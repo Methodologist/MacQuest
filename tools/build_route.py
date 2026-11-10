@@ -56,6 +56,15 @@ FACTIONS = {
         "cities": {1454: ("Orgrimmar", "Doras"), 1456: ("Thunder Bluff", "Tal"), 1458: ("Undercity", "Michael Garrett")},
         # flight masters this faction can never use (druid-only / other faction's in Moonglade)
         "fm_exclude": {11798, 11800},
+        # zeppelins / boats: (kind, (map, x, y, place), (map, x, y, place)) - both directions run.
+        # Zeppelin masters' spots from QuestieDB (Frezza, Zapetta, Snurk Bucksquick, Nez'raz,
+        # Hin Denburg, Squibby Overspeck); the Booty Bay - Ratchet boat is neutral.
+        "transports": [
+            ("zeppelin", (1411, 50.8, 13.5, "Orgrimmar"), (1420, 60.7, 58.9, "the Undercity")),
+            ("zeppelin", (1411, 50.7, 12.9, "Orgrimmar"), (1434, 31.4, 29.9, "Grom'gol")),
+            ("zeppelin", (1420, 61.8, 59.2, "the Undercity"), (1434, 31.5, 29.4, "Grom'gol")),
+            ("boat", (1434, 25.9, 73.1, "Booty Bay"), (1413, 63.7, 38.6, "Ratchet")),
+        ],
     },
     "alliance": {
         "name": "Alliance", "letter": "A", "plan": "alliance.plan",
@@ -64,6 +73,12 @@ FACTIONS = {
         "cities": {1453: ("Stormwind", "Dungar Longdrink"), 1455: ("Ironforge", "Gryth Thurden"),
                    1457: ("Darnassus", "Innkeeper Saelienne")},
         "fm_exclude": {11798, 11800},
+        "transports": [
+            ("boat", (1437, 4.6, 57.2, "Menethil Harbor"), (1439, 32.4, 43.8, "Auberdine")),
+            ("boat", (1437, 5.0, 63.5, "Menethil Harbor"), (1445, 71.6, 56.4, "Theramore")),
+            ("boat", (1439, 33.2, 40.2, "Auberdine"), (1438, 55.0, 96.5, "Rut'theran Village")),
+            ("boat", (1434, 25.9, 73.1, "Booty Bay"), (1413, 63.7, 38.6, "Ratchet")),
+        ],
     },
 }
 FACTION = _faction_arg()
@@ -2111,6 +2126,9 @@ def level_minutes(plan, race="Orc"):
 
 # flight masters a Horde player can never use (druid-only / Alliance hippogryph in Moonglade)
 FM_EXCLUDE = set(FCFG["fm_exclude"])
+# the Moonglade flight masters only druids may use (Bunthen Plainswind: Thunder Bluff, Silva Fil'naveth:
+# Rut'theran Village): listed for druids' live travel advice, never planned into the route
+DRUID_FM = {"horde": {11798}, "alliance": {11800}}
 
 
 def write_travel():
@@ -2138,13 +2156,19 @@ def write_travel():
                     out.append(f"T.zones[{um}] = {{{int(r['MapID'])},{x0:.1f},{y0:.1f},{x1:.1f},{y1:.1f}}}")
     else:
         print("  ! no UiMapAssignment cache: run tools/terrain_extract.py once (travel advice uses the client API then)")
-    out.append("-- fm[i] = {map, x, y, npcID, name}")
+    out.append("-- fm[i] = {map, x, y, npcID, name[, druid only]}")
     for nid, e in sorted(N.items(), key=lambda kv: int(kv[0])):
-        if not ((e.get("flags") or 0) & 8) or e.get("friendly") not in FRIEND or int(nid) in FM_EXCLUDE:
+        druid = int(nid) in DRUID_FM.get(FACTION, set())
+        if not ((e.get("flags") or 0) & 8) or e.get("friendly") not in FRIEND or (int(nid) in FM_EXCLUDE and not druid):
             continue
         for m, pts in sorted(spawns_of("npc", int(nid)).items()):
             x, y = pts[0]
-            out.append(f"T.fm[#T.fm + 1] = {{{m},{x:.1f},{y:.1f},{int(nid)},{lua_str(e['name'])}}}")
+            out.append(f"T.fm[#T.fm + 1] = {{{m},{x:.1f},{y:.1f},{int(nid)},{lua_str(e['name'])}{',true' if druid else ''}}}")
+    out.append("-- boats[i] = {kind, mapA, xA, yA, placeA, mapB, xB, yB, placeB} (zeppelins / boats, both ways)")
+    out.append("T.boats = {}")
+    for kind, a, b in FCFG.get("transports", []):
+        out.append(f"T.boats[#T.boats + 1] = {{{lua_str(kind)},{a[0]},{a[1]},{a[2]},{lua_str(a[3])},"
+                   f"{b[0]},{b[1]},{b[2]},{lua_str(b[3])}}}")
     out.append("-- inns[i] = {map, x, y, npcID, bind name (what GetBindLocation() says)}")
     for nid, bind in sorted(tricks.INN_BIND.items()):
         if not friendly_npc(nid):

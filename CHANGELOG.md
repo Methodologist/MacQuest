@@ -1,5 +1,22 @@
 # Changelog
 
+## 1.2.0
+
+- **Always tells you how to get there.** For any long trip the guide now weighs walking, your flight
+  paths, your hearthstone, and zeppelins and boats (including flying to the dock first), and says
+  what to do: "Fly to the Undercity, then take the zeppelin to Grom'gol (saves ~29 min)". The arrow
+  leads to the first leg. A step on another continent always comes with a way to get there.
+- **Fixed zeppelins, boats and flight paths being skipped.** A quest you'd done in a zone long ago
+  could make the guide think you were already there and skip the zeppelin or flight path into it,
+  sending you on a long run instead (Arathi to Booty Bay, for example).
+- **Grab every flight path**: walking past a flight master you haven't learned shows "New flight path
+  right here". Flight paths also count as known after switching to Mac Quest, before you've opened a
+  flight map.
+- **Hearthstone on cooldown**: if hearthing would be fastest, the guide says when it's ready and how
+  much it would save.
+- **Druids**: Teleport: Moonglade and the druid flight master in Moonglade are suggested for the
+  druid quests there.
+
 ## 1.1.1
 
 - **Fixed the route line missing from the world map.** The map now draws the line before the pins,

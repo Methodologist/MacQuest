@@ -1495,7 +1495,7 @@ SL.Routes["Horde_speed_dungeons"] = {
   {t="T",q=92421,x=58.1,y=89.5,m=1458,npc="Morbin Lightbane"},
   {t="A",q=1048,x=56.2,y=92.2,m=1458,npc="Varimathras"},
 }},
-{title="Arathi Highlands",map=1417,races=nil,entry=33.13,exit=36.48,mins=392,steps={
+{title="Arathi Highlands",map=1417,races=nil,entry=33.13,exit=36.34,mins=367,steps={
   {t="FLY",x=63.2,y=48.6,m=1458,npc=4551,name="Michael Garrett",text="saves ~2 min over running",dest="Fly to Tarren Mill",fto=2389,tm=1424,tx=60.1,ty=18.6},
   {t="GOTO",x=73.0,y=32.5,m=1417,text="Travel east to Hammerfall in the Arathi Highlands"},
   {t="FP",x=73.0,y=32.7,m=1417,npc=2851,name="Urda"},
@@ -1505,18 +1505,15 @@ SL.Routes["Horde_speed_dungeons"] = {
   {t="C",q=676,x=33.6,y=44.6,m=1417,text="Kill 8 Boulderfist Ogres and 10 Boulderfist Enforcers, then find Drum Fel in the Hammerfall outpost in Arathi Highlands."},
   {t="A",q=655,x=72.6,y=33.9,m=1417,npc="Gor'mul"},
   {t="A",q=639,x=73.8,y=34.0,m=1417,npc="Zengu"},
-  {t="A",q=677,x=74.2,y=33.9,m=1417,npc="Drum Fel"},
   {t="T",q=676,x=74.2,y=33.9,m=1417,npc="Drum Fel"},
   {t="T",q=655,x=74.7,y=36.3,m=1417,npc="Tor'gan"},
   {t="A",q=672,x=74.7,y=36.3,m=1417,npc="Tor'gan"},
-  {t="C",q=677,x=67.2,y=73.5,m=1417,text="Slay 10 Witherbark Axe Throwers, 10 Headhunters and 8 Witch Doctors."},
   {t="A",q=663,x=31.8,y=82.7,m=1417,npc="Lolo the Lookout"},
   {t="T",q=663,x=32.3,y=81.4,m=1417,npc="Shakes O'Breen"},
   {t="C",q=639,x=28.3,y=63.4,m=1417,text="Get the Sigil of Strom for Zengu in Hammerfall."},
   {t="C",q=672,x=40.2,y=36.8,m=1417,text="Acquire 10 Highland Raptor Eyes from Highland Striders and Highland Thrashers for Tor'gan in Hammerfall."},
   {t="A",q=642,x=62.5,y=33.7,m=1417,npc="Shards of Myzrael"},
   {t="T",q=639,x=73.8,y=34.0,m=1417,npc="Zengu"},
-  {t="T",q=677,x=74.2,y=33.9,m=1417,npc="Drum Fel"},
   {t="T",q=672,x=74.7,y=36.3,m=1417,npc="Tor'gan"},
   {t="A",q=674,x=74.7,y=36.3,m=1417,npc="Tor'gan"},
   {t="T",q=671,x=74.7,y=36.3,m=1417,npc="Tor'gan"},
@@ -1533,20 +1530,20 @@ SL.Routes["Horde_speed_dungeons"] = {
   {t="A",q=847,x=72.6,y=33.9,m=1417,npc="Gor'mul"},
   {t="T",q=847,x=74.7,y=36.3,m=1417,npc="Tor'gan"},
 }},
-{title="Scarlet Monastery",map=302,races=nil,entry=36.48,exit=36.79,mins=93,dungeon=true,em=1420,ex=82.6,ey=33.8,steps={
+{title="Scarlet Monastery",map=302,races=nil,entry=36.34,exit=36.65,mins=93,dungeon=true,em=1420,ex=82.6,ey=33.8,steps={
   {t="FLY",x=73.0,y=32.7,m=1417,npc=2851,name="Urda",text="saves ~6 min over running",dest="Fly to Undercity",fto=4551,tm=1458,tx=63.2,ty=48.6},
   {t="GOTO",x=82.6,y=33.8,m=1420,text="Travel to the Scarlet Monastery entrance"},
   {t="DUNGEON",x=82.6,y=33.8,m=1420,name="Scarlet Monastery",text="Group up and run Scarlet Monastery (levels 28-42) - quests: Into The Scarlet Monastery"},
   {t="C",q=1048,x=50.0,y=50.0,m=302,text="Kill High Inquisitor Whitemane, Scarlet Commander Mograine, Herod, the Scarlet Champion and Houndmaster Loksey."},
   {t="USEHS",x=67.7,y=37.9,m=1458,bind="Undercity",text="Hearth to Undercity for the next zone"},
 }},
-{title="Undercity (turn in Scarlet Monastery)",map=1458,races=nil,entry=36.79,exit=36.96,mins=2,steps={
+{title="Undercity (turn in Scarlet Monastery)",map=1458,races=nil,entry=36.65,exit=36.83,mins=2,steps={
   {t="NOTE",text="Stop by Undercity: turn in Scarlet Monastery"},
   {t="A",q=2342,x=62.3,y=48.6,m=1458,npc="Patrick Garrett"},
   {t="A",q=3341,x=74.0,y=33.3,m=1458,npc="Andrew Brownell"},
   {t="T",q=1048,x=56.2,y=92.2,m=1458,npc="Varimathras"},
 }},
-{title="Stranglethorn Vale",map=1434,races=nil,entry=36.96,exit=38.68,mins=197,steps={
+{title="Stranglethorn Vale",map=1434,races=nil,entry=36.83,exit=38.56,mins=197,steps={
   {t="BOAT",x=61.9,y=59.1,m=1420,to=1434,text="Take the zeppelin from the Undercity towers to Grom'gol"},
   {t="FP",x=32.5,y=29.4,m=1434,npc=1387,name="Thysta"},
   {t="HEARTH",x=31.5,y=29.8,m=1434,npc=5814,name="Innkeeper Thulbek",bind="Grom'gol Base Camp"},
@@ -1616,7 +1613,7 @@ SL.Routes["Horde_speed_dungeons"] = {
   {t="C",q=188,x=32.2,y=17.4,m=1434,text="Ajeck Rouack of Nesingwary's Expedition wants you to kill Sin'Dall."},
   {t="T",q=188,x=35.6,y=10.6,m=1434,npc="Ajeck Rouack"},
 }},
-{title="Desolace",map=1443,races=nil,entry=38.68,exit=39.49,mins=130,steps={
+{title="Desolace",map=1443,races=nil,entry=38.56,exit=39.38,mins=130,steps={
   {t="NOTE",text="Fly to Sun Rock Retreat and run south-west into Desolace (Shadowprey Village)"},
   {t="FP",x=21.6,y=74.1,m=1443,npc=6726,name="Thalon"},
   {t="HEARTH",x=24.1,y=68.2,m=1443,npc=11106,name="Innkeeper Sikewa",bind="Shadowprey Village"},
@@ -1665,7 +1662,7 @@ SL.Routes["Horde_speed_dungeons"] = {
   {t="A",q=7067,x=50.4,y=86.7,m=1443,npc="Centaur Pariah"},
   {t="T",q=6134,x=47.8,y=61.8,m=1443,npc="Hornizz Brimbuzzle"},
 }},
-{title="Thousand Needles - Shimmering Flats",map=1441,races=nil,entry=39.49,exit=39.65,mins=24,steps={
+{title="Thousand Needles - Shimmering Flats",map=1441,races=nil,entry=39.38,exit=39.54,mins=24,steps={
   {t="FLY",x=21.6,y=74.1,m=1443,npc=6726,name="Thalon",text="Fly to Freewind Post",dest="Fly to Freewind Post"},
   {t="A",q=5762,x=77.8,y=77.3,m=1441,npc="Kravel Koalbeard"},
   {t="A",q=1111,x=77.8,y=77.3,m=1441,npc="Kravel Koalbeard"},
@@ -1676,19 +1673,19 @@ SL.Routes["Horde_speed_dungeons"] = {
   {t="C",q=1175,x=76.9,y=57.6,m=1441,text="Kill Saltstone Basilisk",oname="Saltstone Basilisk"},
   {t="T",q=1175,x=81.6,y=78.0,m=1441,npc="Trackmaster Zherin"},
 }},
-{title="Shaman: Call of Air (air totems)",map=1441,races=nil,entry=39.65,exit=39.65,mins=0,classes={"SHAMAN"},steps={
+{title="Shaman: Call of Air (air totems)",map=1441,races=nil,entry=39.54,exit=39.54,mins=0,classes={"SHAMAN"},steps={
   {t="FLY",x=45.1,y=49.1,m=1441,npc=4317,name="Nyse",text="saves ~13 min over running",dest="Fly to Orgrimmar",fto=3310,tm=1454,tx=45.1,ty=63.9},
   {t="A",q=1531,x=38.0,y=37.7,m=1454,npc="Searn Firewarder"},
   {t="FLY",x=45.1,y=63.9,m=1454,npc=3310,name="Doras",text="saves ~14 min over running",dest="Fly to Freewind Post",fto=4317,tm=1441,tx=45.1,ty=49.1},
   {t="T",q=1531,x=53.5,y=42.6,m=1441,npc="Prate Cloudseer"},
 }},
-{title="Razorfen Downs",map=300,races=nil,entry=39.65,exit=39.96,mins=75,dungeon=true,em=1413,ex=49.0,ey=93.9,steps={
+{title="Razorfen Downs",map=300,races=nil,entry=39.54,exit=39.85,mins=75,dungeon=true,em=1413,ex=49.0,ey=93.9,steps={
   {t="GOTO",x=49.0,y=93.9,m=1413,text="Travel to the Razorfen Downs entrance"},
   {t="DUNGEON",x=49.0,y=93.9,m=1413,name="Razorfen Downs",text="Group up and run Razorfen Downs (levels 33-42) - quests: A Host of Evil, Bring the End"},
   {t="C",q=6626,x=50.0,y=50.0,m=300,text="Kill 8 Razorfen Battleguard, 8 Razorfen Thornweavers, and 8 Death's Head Cultists."},
   {t="C",q=3341,x=50.0,y=50.0,m=300,text="Andrew Brownell wants you to kill Amnennar the Coldbringer."},
 }},
-{title="The Barrens (turn in Razorfen Downs)",map=1413,races=nil,entry=39.96,exit=40.19,mins=3,steps={
+{title="The Barrens (turn in Razorfen Downs)",map=1413,races=nil,entry=39.85,exit=40.08,mins=8,steps={
   {t="NOTE",text="Stop by The Barrens: turn in Razorfen Downs"},
   {t="T",q=6626,x=49.0,y=94.9,m=1413,npc="Myriam Moonsinger"},
   {t="FLY",x=45.1,y=49.1,m=1441,npc=4317,name="Nyse",text="saves ~6 min over running",dest="Fly to Ratchet",fto=16227,tm=1413,tx=63.1,ty=37.2},
@@ -1697,7 +1694,7 @@ SL.Routes["Horde_speed_dungeons"] = {
   {t="FLY",x=63.1,y=37.2,m=1413,npc=16227,name="Bragok",text="saves ~2 min over running",dest="Fly to The Crossroads",fto=3615,tm=1413,tx=51.5,ty=30.3},
   {t="T",q=1361,x=45.3,y=28.4,m=1413,npc="Regthar Deathgate"},
 }},
-{title="Dustwallow Marsh",map=1445,races=nil,entry=40.19,exit=41.09,mins=82,steps={
+{title="Dustwallow Marsh",map=1445,races=nil,entry=40.08,exit=40.99,mins=82,steps={
   {t="NOTE",text="Travel to Brackenwall Village in Dustwallow Marsh (south from the Barrens)"},
   {t="FP",x=35.6,y=31.9,m=1445,npc=11899,name="Shardi"},
   {t="A",q=1201,x=35.2,y=30.7,m=1445,npc="Nazeer Bloodpike"},
@@ -1739,7 +1736,7 @@ SL.Routes["Horde_speed_dungeons"] = {
   {t="T",q=1239,x=35.2,y=30.7,m=1445,npc="Nazeer Bloodpike"},
   {t="A",q=1240,x=35.2,y=30.7,m=1445,npc="Nazeer Bloodpike"},
 }},
-{title="Warlock: Felhunter",map=1445,races=nil,entry=41.09,exit=41.09,mins=0,classes={"WARLOCK"},steps={
+{title="Warlock: Felhunter",map=1445,races=nil,entry=40.99,exit=40.99,mins=0,classes={"WARLOCK"},steps={
   {t="FLY",x=35.6,y=31.9,m=1445,npc=11899,name="Shardi",text="saves ~2 min over running",dest="Fly to Ratchet",fto=16227,tm=1413,tx=63.1,ty=37.2},
   {t="A",q=1758,x=62.6,y=35.5,m=1413,npc="Strahad Farsan"},
   {t="T",q=1758},
@@ -1762,7 +1759,7 @@ SL.Routes["Horde_speed_dungeons"] = {
   {t="C",q=1795,x=62.6,y=35.3,m=1413,text="Using the Tome of the Cabal, summon and subdue a felhunter."},
   {t="T",q=1795,x=62.6,y=35.5,m=1413,npc="Strahad Farsan"},
 }},
-{title="Warrior: Berserker Stance",map=1445,races=nil,entry=41.09,exit=41.09,mins=0,classes={"WARRIOR"},steps={
+{title="Warrior: Berserker Stance",map=1445,races=nil,entry=40.99,exit=40.99,mins=0,classes={"WARRIOR"},steps={
   {t="FLY",x=35.6,y=31.9,m=1445,npc=11899,name="Shardi",text="saves ~2 min over running",dest="Fly to Thunder Bluff",fto=2995,tm=1456,tx=47.0,ty=49.8},
   {t="A",q=1718,x=57.2,y=87.4,m=1456,npc="Torm Ragetotem"},
   {t="FLY",x=47.0,y=49.8,m=1456,npc=2995,name="Tal",text="saves ~2 min over running",dest="Fly to Ratchet",fto=16227,tm=1413,tx=63.1,ty=37.2},
@@ -1771,10 +1768,9 @@ SL.Routes["Horde_speed_dungeons"] = {
   {t="C",q=1719,x=68.6,y=48.7,m=1413,text="Kill Big Will, then speak to Klannoc Macleod on Fray Island."},
   {t="T",q=1719,x=68.6,y=49.2,m=1413,npc="Klannoc Macleod"},
 }},
-{title="Swamp of Sorrows",map=1435,races=nil,entry=41.09,exit=41.73,mins=59,steps={
+{title="Swamp of Sorrows",map=1435,races=nil,entry=40.99,exit=41.50,mins=45,steps={
   {t="NOTE",text="Travel to Stonard (zeppelin to Grom'gol, then run north through Duskwood)"},
   {t="FP",x=46.1,y=54.8,m=1435,npc=6026,name="Breyk"},
-  {t="A",q=1430,x=44.7,y=57.2,m=1435,npc="Dar"},
   {t="A",q=698,x=44.7,y=57.2,m=1435,npc="Dar"},
   {t="A",q=1418,x=47.7,y=55.2,m=1435,npc="Helgrum the Swift"},
   {t="A",q=1424,x=47.9,y=54.8,m=1435,npc="Fel'zerul"},
@@ -1782,11 +1778,9 @@ SL.Routes["Horde_speed_dungeons"] = {
   {t="C",q=1424,x=73.3,y=56.4,m=1435,text="Fel'zerul in Stonard wants you to gather 10 Atal'ai Artifacts."},
   {t="T",q=698,x=81.3,y=81.0,m=1435,npc="Tok'Kar"},
   {t="A",q=699,x=81.3,y=81.0,m=1435,npc="Tok'Kar"},
-  {t="C",q=1430,x=95.2,y=74.2,m=1435,text="Bring 10 Monstrous Crawler Legs to Dar in the Swamp of Sorrows."},
   {t="C",q=699,x=82.7,y=30.9,m=1435,text="Bring 6 Sawtooth Snapper Claws to Tok'Kar in the Swamp of Sorrows."},
   {t="T",q=699,x=81.3,y=81.0,m=1435,npc="Tok'Kar"},
   {t="T",q=1424,x=47.9,y=54.8,m=1435,npc="Fel'zerul"},
-  {t="T",q=1430,x=44.7,y=57.2,m=1435,npc="Dar"},
   {t="A",q=93176,x=25.1,y=54.2,m=1435,npc="Amaryllis Webb"},
   {t="T",q=93176,x=25.1,y=54.2,m=1435,npc="Amaryllis Webb"},
   {t="A",q=1389,x=26.0,y=31.4,m=1435,npc="Magtoor"},
@@ -1796,7 +1790,7 @@ SL.Routes["Horde_speed_dungeons"] = {
   {t="T",q=1393,x=47.8,y=39.8,m=1435,npc="Galen's Strongbox"},
   {t="T",q=1389,x=26.0,y=31.4,m=1435,npc="Magtoor"},
 }},
-{title="Badlands",map=1418,races=nil,entry=41.73,exit=42.58,mins=97,steps={
+{title="Badlands",map=1418,races=nil,entry=41.50,exit=42.36,mins=97,steps={
   {t="NOTE",text="Travel to Kargath in the Badlands"},
   {t="FP",x=4.0,y=44.8,m=1418,npc=2861,name="Gorrik"},
   {t="HEARTH",x=2.8,y=45.9,m=1418,npc=9356,name="Innkeeper Shul'kar",bind="Kargath"},
@@ -1827,7 +1821,7 @@ SL.Routes["Horde_speed_dungeons"] = {
   {t="C",q=712,x=4.1,y=79.9,m=1418,text="Bring 5 Bracers of Rock Binding to Lotwil Veriatus in the Badlands."},
   {t="T",q=712,x=25.9,y=44.9,m=1418,npc="Lotwil Veriatus"},
 }},
-{title="Uldaman",map=230,races=nil,entry=42.58,exit=42.89,mins=135,dungeon=true,em=1418,ex=44.6,ey=12.1,steps={
+{title="Uldaman",map=230,races=nil,entry=42.36,exit=42.67,mins=135,dungeon=true,em=1418,ex=44.6,ey=12.1,steps={
   {t="GOTO",x=44.6,y=12.1,m=1418,text="Travel to the Uldaman entrance"},
   {t="DUNGEON",x=44.6,y=12.1,m=1418,name="Uldaman",text="Group up and run Uldaman (levels 36-48) - quests: Necklace Recovery, Power Stones, Reclaimed Treasures, Solution to Doom"},
   {t="C",q=2283,x=50.0,y=50.0,m=230,text="Look for a valuable necklace within the Uldaman dig site and bring it back to Dran Droffers in Orgrimmar. The necklace may be damaged."},
@@ -1836,14 +1830,13 @@ SL.Routes["Horde_speed_dungeons"] = {
   {t="C",q=709,x=50.0,y=50.0,m=230,text="Bring the Tablet of Ryun'eh to Theldurin the Lost."},
   {t="USEHS",x=2.8,y=45.9,m=1418,bind="Kargath",text="Hearth to Kargath for the next zone"},
 }},
-{title="Badlands (turn in Uldaman)",map=1418,races=nil,entry=42.89,exit=43.23,mins=1,steps={
+{title="Badlands (turn in Uldaman)",map=1418,races=nil,entry=42.67,exit=43.02,mins=1,steps={
   {t="NOTE",text="Stop by Badlands: turn in Uldaman"},
   {t="T",q=709,x=51.4,y=76.9,m=1418,npc="Theldurin the Lost"},
   {t="T",q=2418,x=42.4,y=52.9,m=1418,npc="Rigglefuzz"},
 }},
-{title="Arathi Highlands 2",map=1417,races=nil,entry=43.23,exit=43.80,mins=53,steps={
+{title="Arathi Highlands 2",map=1417,races=nil,entry=43.02,exit=43.52,mins=46,steps={
   {t="FLY",x=4.0,y=44.8,m=1418,npc=2861,name="Gorrik",text="saves ~4 min over running",dest="Fly to Hammerfall",fto=2851,tm=1417,tx=73.0,ty=32.7},
-  {t="A",q=678,x=74.2,y=33.9,m=1417,npc="Drum Fel"},
   {t="A",q=640,x=73.8,y=34.0,m=1417,npc="Zengu"},
   {t="T",q=638,x=73.8,y=34.0,m=1417,npc="Zengu"},
   {t="C",q=640,x=24.4,y=58.8,m=1417,text="Retrieve the 11 Sigil Fragments from the defenders in Stromgarde, and bring them to Tor'gan in Hammerfall."},
@@ -1852,11 +1845,9 @@ SL.Routes["Horde_speed_dungeons"] = {
   {t="T",q=665,x=33.9,y=80.5,m=1417,npc="Doctor Draxlegauge"},
   {t="A",q=666,x=33.9,y=80.5,m=1417,npc="Doctor Draxlegauge"},
   {t="A",q=664,x=34.0,y=80.8,m=1417,npc="Captain Steelgut"},
-  {t="C",q=678,x=53.1,y=75.9,m=1417,text="Kill 10 Boulderfist Brutes and 4 Boulderfist Magi."},
   {t="T",q=640,x=74.7,y=36.3,m=1417,npc="Tor'gan"},
   {t="A",q=641,x=74.7,y=36.3,m=1417,npc="Tor'gan"},
   {t="A",q=651,x=84.3,y=30.9,m=1417,npc="Iridescent Shards"},
-  {t="T",q=678,x=74.2,y=33.9,m=1417,npc="Drum Fel"},
   {t="T",q=641,x=73.8,y=34.0,m=1417,npc="Zengu"},
   {t="C",q=651,x=66.7,y=29.7,m=1417,text="Cresting Key",oname="Cresting Key"},
   {t="C",q=651,x=52.0,y=50.7,m=1417,text="Thundering Key",oname="Thundering Key"},
@@ -1873,7 +1864,7 @@ SL.Routes["Horde_speed_dungeons"] = {
   {t="C",q=662,x=23.1,y=84.5,m=1417,text="First Mate Nilzlix wants you to retrieve the Charts and Logs from the Maiden's Folly and the Spirit of Silverpine."},
   {t="T",q=662,x=32.8,y=81.5,m=1417,npc="First Mate Nilzlix"},
 }},
-{title="Stranglethorn Vale 2",map=1434,races=nil,entry=43.80,exit=45.57,mins=208,steps={
+{title="Stranglethorn Vale 2",map=1434,races=nil,entry=43.52,exit=45.32,mins=207,steps={
   {t="FLY",x=73.0,y=32.7,m=1417,npc=2851,name="Urda",text="Fly to Grom'gol (or take the zeppelin from Undercity)",dest="Fly to Grom'gol (or take the zeppelin from Undercity)"},
   {t="HEARTH",x=27.0,y=77.3,m=1434,npc=6807,name="Innkeeper Skindle",bind="Booty Bay"},
   {t="FLY",x=26.9,y=77.1,m=1434,npc=2858,name="Gringer",text="saves ~2 min over running",dest="Fly to Grom'gol Base Camp",fto=1387,tm=1434,tx=32.5,ty=29.4},
@@ -1954,7 +1945,7 @@ SL.Routes["Horde_speed_dungeons"] = {
   {t="T",q=613,x=27.8,y=77.1,m=1434,npc="\"Sea Wolf\" MacKinley"},
   {t="T",q=577,x=28.3,y=77.6,m=1434,npc="Drizzlik"},
 }},
-{title="Orgrimmar - 40s",map=1454,races=nil,entry=45.57,exit=45.69,mins=3,steps={
+{title="Orgrimmar - 40s",map=1454,races=nil,entry=45.32,exit=45.44,mins=3,steps={
   {t="NOTE",text="Head back to Orgrimmar (zeppelin from Grom'gol)"},
   {t="A",q=7068,x=39.2,y=86.3,m=1454,npc="Uthel'nay"},
   {t="A",q=649,x=59.5,y=36.6,m=1454,npc="Dran Droffers"},
@@ -1964,7 +1955,7 @@ SL.Routes["Horde_speed_dungeons"] = {
   {t="A",q=2981,x=75.2,y=34.2,m=1454,npc="Belgrom Rockmaul"},
   {t="TRAIN",text="Train new spells in Orgrimmar"},
 }},
-{title="Tanaris",map=1446,races=nil,entry=45.69,exit=47.12,mins=162,steps={
+{title="Tanaris",map=1446,races=nil,entry=45.44,exit=47.12,mins=206,steps={
   {t="NOTE",text="Travel to Gadgetzan in Tanaris"},
   {t="FLY",x=45.1,y=63.9,m=1454,npc=3310,name="Doras",text="saves ~6 min over running",dest="Fly to Freewind Post",fto=4317,tm=1441,tx=45.1,ty=49.1},
   {t="FP",x=51.6,y=25.4,m=1446,npc=7824,name="Bulkrek Ragefist"},
@@ -2635,7 +2626,7 @@ SL.Routes["Horde_speed_dungeons"] = {
 }},
 }
 SL.RouteVersions = SL.RouteVersions or {}
-SL.RouteVersions["Horde_speed_dungeons"] = "5dc3719431f2"
+SL.RouteVersions["Horde_speed_dungeons"] = "a4287efb62cd"
 -- modelled minutes per level along this route (for the time-to-60 estimate)
 SL.LevelMinutes = SL.LevelMinutes or {}
-SL.LevelMinutes["Horde_speed_dungeons"] = {2.5,5.7,8.9,13.3,17.8,17.8,17.5,21.1,25.3,29.6,47.3,69.1,43.4,38.0,42.4,47.1,112.8,54.7,60.1,65.4,66.9,159.8,24.4,65.6,70.6,64.6,112.9,85.4,77.2,103.6,151.5,110.9,99.0,117.3,125.3,177.0,123.4,141.2,201.1,95.7,107.1,213.1,93.7,122.4,119.9,124.0,170.9,145.2,182.4,119.4,143.9,102.9,121.8,124.7,182.1,154.4,221.1,231.1,222.0}
+SL.LevelMinutes["Horde_speed_dungeons"] = {2.5,5.7,8.9,13.3,17.8,17.8,17.5,21.1,25.3,29.6,47.3,69.1,43.4,38.0,42.4,47.1,112.8,54.7,60.1,65.4,66.9,159.8,24.4,65.6,70.6,64.6,112.9,85.4,77.2,103.6,151.5,110.9,97.2,115.1,123.0,174.0,123.2,144.9,193.8,98.6,110.8,190.0,114.2,121.8,121.6,132.4,172.0,145.2,182.4,119.4,143.9,102.9,121.8,124.7,182.1,154.4,221.1,231.1,222.0}

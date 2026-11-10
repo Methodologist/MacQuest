@@ -72,7 +72,7 @@
     catch-up grind 30.08 -> 32.1 before questing (270 min; quests here ~level 38)
     left for later (level too low): [639, 640, 641, 642, 651, 662, 663, 664, 665, 666, 668, 669, 678, 701, 702, 847]
     -> set hearth at Hammerfall (worth ~3 min more than keeping the old bind)
-[34] Arathi Highlands                       map=1417 races=all entry=30.08 exit=32.85 quests=6 deferredIn=0 ~ 326min HS=1 death=0 stacked=0
+[34] Arathi Highlands                       map=1417 races=all entry=30.08 exit=32.85 quests=6 deferredIn=0 ~ 312min HS=1 death=0 stacked=0
     catch-up grind 32.85 -> 34.9 before questing (196 min; quests here ~level 37) on the mobs of Supply and Demand
     left for later (level too low): [196, 572, 576, 584, 585, 587, 595, 597, 599, 600, 604, 606, 607, 617]
     -> set hearth at Grom'gol Base Camp (worth ~16 min more than keeping the old bind)
@@ -130,7 +130,7 @@
     -> keep hearth (Light's Hope Chapel) instead of binding at Cenarion Hold
 [62] Silithus                               map=1451 races=all entry=58.98 exit=60.00 quests=25 deferredIn=0 ~ 188min HS=0 death=0 stacked=0
 
-telemetry: 1 SavedVariables file(s), 57 timed steps, 52 measured step keys, 0 player reports
+telemetry: 2 SavedVariables file(s), 64 timed steps, 59 measured step keys, 0 player reports
     flights The Barrens - Crossroads: 2 planned, ~4 min saved
     flight paths grabbed on the way (Warlock: Voidwalker): Doras
     flights The Barrens - Camp Taurajo: 4 planned, ~10 min saved
@@ -164,8 +164,8 @@ quest log peak Skyborne  20 (in Ashenvale)
 quest log peak Tauren    20 (in Ashenvale)
 quest log peak Troll     21 (in Ashenvale)
 quest log peak Undead    20 (in Ashenvale)
-estimated /played to 60 for Orc       ~87.3 h (questing + planned grinding, excl. class/vendor stops)
-estimated /played to 60 for Skyborne  ~86.7 h (questing + planned grinding, excl. class/vendor stops)
-estimated /played to 60 for Tauren    ~87.4 h (questing + planned grinding, excl. class/vendor stops)
-estimated /played to 60 for Troll     ~87.3 h (questing + planned grinding, excl. class/vendor stops)
-estimated /played to 60 for Undead    ~89.8 h (questing + planned grinding, excl. class/vendor stops)
+estimated /played to 60 for Orc       ~87.0 h (questing + planned grinding, excl. class/vendor stops)
+estimated /played to 60 for Skyborne  ~86.5 h (questing + planned grinding, excl. class/vendor stops)
+estimated /played to 60 for Tauren    ~87.2 h (questing + planned grinding, excl. class/vendor stops)
+estimated /played to 60 for Troll     ~87.0 h (questing + planned grinding, excl. class/vendor stops)
+estimated /played to 60 for Undead    ~89.6 h (questing + planned grinding, excl. class/vendor stops)

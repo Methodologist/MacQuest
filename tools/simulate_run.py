@@ -71,6 +71,21 @@ function SIM.abandonSkipped()
   end
   return gone
 end
+-- how the guide gets you from where you stand to (m, x, y) when it is another map: its own travel
+-- advice (walk / known flights / hearth / zeppelin / boat) -> seconds, kind, other continent?
+function SIM.travel(m, x, y)
+  local A, P = SpeedLevel.Advisor, SpeedLevel.Player
+  local pm, px, py = P:Position()
+  local pc, pwx, pwy = A:World(pm, px, py)
+  local tc, twx, twy = A:World(m, x, y)
+  if not pc or not tc then return { secs = -1, kind = "unknown", cross = false } end
+  local spd = 7 * ((STATE.level or 1) >= 40 and 1.6 or 1)
+  local walk = (pc == tc) and math.sqrt((pwx - twx) ^ 2 + (pwy - twy) ^ 2) * 1.3 / spd or nil
+  local adv = A:Advise({ m = m, x = x, y = y })
+  local secs = adv and adv.eta or walk
+  local kind = adv and adv.eta and adv.kind or (walk and "walk" or "none")
+  return { secs = secs or -1, kind = kind, cross = pc ~= tc, line = adv and adv.line or "" }
+end
 function SIM.focus()
   local E = SpeedLevel.Engine
   local i = E:Focus()
@@ -171,6 +186,9 @@ def run(char, mode):
     zone_rows = []           # (section title, plan entry, actual entry)
     left_behind = []         # (section, [quest ids])
     orange = []
+    travel = Counter()       # seconds between maps, by how the guide sent you (walk/fly/hearth/boat)
+    travel_n = Counter()
+    long_walks = []          # (zone, from map, to map, minutes): 20+ minute runs with no better way
     abandoned = []           # (zone, quest): picked up, then its turn-in skipped
     manual = Counter()
     grind_secs = 0.0
@@ -183,10 +201,28 @@ def run(char, mode):
         return float(G.STATE.level) + float(G.STATE.xp) / max(1.0, float(G.STATE.xpMax))
 
     def teleport(m, x, y):
-        nonlocal pos
+        nonlocal pos, last_hs
         if m is None or x is None:
             return 0.0
-        t = tricks.walk_time(m, (pos[1], pos[2]), (x, y), int(lv())) if pos[0] == m else ZONE_TRAVEL
+        if pos[0] == m:
+            t = tricks.walk_time(m, (pos[1], pos[2]), (x, y), int(lv()))
+        else:
+            # another map: travel the way the guide would tell you (its live travel advice)
+            tr = lua_table(L, L.eval(f"SIM.travel({m}, {x}, {y})"))
+            t = float(tr["secs"])
+            kind = tr["kind"]
+            if t < 0:
+                t = ZONE_TRAVEL
+                kind = "unknown"
+            if kind == "none":
+                issues.append(f"no way to travel from map {pos[0]} to map {m} ({zone_rows[-1][0] if zone_rows else '?'})")
+                t = 900.0
+            if kind == "hearth":
+                last_hs = clock
+            travel[kind] += t
+            travel_n[kind] += 1
+            if t > 1200 and kind == "walk":
+                long_walks.append((zone_rows[-1][0] if zone_rows else "?", pos[0], m, round(t / 60)))
         pos = (m, x, y)
         L.execute(f"STATE.map = {m}; STATE.x = {x / 100}; STATE.y = {y / 100}")
         return t
@@ -378,6 +414,7 @@ def run(char, mode):
         "issues": issues, "orange": orange, "left_behind": left_behind, "zones": zone_rows,
         "zone_time": dict(zone_time), "manual": dict(manual), "ended_early": ended_early,
         "abandoned": abandoned,
+        "travel": dict(travel), "travel_n": dict(travel_n), "long_walks": long_walks,
         "shortfall": round(shortfall, 2),
     }
 
@@ -428,6 +465,27 @@ def main():
         lines.append("Quests picked up but then dropped (turn-in skipped), by zone:")
         for sec, n in ab.most_common(12):
             lines.append(f"  {n:4d}  {sec}")
+        lines.append("")
+    tr_s, tr_n = Counter(), Counter()
+    for r in results:
+        for k, v in r["travel"].items():
+            tr_s[k] += v
+        for k, v in r["travel_n"].items():
+            tr_n[k] += v
+    if tr_s:
+        n = len(results)
+        lines.append("Travel between maps, as the guide advises it (average per run):")
+        for k, v in tr_s.most_common():
+            lines.append(f"  {k:<8} {v / n / 3600:5.2f} h over {tr_n[k] / n:5.1f} trips")
+        lines.append("")
+    lw = Counter()
+    for r in results:
+        for zone, a, b, mins in r["long_walks"]:
+            lw[(zone, a, b, mins)] += 1
+    if lw:
+        lines.append("Runs of 20+ minutes with no faster way (zone, from map -> to map, minutes: runs):")
+        for (zone, a, b, mins), c in lw.most_common(15):
+            lines.append(f"  {zone:<34} {a} -> {b}  {mins:3d} min: {c}")
         lines.append("")
     drift = defaultdict(list)
     for r in results:

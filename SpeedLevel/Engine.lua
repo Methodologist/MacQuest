@@ -237,6 +237,36 @@ local function inSectionDoneAfter(i)
     return false
 end
 
+-- steps before a section's first quest step that get you into the zone
+local LEAD_IN = { GOTO = true, NOTE = true, FLY = true, BOAT = true, FP = true, HEARTH = true }
+local function isLeadIn(i)
+    local sec = E.sections[E.steps[i].sec]
+    local firstQ = sec.questSteps[1]
+    return not firstQ or i < firstQ
+end
+
+local function leadInDone(i)
+    local st = E.steps[i]
+    local si = st.sec
+    local sec = E.sections[si]
+    local last = (E.sections[si + 1] and E.sections[si + 1].first or #E.steps + 1) - 1
+    local open = false
+    for _, j in ipairs(sec.questSteps) do
+        local s = E:Status(j)
+        if s ~= DONE and s ~= SKIP then open = true end
+        -- you have started here: a quest picked up in this zone is in your log (quests from earlier
+        -- zones that are only turned in here do not count)
+        local sj = E.steps[j]
+        if j > i and sj.t == "A" and sj.q and SL.Player:InLog(sj.q) then return true end
+    end
+    -- nothing left for you here - except a flight path, which is always worth learning
+    if not open and st.t ~= "FP" then return true end
+    for j = i + 1, last do
+        if SL.char.flags[j] or SL.char.manualDone[j] then return true end -- you did a later step here
+    end
+    return false
+end
+
 local function sectionAllQuestsSkipped(si)
     local cached = secMemo[si]
     if cached ~= nil then return cached end
@@ -426,7 +456,14 @@ function E:ComputeStatus(i)
         return ACTIVE
     end
     if sectionAllQuestsSkipped(st.sec) then return SKIP, "section skipped" end
-    if inSectionDoneAfter(i) then return DONE, "moved on" end
+    if LEAD_IN[t] and isLeadIn(i) then
+        -- getting into a zone (zeppelin, flight path, inn, travel note): done when you are there, have
+        -- started on it, or there is nothing left for you in it - a quest there completed long ago
+        -- (another visit, another route) is no proof you have arrived
+        if leadInDone(i) then return DONE, "moved on" end
+    elseif inSectionDoneAfter(i) then
+        return DONE, "moved on"
+    end
     if self:LeftFinishedSection(i) then return DONE, "left the zone" end
     if t == "FLY" and st.fto then
         -- a flight the route planned: needs both flight paths; done once you are at the destination
@@ -889,6 +926,8 @@ function E:CurrentTarget()
             end
         end
     end
+    -- a flight path you have not learned, right here: always worth the few seconds
+    self.fpHint = SL.Advisor and SL.Advisor:NearbyNewFlightPath() or nil
     -- faster by flight path or hearthstone?
     self.advice = nil
     if best and first.t ~= "FLY" and SL.Advisor then
@@ -898,8 +937,16 @@ function E:CurrentTarget()
             self.advice = adv
             if adv.kind == "fly" then
                 return { m = adv.from.m, x = adv.from.x, y = adv.from.y, step = best.step, label = adv.label, via = "fly" }
+            elseif adv.kind == "boat" then
+                -- zeppelin / boat: the arrow leads to the first leg (a flight master, or the dock)
+                local f = adv.first and adv.first.from
+                if f then
+                    return { m = f.m, x = f.x, y = f.y, step = best.step, label = adv.label, via = "fly" }
+                end
+                local d = adv.boat.from
+                return { m = d.m, x = d.x, y = d.y, step = best.step, label = adv.label, via = "boat" }
             end
-            best.label = adv.label
+            if adv.label then best.label = adv.label end
         end
     end
     return best
@@ -1050,6 +1097,9 @@ function E:StepText(st)
     if self.advice and self.advice.step == st.i and self.advice.line then
         table.insert(lines, 1, self.advice.line)
     end
+    if self.fpHint and st.i == self:Focus() and not (st.t == "FP" and st.npc == self.fpHint.npc) then
+        table.insert(lines, 1, "|cffe6c070New flight path right here: talk to " .. self.fpHint.name .. " to learn it|r")
+    end
     return ICONS[t], text, lines
 end
 
@@ -1096,12 +1146,18 @@ function E:ScanTaxi()
         if ok2 and left then
             local px = left + (right - left) * fm.x / 100
             local py = top + (bottom - top) * fm.y / 100
+            local found = false
             for _, node in ipairs(nodes) do
                 local nx, ny = node.position:GetXY()
                 if math.abs(nx - px) < 0.012 and math.abs(ny - py) < 0.012 then
                     if node.name then SL.db.taxiNames[fm.npc] = node.name end
                     SL.char.knownTaxi[fm.key] = node.state ~= reach
+                    found = true
                 end
+            end
+            -- on this continent's flight map but not listed: you have not learned it yet
+            if not found and px >= 0 and px <= 1 and py >= 0 and py <= 1 and SL.char.knownTaxi[fm.key] == nil then
+                SL.char.knownTaxi[fm.key] = false
             end
         end
     end

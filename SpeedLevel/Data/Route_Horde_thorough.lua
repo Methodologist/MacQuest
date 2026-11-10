@@ -1393,7 +1393,7 @@ SL.Routes["Horde_thorough"] = {
   {t="C",q=535,x=59.3,y=69.8,m=1416,text="Bring a mug of Southshore Stout to Valik in the Syndicate camp."},
   {t="T",q=535,x=57.2,y=69.5,m=1416,npc="Henchman Valik"},
 }},
-{title="Arathi Highlands",map=1417,races=nil,entry=30.08,exit=32.85,mins=326,steps={
+{title="Arathi Highlands",map=1417,races=nil,entry=30.08,exit=32.85,mins=312,steps={
   {t="GOTO",x=73.0,y=32.5,m=1417,text="Travel east to Hammerfall in the Arathi Highlands"},
   {t="FP",x=73.0,y=32.7,m=1417,npc=2851,name="Urda"},
   {t="GRIND",x=65.6,y=38.0,m=1417,text="Highland Strider (level 30-31), about 22k XP/hour - most quests here are level 38",level=32.1},
@@ -2472,7 +2472,7 @@ SL.Routes["Horde_thorough"] = {
 }},
 }
 SL.RouteVersions = SL.RouteVersions or {}
-SL.RouteVersions["Horde_thorough"] = "98d2fd716b2a"
+SL.RouteVersions["Horde_thorough"] = "4e8c19bc84c1"
 -- modelled minutes per level along this route (for the time-to-60 estimate)
 SL.LevelMinutes = SL.LevelMinutes or {}
-SL.LevelMinutes["Horde_thorough"] = {2.5,5.7,8.9,13.3,17.8,17.8,17.5,21.1,25.3,29.6,47.3,69.2,43.4,38.1,42.5,47.3,49.9,53.5,58.8,64.0,81.2,71.1,67.1,66.6,56.6,77.0,79.8,74.2,88.2,112.7,120.2,124.3,104.4,111.9,119.5,128.2,144.2,153.4,128.5,121.6,108.8,112.2,121.5,139.4,157.1,164.7,146.4,125.9,114.7,155.5,88.8,149.6,151.4,169.0,204.2,156.7,221.1,228.5,185.4}
+SL.LevelMinutes["Horde_thorough"] = {2.5,5.7,8.9,13.3,17.8,17.8,17.5,21.1,25.3,29.6,47.3,69.2,43.4,38.1,42.5,47.3,49.9,53.5,58.8,64.0,81.2,71.1,67.1,66.6,56.6,77.0,79.8,74.2,88.2,108.1,114.9,119.5,104.4,111.9,119.5,128.2,144.2,153.4,128.5,121.6,108.8,112.2,121.5,139.4,157.1,164.7,146.4,125.9,114.7,155.5,88.8,149.6,151.4,169.0,204.2,156.7,221.1,228.5,185.4}

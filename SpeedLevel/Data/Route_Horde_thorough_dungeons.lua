@@ -1515,7 +1515,7 @@ SL.Routes["Horde_thorough_dungeons"] = {
   {t="T",q=92421,x=58.1,y=89.5,m=1458,npc="Morbin Lightbane"},
   {t="A",q=1048,x=56.2,y=92.2,m=1458,npc="Varimathras"},
 }},
-{title="Arathi Highlands",map=1417,races=nil,entry=33.45,exit=36.85,mins=411,steps={
+{title="Arathi Highlands",map=1417,races=nil,entry=33.45,exit=36.85,mins=402,steps={
   {t="FLY",x=63.2,y=48.6,m=1458,npc=4551,name="Michael Garrett",text="saves ~2 min over running",dest="Fly to Tarren Mill",fto=2389,tm=1424,tx=60.1,ty=18.6},
   {t="GOTO",x=73.0,y=32.5,m=1417,text="Travel east to Hammerfall in the Arathi Highlands"},
   {t="FP",x=73.0,y=32.7,m=1417,npc=2851,name="Urda"},
@@ -2692,7 +2692,7 @@ SL.Routes["Horde_thorough_dungeons"] = {
 }},
 }
 SL.RouteVersions = SL.RouteVersions or {}
-SL.RouteVersions["Horde_thorough_dungeons"] = "7cad0c5f3ede"
+SL.RouteVersions["Horde_thorough_dungeons"] = "cb685905fba7"
 -- modelled minutes per level along this route (for the time-to-60 estimate)
 SL.LevelMinutes = SL.LevelMinutes or {}
-SL.LevelMinutes["Horde_thorough_dungeons"] = {2.5,5.7,8.9,13.3,17.8,17.8,17.5,21.1,25.3,29.6,46.9,68.3,42.4,36.9,41.2,45.8,112.4,52.8,58.0,63.2,58.3,158.0,24.4,80.0,65.2,64.5,114.2,83.8,78.8,101.6,156.6,118.2,102.9,118.3,126.4,162.4,147.3,135.5,162.4,192.8,106.2,118.6,193.6,122.0,127.2,116.5,208.3,101.4,219.6,96.4,131.7,136.1,104.3,146.8,137.4,151.2,221.1,231.1,222.0}
+SL.LevelMinutes["Horde_thorough_dungeons"] = {2.5,5.7,8.9,13.3,17.8,17.8,17.5,21.1,25.3,29.6,46.9,68.3,42.4,36.9,41.2,45.8,112.4,52.8,58.0,63.2,58.3,158.0,24.4,80.0,65.2,64.5,114.2,83.8,78.8,101.6,156.6,118.2,101.7,116.0,123.9,160.2,147.3,135.5,162.4,192.8,106.2,118.6,193.6,122.0,127.2,116.5,208.3,101.4,219.6,96.4,131.7,136.1,104.3,146.8,137.4,151.2,221.1,231.1,222.0}

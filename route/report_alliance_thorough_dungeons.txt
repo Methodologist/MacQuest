@@ -181,7 +181,7 @@
     -> keep hearth (Feathermoon Stronghold) instead of binding at Cenarion Hold
 [96] Silithus                               map=1451 races=all entry=59.58 exit=60.00 quests=25 deferredIn=0 ~ 122min HS=0 death=0 stacked=0
 
-telemetry: 1 SavedVariables file(s), 57 timed steps, 52 measured step keys, 0 player reports
+telemetry: 2 SavedVariables file(s), 64 timed steps, 59 measured step keys, 0 player reports
 dropped 1 quests whose objectives would be grey on the later visit: [5621]
     flight paths grabbed on the way (Teldrassil): Vesprystus
     flights Druid: Bear Form: 1 planned, ~4 min saved

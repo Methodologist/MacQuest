@@ -397,6 +397,46 @@ def main():
     # back to the Horde state the following tests expect (as left by the Skyborne test above)
     login(faction="Horde", level=1, race=96, raceFile="Skyborne", **{"class": 7}, map=2521, x=0.43, y=0.69)
 
+    print("\n== Arathi done, one old Stranglethorn quest: the zeppelin to Grom'gol is still the next step")
+    login(faction="Horde", level=34, race=2, raceFile="Orc", **{"class": 1}, map=1417, x=0.73, y=0.33)
+    done = [int(m) for m in L.eval("""(function()
+        local SL = SpeedLevel; local t = {}
+        local stv
+        for si, sec in ipairs(SL.Engine.sections) do if sec.title == "Stranglethorn Vale" then stv = si break end end
+        for _, st in ipairs(SL.Engine.steps) do
+          if st.q and st.sec < stv then t[#t+1] = tostring(st.q) end
+        end
+        -- one Stranglethorn quest done long ago (its last step in the section)
+        local sec = SL.Engine.sections[stv]
+        local j = sec.questSteps[#sec.questSteps]
+        t[#t+1] = tostring(SL.Engine.steps[j].q)
+        return table.concat(t, ",")
+    end)()""").split(",")]
+    login(faction="Horde", level=34, race=2, raceFile="Orc", **{"class": 1}, map=1417, x=0.73, y=0.33, completed=done)
+    c = current()
+    print("  ", c)
+    check("[Stranglethorn Vale] BOAT" in c, "an old completed quest does not skip the zeppelin into Stranglethorn")
+    adv = L.eval("SpeedLevel.Engine.advice and (SpeedLevel.Engine.advice.kind .. ': ' .. tostring(SpeedLevel.Engine.advice.line)) or 'none'")
+    print("   advice:", adv)
+    check(adv.startswith("fly") or adv.startswith("boat") or adv.startswith("hearth"),
+          "the long trip to the zeppelin comes with travel advice")
+
+    # standing in Arathi with Booty Bay as the target: the advisor plans the zeppelin
+    plan = L.eval("""(function()
+        local a = SpeedLevel.Advisor:Advise({ m = 1434, x = 28.3, y = 77.6 })
+        return a and (a.kind .. ': ' .. tostring(a.line)) or 'none'
+    end)()""")
+    print("   Arathi -> Booty Bay:", plan)
+    check(plan.startswith("boat") and "Grom'gol" in plan, "Arathi to Booty Bay: take the zeppelin to Grom'gol")
+    # another continent: never just a straight-line distance
+    plan2 = L.eval("""(function()
+        local a = SpeedLevel.Advisor:Advise({ m = 1413, x = 51.5, y = 30.3 })
+        return a and (a.kind .. ': ' .. tostring(a.line)) or 'none'
+    end)()""")
+    print("   Arathi -> Crossroads:", plan2)
+    check(plan2 != "none", "a target on another continent always gets travel advice")
+    login(faction="Horde", level=1, race=96, raceFile="Skyborne", **{"class": 7}, map=2521, x=0.43, y=0.69)
+
     print("\n== Orc level 14, Valley + Durotar quests all turned in")
     done = [int(m) for m in L.eval("""(function()
         local SL = SpeedLevel; local t = {}

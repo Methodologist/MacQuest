@@ -1374,21 +1374,18 @@ SL.Routes["Horde_speed"] = {
 }},
 {title="Alterac Mountains",map=1416,races=nil,entry=29.64,exit=29.70,mins=0,steps={
 }},
-{title="Arathi Highlands",map=1417,races=nil,entry=29.70,exit=32.47,mins=336,steps={
+{title="Arathi Highlands",map=1417,races=nil,entry=29.70,exit=32.29,mins=302,steps={
   {t="GOTO",x=73.0,y=32.5,m=1417,text="Travel east to Hammerfall in the Arathi Highlands"},
   {t="FP",x=73.0,y=32.7,m=1417,npc=2851,name="Urda"},
   {t="GRIND",x=65.6,y=38.0,m=1417,text="Highland Strider (level 30-31), about 20k XP/hour - most quests here are level 38",level=31.7},
   {t="HEARTH",x=73.8,y=32.5,m=1417,npc=9501,name="Innkeeper Adegwa",bind="Hammerfall"},
   {t="A",q=655,x=72.6,y=33.9,m=1417,npc="Gor'mul"},
-  {t="A",q=677,x=74.2,y=33.9,m=1417,npc="Drum Fel"},
   {t="A",q=671,x=74.7,y=36.3,m=1417,npc="Tor'gan"},
   {t="T",q=655,x=74.7,y=36.3,m=1417,npc="Tor'gan"},
   {t="A",q=672,x=74.7,y=36.3,m=1417,npc="Tor'gan"},
-  {t="C",q=677,x=67.2,y=73.5,m=1417,text="Slay 10 Witherbark Axe Throwers, 10 Headhunters and 8 Witch Doctors."},
   {t="C",q=671,x=32.3,y=28.3,m=1417,text="Get 10 Bloodstone Amulets for Tor'gan in Hammerfall."},
   {t="C",q=672,x=40.2,y=36.8,m=1417,text="Acquire 10 Highland Raptor Eyes from Highland Striders and Highland Thrashers for Tor'gan in Hammerfall."},
   {t="USEHS",x=73.8,y=32.5,m=1417,bind="Hammerfall",text="Hearth to Hammerfall (saves ~3 min of running)"},
-  {t="T",q=677,x=74.2,y=33.9,m=1417,npc="Drum Fel"},
   {t="T",q=672,x=74.7,y=36.3,m=1417,npc="Tor'gan"},
   {t="A",q=674,x=74.7,y=36.3,m=1417,npc="Tor'gan"},
   {t="T",q=671,x=74.7,y=36.3,m=1417,npc="Tor'gan"},
@@ -1396,14 +1393,14 @@ SL.Routes["Horde_speed"] = {
   {t="A",q=675,x=72.6,y=33.9,m=1417,npc="Gor'mul"},
   {t="T",q=675,x=74.7,y=36.3,m=1417,npc="Tor'gan"},
 }},
-{title="Stranglethorn Vale",map=1434,races=nil,entry=32.47,exit=36.21,mins=371,steps={
+{title="Stranglethorn Vale",map=1434,races=nil,entry=32.29,exit=36.03,mins=366,steps={
   {t="BOAT",x=61.9,y=59.1,m=1420,to=1434,text="Take the zeppelin from the Undercity towers to Grom'gol"},
   {t="FP",x=32.5,y=29.4,m=1434,npc=1387,name="Thysta"},
   {t="HEARTH",x=31.5,y=29.8,m=1434,npc=5814,name="Innkeeper Thulbek",bind="Grom'gol Base Camp"},
   {t="FP",x=26.9,y=77.1,m=1434,npc=2858,name="Gringer",text="Grab the Booty Bay flight path when you first visit Booty Bay"},
   {t="A",q=575,x=28.3,y=77.6,m=1434,npc="Drizzlik"},
   {t="FLY",x=26.9,y=77.1,m=1434,npc=2858,name="Gringer",text="saves ~4 min over running",dest="Fly to Grom'gol Base Camp",fto=1387,tm=1434,tx=32.5,ty=29.4},
-  {t="GRIND",x=39.1,y=6.6,m=1434,text="Young Stranglethorn Tiger and Young Panther (level 20-31), about 37k XP/hour - finishes Supply and Demand on the way",level=34.5},
+  {t="GRIND",x=39.1,y=6.6,m=1434,text="Young Stranglethorn Tiger and Young Panther (level 20-31), about 37k XP/hour - finishes Supply and Demand on the way",level=34.3},
   {t="USEHS",x=31.5,y=29.8,m=1434,bind="Grom'gol Base Camp",text="Hearth to Grom'gol Base Camp (saves ~5 min of running)"},
   {t="C",q=575,x=36.9,y=10.5,m=1434,text="Bring 2 Large River Crocolisk Skins to Drizzlik in Booty Bay."},
   {t="A",q=568,x=32.2,y=28.9,m=1434,npc="Commander Aggro'gosh"},
@@ -1464,7 +1461,7 @@ SL.Routes["Horde_speed"] = {
   {t="C",q=188,x=32.2,y=17.4,m=1434,text="Ajeck Rouack of Nesingwary's Expedition wants you to kill Sin'Dall."},
   {t="T",q=188,x=35.6,y=10.6,m=1434,npc="Ajeck Rouack"},
 }},
-{title="Desolace",map=1443,races=nil,entry=36.21,exit=37.39,mins=171,steps={
+{title="Desolace",map=1443,races=nil,entry=36.03,exit=37.22,mins=171,steps={
   {t="NOTE",text="Fly to Sun Rock Retreat and run south-west into Desolace (Shadowprey Village)"},
   {t="FP",x=21.6,y=74.1,m=1443,npc=6726,name="Thalon"},
   {t="A",q=6142,x=22.6,y=72.0,m=1443,npc="Mai'Lahii"},
@@ -1515,7 +1512,7 @@ SL.Routes["Horde_speed"] = {
   {t="T",q=6134,x=47.8,y=61.8,m=1443,npc="Hornizz Brimbuzzle"},
   {t="T",q=1369,x=75.0,y=68.2,m=1443,npc="Warug"},
 }},
-{title="Thousand Needles - Shimmering Flats",map=1441,races=nil,entry=37.39,exit=37.92,mins=70,steps={
+{title="Thousand Needles - Shimmering Flats",map=1441,races=nil,entry=37.22,exit=37.75,mins=70,steps={
   {t="FLY",x=21.6,y=74.1,m=1443,npc=6726,name="Thalon",text="Fly to Freewind Post",dest="Fly to Freewind Post"},
   {t="C",q=98070,x=27.2,y=52.2,m=1441,text="Slay 5 Screeching Harpies, 5 Screeching Roguefeather Harpies and 5 Screeching Windcaller Harpies."},
   {t="T",q=98070,x=46.2,y=51.5,m=1441,npc="Jandia"},
@@ -1538,13 +1535,13 @@ SL.Routes["Horde_speed"] = {
   {t="T",q=1176,x=80.2,y=75.9,m=1441,npc="Pozzik"},
   {t="T",q=1175,x=81.6,y=78.0,m=1441,npc="Trackmaster Zherin"},
 }},
-{title="Shaman: Call of Air (air totems)",map=1441,races=nil,entry=37.92,exit=37.92,mins=0,classes={"SHAMAN"},steps={
+{title="Shaman: Call of Air (air totems)",map=1441,races=nil,entry=37.75,exit=37.75,mins=0,classes={"SHAMAN"},steps={
   {t="FLY",x=45.1,y=49.1,m=1441,npc=4317,name="Nyse",text="saves ~13 min over running",dest="Fly to Orgrimmar",fto=3310,tm=1454,tx=45.1,ty=63.9},
   {t="A",q=1531,x=38.0,y=37.7,m=1454,npc="Searn Firewarder"},
   {t="FLY",x=45.1,y=63.9,m=1454,npc=3310,name="Doras",text="saves ~14 min over running",dest="Fly to Freewind Post",fto=4317,tm=1441,tx=45.1,ty=49.1},
   {t="T",q=1531,x=53.5,y=42.6,m=1441,npc="Prate Cloudseer"},
 }},
-{title="Dustwallow Marsh",map=1445,races=nil,entry=37.92,exit=38.70,mins=76,steps={
+{title="Dustwallow Marsh",map=1445,races=nil,entry=37.75,exit=38.54,mins=76,steps={
   {t="NOTE",text="Travel to Brackenwall Village in Dustwallow Marsh (south from the Barrens)"},
   {t="FP",x=35.6,y=31.9,m=1445,npc=11899,name="Shardi"},
   {t="A",q=1201,x=35.2,y=30.7,m=1445,npc="Nazeer Bloodpike"},
@@ -1578,7 +1575,7 @@ SL.Routes["Horde_speed"] = {
   {t="T",q=1239,x=35.2,y=30.7,m=1445,npc="Nazeer Bloodpike"},
   {t="A",q=1240,x=35.2,y=30.7,m=1445,npc="Nazeer Bloodpike"},
 }},
-{title="Warlock: Felhunter",map=1445,races=nil,entry=38.70,exit=38.70,mins=0,classes={"WARLOCK"},steps={
+{title="Warlock: Felhunter",map=1445,races=nil,entry=38.54,exit=38.54,mins=0,classes={"WARLOCK"},steps={
   {t="FLY",x=35.6,y=31.9,m=1445,npc=11899,name="Shardi",text="saves ~5 min over running",dest="Fly to Ratchet",fto=16227,tm=1413,tx=63.1,ty=37.2},
   {t="A",q=1758,x=62.6,y=35.5,m=1413,npc="Strahad Farsan"},
   {t="T",q=1758},
@@ -1602,7 +1599,7 @@ SL.Routes["Horde_speed"] = {
   {t="C",q=1795,x=62.6,y=35.3,m=1413,text="Using the Tome of the Cabal, summon and subdue a felhunter."},
   {t="T",q=1795,x=62.6,y=35.5,m=1413,npc="Strahad Farsan"},
 }},
-{title="Warrior: Berserker Stance",map=1445,races=nil,entry=38.70,exit=38.70,mins=0,classes={"WARRIOR"},steps={
+{title="Warrior: Berserker Stance",map=1445,races=nil,entry=38.54,exit=38.54,mins=0,classes={"WARRIOR"},steps={
   {t="FLY",x=35.6,y=31.9,m=1445,npc=11899,name="Shardi",text="saves ~2 min over running",dest="Fly to Camp Taurajo",fto=10378,tm=1413,tx=44.5,ty=59.1},
   {t="A",q=1718,x=57.2,y=87.4,m=1456,npc="Torm Ragetotem"},
   {t="FLY",x=44.5,y=59.1,m=1413,npc=10378,name="Omusa Thunderhorn",text="saves ~1 min over running",dest="Fly to Ratchet",fto=16227,tm=1413,tx=63.1,ty=37.2},
@@ -1611,7 +1608,7 @@ SL.Routes["Horde_speed"] = {
   {t="C",q=1719,x=68.6,y=48.7,m=1413,text="Kill Big Will, then speak to Klannoc Macleod on Fray Island."},
   {t="T",q=1719,x=68.6,y=49.2,m=1413,npc="Klannoc Macleod"},
 }},
-{title="Swamp of Sorrows",map=1435,races=nil,entry=38.70,exit=40.54,mins=274,steps={
+{title="Swamp of Sorrows",map=1435,races=nil,entry=38.54,exit=40.54,mins=301,steps={
   {t="NOTE",text="Travel to Stonard (zeppelin to Grom'gol, then run north through Duskwood)"},
   {t="FP",x=46.1,y=54.8,m=1435,npc=6026,name="Breyk"},
   {t="A",q=1389,x=26.0,y=31.4,m=1435,npc="Magtoor"},
@@ -1666,50 +1663,47 @@ SL.Routes["Horde_speed"] = {
   {t="C",q=712,x=4.1,y=79.9,m=1418,text="Bring 5 Bracers of Rock Binding to Lotwil Veriatus in the Badlands."},
   {t="T",q=712,x=25.9,y=44.9,m=1418,npc="Lotwil Veriatus"},
 }},
-{title="Arathi Highlands 2",map=1417,races=nil,entry=41.50,exit=42.52,mins=100,steps={
+{title="Arathi Highlands 2",map=1417,races=nil,entry=41.50,exit=42.45,mins=94,steps={
   {t="FLY",x=4.0,y=44.8,m=1418,npc=2861,name="Gorrik",text="saves ~5 min over running",dest="Fly to Hammerfall",fto=2851,tm=1417,tx=73.0,ty=32.7},
-  {t="A",q=678,x=74.2,y=33.9,m=1417,npc="Drum Fel"},
   {t="A",q=639,x=73.8,y=34.0,m=1417,npc="Zengu"},
   {t="T",q=638,x=73.8,y=34.0,m=1417,npc="Zengu"},
+  {t="A",q=642,x=62.5,y=33.7,m=1417,npc="Shards of Myzrael"},
   {t="C",q=639,x=28.3,y=63.4,m=1417,text="Get the Sigil of Strom for Zengu in Hammerfall."},
   {t="A",q=663,x=31.8,y=82.7,m=1417,npc="Lolo the Lookout"},
   {t="T",q=663,x=32.3,y=81.4,m=1417,npc="Shakes O'Breen"},
-  {t="A",q=662,x=32.8,y=81.5,m=1417,npc="First Mate Nilzlix"},
   {t="A",q=665,x=33.9,y=80.5,m=1417,npc="Professor Phizzlethorpe"},
   {t="C",q=665,x=33.9,y=80.6,m=1417,text="Escort Professor Phizzlethorpe to the cave and back."},
   {t="T",q=665,x=33.9,y=80.5,m=1417,npc="Doctor Draxlegauge"},
   {t="A",q=666,x=33.9,y=80.5,m=1417,npc="Doctor Draxlegauge"},
-  {t="A",q=664,x=34.0,y=80.8,m=1417,npc="Captain Steelgut"},
-  {t="C",q=678,x=53.1,y=75.9,m=1417,text="Kill 10 Boulderfist Brutes and 4 Boulderfist Magi."},
-  {t="A",q=701,x=74.7,y=36.3,m=1417,npc="Tor'gan"},
   {t="T",q=639,x=73.8,y=34.0,m=1417,npc="Zengu"},
   {t="A",q=640,x=73.8,y=34.0,m=1417,npc="Zengu"},
-  {t="A",q=642,x=62.5,y=33.7,m=1417,npc="Shards of Myzrael"},
-  {t="C",q=640,x=24.4,y=58.8,m=1417,text="Retrieve the 11 Sigil Fragments from the defenders in Stromgarde, and bring them to Tor'gan in Hammerfall."},
-  {t="C",q=662,x=23.1,y=84.5,m=1417,text="First Mate Nilzlix wants you to retrieve the Charts and Logs from the Maiden's Folly and the Spirit of Silverpine."},
+  {t="A",q=701,x=74.7,y=36.3,m=1417,npc="Tor'gan"},
+  {t="C",q=701,x=52.3,y=68.1,m=1417,text="Acquire 12 Raptor Hearts from Highland Fleshstalkers for Tor'gan."},
+  {t="A",q=664,x=34.0,y=80.8,m=1417,npc="Captain Steelgut"},
   {t="C",q=664,x=21.9,y=86.8,m=1417,text="Captain Steelgut in Faldir's Cove wants you to kill 10 Daggerspine Raiders and 3 Daggerspine Sorceresses."},
   {t="C",q=666,x=23.0,y=88.0,m=1417,text="Doctor Draxlegauge in Faldir's Cove wants you to collect 10 Elven Gems."},
-  {t="T",q=662,x=32.8,y=81.5,m=1417,npc="First Mate Nilzlix"},
+  {t="A",q=662,x=32.8,y=81.5,m=1417,npc="First Mate Nilzlix"},
+  {t="T",q=664,x=34.0,y=80.8,m=1417,npc="Captain Steelgut"},
   {t="T",q=666,x=33.9,y=80.5,m=1417,npc="Doctor Draxlegauge"},
   {t="A",q=668,x=33.9,y=80.5,m=1417,npc="Doctor Draxlegauge"},
   {t="T",q=668,x=32.3,y=81.4,m=1417,npc="Shakes O'Breen"},
   {t="A",q=669,x=32.3,y=81.4,m=1417,npc="Shakes O'Breen"},
-  {t="T",q=664,x=34.0,y=80.8,m=1417,npc="Captain Steelgut"},
-  {t="C",q=701,x=52.3,y=68.1,m=1417,text="Acquire 12 Raptor Hearts from Highland Fleshstalkers for Tor'gan."},
+  {t="C",q=662,x=23.1,y=84.5,m=1417,text="First Mate Nilzlix wants you to retrieve the Charts and Logs from the Maiden's Folly and the Spirit of Silverpine."},
+  {t="T",q=662,x=32.8,y=81.5,m=1417,npc="First Mate Nilzlix"},
+  {t="C",q=640,x=24.4,y=58.8,m=1417,text="Retrieve the 11 Sigil Fragments from the defenders in Stromgarde, and bring them to Tor'gan in Hammerfall."},
   {t="T",q=640,x=74.7,y=36.3,m=1417,npc="Tor'gan"},
   {t="A",q=641,x=74.7,y=36.3,m=1417,npc="Tor'gan"},
   {t="T",q=701,x=74.7,y=36.3,m=1417,npc="Tor'gan"},
   {t="A",q=702,x=74.7,y=36.3,m=1417,npc="Tor'gan"},
+  {t="T",q=641,x=73.8,y=34.0,m=1417,npc="Zengu"},
   {t="T",q=702,x=72.6,y=33.9,m=1417,npc="Gor'mul"},
   {t="A",q=847,x=72.6,y=33.9,m=1417,npc="Gor'mul"},
-  {t="T",q=641,x=73.8,y=34.0,m=1417,npc="Zengu"},
-  {t="T",q=678,x=74.2,y=33.9,m=1417,npc="Drum Fel"},
   {t="T",q=847,x=74.7,y=36.3,m=1417,npc="Tor'gan"},
   {t="C",q=642,x=81.8,y=35.9,m=1417,text="Gather 12 Motes of Myzrael, then bring them to the Iridescent Shards in Drywhisker Gorge."},
   {t="T",q=642,x=84.3,y=30.9,m=1417,npc="Iridescent Shards"},
   {t="USEHS",x=31.5,y=29.8,m=1434,bind="Grom'gol Base Camp",text="Hearth to Grom'gol Base Camp for the next zone"},
 }},
-{title="Stranglethorn Vale 2",map=1434,races=nil,entry=42.52,exit=44.59,mins=251,steps={
+{title="Stranglethorn Vale 2",map=1434,races=nil,entry=42.45,exit=44.53,mins=251,steps={
   {t="FLY",x=73.0,y=32.7,m=1417,npc=2851,name="Urda",text="Fly to Grom'gol (or take the zeppelin from Undercity)",dest="Fly to Grom'gol (or take the zeppelin from Undercity)"},
   {t="A",q=196,x=35.7,y=10.8,m=1434,npc="Hemet Nesingwary"},
   {t="T",q=5763,x=35.7,y=10.8,m=1434,npc="Hemet Nesingwary"},
@@ -1792,7 +1786,7 @@ SL.Routes["Horde_speed"] = {
   {t="T",q=613,x=27.8,y=77.1,m=1434,npc="\"Sea Wolf\" MacKinley"},
   {t="T",q=608,x=27.2,y=77.0,m=1434,npc="Fleet Master Seahorn"},
 }},
-{title="Orgrimmar - 40s",map=1454,races=nil,entry=44.59,exit=44.66,mins=1,steps={
+{title="Orgrimmar - 40s",map=1454,races=nil,entry=44.53,exit=44.60,mins=1,steps={
   {t="NOTE",text="Head back to Orgrimmar (zeppelin from Grom'gol)"},
   {t="A",q=649,x=59.5,y=36.6,m=1454,npc="Dran Droffers"},
   {t="T",q=649,x=59.6,y=36.9,m=1454,npc="Malton Droffers"},
@@ -1800,7 +1794,7 @@ SL.Routes["Horde_speed"] = {
   {t="A",q=2981,x=75.2,y=34.2,m=1454,npc="Belgrom Rockmaul"},
   {t="TRAIN",text="Train new spells in Orgrimmar"},
 }},
-{title="Tanaris",map=1446,races=nil,entry=44.66,exit=47.12,mins=368,steps={
+{title="Tanaris",map=1446,races=nil,entry=44.60,exit=47.12,mins=379,steps={
   {t="NOTE",text="Travel to Gadgetzan in Tanaris"},
   {t="FLY",x=45.1,y=63.9,m=1454,npc=3310,name="Doras",text="saves ~6 min over running",dest="Fly to Freewind Post",fto=4317,tm=1441,tx=45.1,ty=49.1},
   {t="FP",x=51.6,y=25.4,m=1446,npc=7824,name="Bulkrek Ragefist"},
@@ -2411,7 +2405,7 @@ SL.Routes["Horde_speed"] = {
 }},
 }
 SL.RouteVersions = SL.RouteVersions or {}
-SL.RouteVersions["Horde_speed"] = "3af92d52d9e0"
+SL.RouteVersions["Horde_speed"] = "b0abdd31d620"
 -- modelled minutes per level along this route (for the time-to-60 estimate)
 SL.LevelMinutes = SL.LevelMinutes or {}
-SL.LevelMinutes["Horde_speed"] = {2.5,5.7,8.9,13.3,17.8,17.8,17.5,21.1,25.3,29.6,47.3,69.2,43.4,38.1,42.5,47.3,49.9,53.5,58.8,64.0,82.2,57.8,55.9,51.7,68.7,72.9,78.1,74.2,88.5,118.7,127.2,113.2,99.6,106.8,114.1,142.8,146.3,118.3,151.6,136.8,107.6,112.1,125.3,135.6,152.7,160.1,142.9,122.7,115.2,151.5,91.7,157.0,149.5,170.8,204.4,156.7,221.1,228.5,185.4}
+SL.LevelMinutes["Horde_speed"] = {2.5,5.7,8.9,13.3,17.8,17.8,17.5,21.1,25.3,29.6,47.3,69.2,43.4,38.1,42.5,47.3,49.9,53.5,58.8,64.0,82.2,57.8,55.9,51.7,68.7,72.9,78.1,74.2,87.5,115.1,123.3,104.4,99.8,107.0,114.3,147.7,136.6,124.6,153.3,137.8,109.0,114.3,125.1,136.7,153.7,161.2,143.0,122.7,115.2,151.5,91.7,157.0,149.5,170.8,204.4,156.7,221.1,228.5,185.4}

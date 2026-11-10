@@ -78,47 +78,48 @@
     catch-up grind 29.70 -> 31.7 before questing (279 min; quests here ~level 38)
     left for later (level too low): [639, 640, 641]
     left for later (level too low): [642, 651, 662, 663, 664, 665, 666, 668, 669, 678, 701, 702, 847]
+    pruned 677 Call to Arms (47% of grinding XP/h)
     -> set hearth at Hammerfall (worth ~3 min more than keeping the old bind)
-[34] Arathi Highlands                       map=1417 races=all entry=29.70 exit=32.47 quests=6 deferredIn=0 ~ 336min HS=1 death=0 stacked=0
-    catch-up grind 32.47 -> 34.5 before questing (189 min; quests here ~level 37) on the mobs of Supply and Demand
+[34] Arathi Highlands                       map=1417 races=all entry=29.70 exit=32.29 quests=5 deferredIn=0 ~ 302min HS=1 death=0 stacked=0
+    catch-up grind 32.29 -> 34.3 before questing (184 min; quests here ~level 37) on the mobs of Supply and Demand
     left for later (level too low): [196, 572, 576, 584, 585, 587, 595, 597, 599, 600, 604, 606, 607, 617]
-    pruned 570 Mok'thardin's Enchantment (46% of grinding XP/h)
+    pruned 570 Mok'thardin's Enchantment (43% of grinding XP/h)
     pruned 577 Some Assembly Required (49% of grinding XP/h)
-    pruned 192 Panther Mastery (52% of grinding XP/h)
+    pruned 192 Panther Mastery (50% of grinding XP/h)
     -> set hearth at Grom'gol Base Camp (worth ~16 min more than keeping the old bind)
-[35] Stranglethorn Vale                     map=1434 races=all entry=32.47 exit=36.21 quests=19 deferredIn=0 ~ 388min HS=3 death=0 stacked=0
+[35] Stranglethorn Vale                     map=1434 races=all entry=32.29 exit=36.03 quests=19 deferredIn=0 ~ 383min HS=3 death=0 stacked=0
     pruned 6143 Other Fish to Fry (31% of grinding XP/h)
     pruned 5561 Kodo Roundup (37% of grinding XP/h)
-    pruned 93225 Carved Centaur Totems (58% of grinding XP/h)
+    pruned 93225 Carved Centaur Totems (56% of grinding XP/h)
     -> keep hearth (Grom'gol Base Camp) instead of binding at Shadowprey Village
-[36] Desolace                               map=1443 races=all entry=36.21 exit=37.39 quests=17 deferredIn=0 ~ 171min HS=0 death=0 stacked=0
+[36] Desolace                               map=1443 races=all entry=36.03 exit=37.22 quests=17 deferredIn=0 ~ 171min HS=0 death=0 stacked=0
     -> keep hearth (Grom'gol Base Camp) instead of binding at Freewind Post
-[37] Thousand Needles - Shimmering Flats    map=1441 races=all entry=37.39 exit=37.92 quests=7 deferredIn=2 ~  70min HS=0 death=0 stacked=0
+[37] Thousand Needles - Shimmering Flats    map=1441 races=all entry=37.22 exit=37.75 quests=7 deferredIn=2 ~  70min HS=0 death=0 stacked=0
 [--] Shaman: Call of Air (air totems)       class chain (SHAMAN): 1 quests
     left for later (level too low): [1166, 1168]
-[39] Dustwallow Marsh                       map=1445 races=all entry=37.92 exit=38.70 quests=13 deferredIn=0 ~  76min HS=0 death=0 stacked=0
+[39] Dustwallow Marsh                       map=1445 races=all entry=37.75 exit=38.54 quests=13 deferredIn=0 ~  76min HS=0 death=0 stacked=0
 [--] Warlock: Felhunter                     class chain (WARLOCK): 7 quests
 [--] Warrior: Berserker Stance              class chain (WARRIOR): 2 quests
-    catch-up grind 38.70 -> 40.0 before questing (223 min; quests here ~level 42) on the mobs of Draenethyst Crystals
+    catch-up grind 38.54 -> 40.0 before questing (250 min; quests here ~level 42) on the mobs of Draenethyst Crystals
     pruned 1430 Fresh Meat (46% of grinding XP/h)
     -> keep hearth (Grom'gol Base Camp) instead of binding at Stonard
-[42] Swamp of Sorrows                       map=1435 races=all entry=38.70 exit=40.54 quests=8 deferredIn=0 ~ 274min HS=0 death=0 stacked=0
+[42] Swamp of Sorrows                       map=1435 races=all entry=38.54 exit=40.54 quests=8 deferredIn=0 ~ 301min HS=0 death=0 stacked=0
     -> keep hearth (Grom'gol Base Camp) instead of binding at Kargath
 [43] Badlands                               map=1418 races=all entry=40.54 exit=41.50 quests=9 deferredIn=2 ~ 100min HS=0 death=0 stacked=0
     pruned 651 Stones of Binding (63% of grinding XP/h)
     -> keep hearth (Grom'gol Base Camp) instead of binding at Hammerfall
-[44] Arathi Highlands 2                     map=1417 races=all entry=41.50 exit=42.52 quests=15 deferredIn=1 ~ 105min HS=0 death=0 stacked=0
+[44] Arathi Highlands 2                     map=1417 races=all entry=41.50 exit=42.45 quests=14 deferredIn=1 ~ 100min HS=0 death=0 stacked=0
     -> hearth to Grom'gol Base Camp for Stranglethorn Vale 2
     -> keep hearth (Grom'gol Base Camp) instead of binding at Booty Bay
-[45] Stranglethorn Vale 2                   map=1434 races=all entry=42.52 exit=44.59 quests=27 deferredIn=4 ~ 253min HS=0 death=0 stacked=0
+[45] Stranglethorn Vale 2                   map=1434 races=all entry=42.45 exit=44.53 quests=27 deferredIn=4 ~ 253min HS=0 death=0 stacked=0
     left for later (level too low): [8151, 8250, 8254, 8419]
     -> keep hearth (Grom'gol Base Camp) instead of binding at Orgrimmar
-[46] Orgrimmar - 40s                        map=1454 races=all entry=44.59 exit=44.66 quests=3 deferredIn=0 ~   1min HS=0 death=0 stacked=0
-    catch-up grind 44.66 -> 46.0 before questing (260 min; quests here ~level 48) on the mobs of Wastewander Justice
+[46] Orgrimmar - 40s                        map=1454 races=all entry=44.53 exit=44.60 quests=3 deferredIn=0 ~   1min HS=0 death=0 stacked=0
+    catch-up grind 44.60 -> 46.0 before questing (272 min; quests here ~level 48) on the mobs of Wastewander Justice
     left for later (level too low): [4324]
     pruned 3362 Thistleshrub Valley (59% of grinding XP/h)
     -> keep hearth (Grom'gol Base Camp) instead of binding at Gadgetzan
-[47] Tanaris                                map=1446 races=all entry=44.66 exit=47.12 quests=22 deferredIn=2 ~ 375min HS=0 death=0 stacked=0
+[47] Tanaris                                map=1446 races=all entry=44.60 exit=47.12 quests=22 deferredIn=2 ~ 386min HS=0 death=0 stacked=0
     -> set hearth at Camp Mojache (worth ~3 min more than keeping the old bind)
 [48] Feralas                                map=1444 races=all entry=47.12 exit=48.39 quests=19 deferredIn=2 ~ 173min HS=1 death=0 stacked=0
     -> keep hearth (Camp Mojache) instead of binding at Undercity
@@ -152,7 +153,7 @@
     -> keep hearth (Light's Hope Chapel) instead of binding at Cenarion Hold
 [62] Silithus                               map=1451 races=all entry=58.98 exit=60.00 quests=25 deferredIn=0 ~ 188min HS=0 death=0 stacked=0
 
-telemetry: 1 SavedVariables file(s), 57 timed steps, 52 measured step keys, 0 player reports
+telemetry: 2 SavedVariables file(s), 64 timed steps, 59 measured step keys, 0 player reports
     flights The Barrens - Crossroads: 2 planned, ~4 min saved
     flight paths grabbed on the way (Warlock: Voidwalker): Doras
     flights The Barrens - Camp Taurajo: 4 planned, ~10 min saved
@@ -180,14 +181,14 @@ telemetry: 1 SavedVariables file(s), 57 timed steps, 52 measured step keys, 0 pl
     flights Blasted Lands: 1 planned, ~3 min saved
 flights: ~169 min saved over running
 
-hearths=15 death-skips=2 stacked quests=5 time saved by hearths/deaths ~68 min
+hearths=15 death-skips=2 stacked quests=5 time saved by hearths/deaths ~67 min
 quest log peak Orc       21 (in Ashenvale)
 quest log peak Skyborne  20 (in Ashenvale)
 quest log peak Tauren    20 (in Ashenvale)
 quest log peak Troll     21 (in Ashenvale)
 quest log peak Undead    20 (in Ashenvale)
-estimated /played to 60 for Orc       ~86.8 h (questing + planned grinding, excl. class/vendor stops)
-estimated /played to 60 for Skyborne  ~86.2 h (questing + planned grinding, excl. class/vendor stops)
-estimated /played to 60 for Tauren    ~86.9 h (questing + planned grinding, excl. class/vendor stops)
-estimated /played to 60 for Troll     ~86.8 h (questing + planned grinding, excl. class/vendor stops)
-estimated /played to 60 for Undead    ~89.3 h (questing + planned grinding, excl. class/vendor stops)
+estimated /played to 60 for Orc       ~86.7 h (questing + planned grinding, excl. class/vendor stops)
+estimated /played to 60 for Skyborne  ~86.1 h (questing + planned grinding, excl. class/vendor stops)
+estimated /played to 60 for Tauren    ~86.8 h (questing + planned grinding, excl. class/vendor stops)
+estimated /played to 60 for Troll     ~86.7 h (questing + planned grinding, excl. class/vendor stops)
+estimated /played to 60 for Undead    ~89.2 h (questing + planned grinding, excl. class/vendor stops)

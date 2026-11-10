@@ -93,7 +93,7 @@
 [47] Undercity (turn in City of Dalaran)    map=1458 races=all entry=33.18 exit=33.45 quests=1 deferredIn=4 ~   2min HS=0 death=0 stacked=0
     catch-up grind 33.45 -> 35.5 before questing (292 min; quests here ~level 38) on the mobs of Foul Magics
     -> keep hearth (Undercity) instead of binding at Hammerfall
-[48] Arathi Highlands                       map=1417 races=all entry=33.45 exit=36.85 quests=12 deferredIn=2 ~ 413min HS=0 death=0 stacked=0
+[48] Arathi Highlands                       map=1417 races=all entry=33.45 exit=36.85 quests=12 deferredIn=2 ~ 405min HS=0 death=0 stacked=0
 [49] Scarlet Monastery (dungeon)            map=302 races=all entry=36.85 exit=37.15 quests=0 deferredIn=1 ~  99min HS=0 death=0 stacked=0
     -> hearth to Undercity for Undercity (turn in Scarlet Monastery)
 [50] Undercity (turn in Scarlet Monastery)  map=1458 races=all entry=37.15 exit=37.32 quests=2 deferredIn=1 ~   2min HS=0 death=0 stacked=0
@@ -162,7 +162,7 @@
     -> keep hearth (Light's Hope Chapel) instead of binding at Cenarion Hold
 [88] Silithus                               map=1451 races=all entry=59.54 exit=60.00 quests=25 deferredIn=0 ~ 114min HS=0 death=0 stacked=0
 
-telemetry: 1 SavedVariables file(s), 57 timed steps, 52 measured step keys, 0 player reports
+telemetry: 2 SavedVariables file(s), 64 timed steps, 59 measured step keys, 0 player reports
     flights The Barrens - Crossroads: 2 planned, ~4 min saved
     flight paths grabbed on the way (Warlock: Voidwalker): Doras
     flight paths grabbed on the way (Ragefire Chasm): Doras
@@ -202,8 +202,8 @@ quest log peak Skyborne  25 (in Tanaris)
 quest log peak Tauren    25 (in Tanaris)
 quest log peak Troll     25 (in Tanaris)
 quest log peak Undead    27 (in The Barrens - Camp Taurajo)
-estimated /played to 60 for Orc       ~88.6 h (questing + planned grinding, excl. class/vendor stops)
-estimated /played to 60 for Skyborne  ~88.2 h (questing + planned grinding, excl. class/vendor stops)
-estimated /played to 60 for Tauren    ~88.8 h (questing + planned grinding, excl. class/vendor stops)
-estimated /played to 60 for Troll     ~88.6 h (questing + planned grinding, excl. class/vendor stops)
-estimated /played to 60 for Undead    ~91.2 h (questing + planned grinding, excl. class/vendor stops)
+estimated /played to 60 for Orc       ~88.5 h (questing + planned grinding, excl. class/vendor stops)
+estimated /played to 60 for Skyborne  ~88.1 h (questing + planned grinding, excl. class/vendor stops)
+estimated /played to 60 for Tauren    ~88.7 h (questing + planned grinding, excl. class/vendor stops)
+estimated /played to 60 for Troll     ~88.5 h (questing + planned grinding, excl. class/vendor stops)
+estimated /played to 60 for Undead    ~91.1 h (questing + planned grinding, excl. class/vendor stops)
