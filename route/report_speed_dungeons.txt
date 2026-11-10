@@ -1,234 +1,233 @@
+    left for later (level too low): [5649]
     -> keep hearth (unbound) instead of binding at Razor Hill
-[00] Valley of Trials                       map=1411 races=Orc,Troll entry= 1.00 exit= 7.63 quests=30 deferredIn=0 ~  49min HS=0 death=0 stacked=0
+[00] Valley of Trials                       map=1411 races=Orc,Troll entry= 1.00 exit= 6.42 quests=29 deferredIn=0 ~  51min HS=0 death=0 stacked=0
     -> keep hearth (unbound) instead of binding at Razor Hill
-[01] Durotar                                map=1411 races=Orc,Troll entry= 7.63 exit=14.07 quests=39 deferredIn=0 ~ 172min HS=0 death=0 stacked=0
+[01] Durotar                                map=1411 races=Orc,Troll entry= 6.42 exit=13.07 quests=40 deferredIn=0 ~ 172min HS=0 death=0 stacked=0
     -> keep hearth (unbound) instead of binding at Orgrimmar
-[02] Orgrimmar                              map=1454 races=Orc,Troll entry=14.07 exit=14.37 quests=4 deferredIn=5 ~   7min HS=0 death=0 stacked=0
+[02] Orgrimmar                              map=1454 races=Orc,Troll entry=13.07 exit=13.20 quests=4 deferredIn=5 ~   7min HS=0 death=0 stacked=0
     -> keep hearth (unbound) instead of binding at Bloodhoof Village
-[03] Red Cloud Mesa                         map=1412 races=Tauren entry= 1.00 exit= 9.74 quests=21 deferredIn=0 ~  95min HS=0 death=2 stacked=0
-    -> set hearth at Bloodhoof Village (worth ~1 min more than keeping the old bind)
-[04] Mulgore                                map=1412 races=Tauren entry= 9.74 exit=14.02 quests=27 deferredIn=0 ~ 115min HS=1 death=1 stacked=0
+[03] Red Cloud Mesa                         map=1412 races=Tauren entry= 1.00 exit= 9.96 quests=24 deferredIn=0 ~ 102min HS=0 death=1 stacked=0
+    -> set hearth at Bloodhoof Village (worth ~0 min more than keeping the old bind)
+[04] Mulgore                                map=1412 races=Tauren entry= 9.96 exit=13.77 quests=29 deferredIn=0 ~ 114min HS=1 death=1 stacked=0
     -> keep hearth (Bloodhoof Village) instead of binding at Thunder Bluff
-[05] Thunder Bluff                          map=1456 races=Tauren entry=14.02 exit=15.00 quests=5 deferredIn=6 ~  19min HS=0 death=0 stacked=0
-    pruned 590 A Rogue's Deal (35% of grinding XP/h)
+[05] Thunder Bluff                          map=1456 races=Tauren entry=13.77 exit=14.71 quests=5 deferredIn=6 ~  19min HS=0 death=0 stacked=0
+    pruned 590 A Rogue's Deal (41% of grinding XP/h)
     -> keep hearth (unbound) instead of binding at Brill
-[06] Deathknell                             map=1420 races=Undead entry= 1.00 exit= 7.81 quests=22 deferredIn=0 ~  54min HS=0 death=0 stacked=0
-    pruned 95314 That Shadowvale Green Elixir (45% of grinding XP/h)
+[06] Deathknell                             map=1420 races=Undead entry= 1.00 exit= 7.32 quests=23 deferredIn=0 ~  54min HS=0 death=0 stacked=0
     -> keep hearth (unbound) instead of binding at Brill
-[07] Tirisfal Glades                        map=1420 races=Undead entry= 7.81 exit=15.50 quests=48 deferredIn=0 ~ 199min HS=0 death=0 stacked=0
+[07] Tirisfal Glades                        map=1420 races=Undead entry= 7.32 exit=14.86 quests=53 deferredIn=0 ~ 210min HS=0 death=0 stacked=0
     -> keep hearth (unbound) instead of binding at Undercity
-[08] Undercity                              map=1458 races=Undead entry=15.50 exit=15.76 quests=3 deferredIn=3 ~   5min HS=0 death=0 stacked=0
+[08] Undercity                              map=1458 races=Undead entry=14.86 exit=15.05 quests=3 deferredIn=5 ~   6min HS=0 death=0 stacked=0
 [--] Paladin: A Lesson in Divinity          class chain (PALADIN): 5 quests
     -> keep hearth (unbound) instead of binding at The Sepulcher
-[10] Silverpine Forest                      map=1421 races=Undead entry=15.76 exit=18.47 quests=27 deferredIn=1 ~ 102min HS=0 death=0 stacked=0
+[10] Silverpine Forest                      map=1421 races=Undead entry=15.05 exit=17.96 quests=27 deferredIn=1 ~ 101min HS=0 death=0 stacked=0
     -> keep hearth (unbound) instead of binding at Orgrimmar
-[11] Orgrimmar (Undead)                     map=1454 races=Undead entry=18.47 exit=19.03 quests=7 deferredIn=0 ~   8min HS=0 death=0 stacked=0
-    left for later (level too low): [93159, 93160, 93172, 97243, 97244, 97245, 97257]
+[11] Orgrimmar (Undead)                     map=1454 races=Undead entry=17.96 exit=18.45 quests=8 deferredIn=0 ~   8min HS=0 death=0 stacked=0
+    left for later (level too low): [97243, 97244, 97245, 97257]
+    left for later (level too low): [93159, 93160, 93172]
+    left for later (level too low): [98512]
     left for later (level too low): [94003]
-    left for later (level too low): [93165, 94006, 94484, 94485, 94486, 94487, 94488, 94489, 94638]
-    left for later (level too low): [94896, 94897]
-    -> set hearth at Coriella Calmbreeze (worth ~0 min more than keeping the old bind)
-[12] Zephras Isle                           map=2521 races=Skyborne entry= 1.00 exit=15.13 quests=69 deferredIn=0 ~ 246min HS=1 death=0 stacked=0
+    left for later (level too low): [92579, 92642, 92643, 92644, 92645, 92700, 92871, 92880, 92881, 93320, 93735, 93736, 93737, 93738, 93740, 93746, 93948, 93949, 94568]
+    left for later (level too low): [93165, 94006, 94484, 94485, 94486, 94487, 94488, 94489, 94638, 94896, 94897]
+    -> set hearth at Coriella Calmbreeze (worth ~1 min more than keeping the old bind)
+[12] Zephras Isle                           map=2521 races=Skyborne entry= 1.00 exit=12.78 quests=52 deferredIn=0 ~ 181min HS=1 death=0 stacked=0
     -> hearth to Coriella Calmbreeze for Hunter: Taming the Beast (Skyborne)
 [--] Hunter: Taming the Beast (Skyborne)    class chain (HUNTER): 5 quests
     -> keep hearth (Coriella Calmbreeze) instead of binding at Bloodhoof Village
-[14] Mulgore (Skyborne)                     map=1412 races=Skyborne entry=15.13 exit=15.19 quests=0 deferredIn=0 ~   0min HS=0 death=0 stacked=0
-    left for later (level too low): [6541]
-    left for later (level too low): [2381]
-    -> set hearth at The Crossroads (worth ~4 min more than keeping the old bind)
-[15] The Barrens - Crossroads               map=1413 races=all entry=11.50 exit=17.56 quests=55 deferredIn=7 ~ 217min HS=1 death=0 stacked=18
+[14] Mulgore (Skyborne)                     map=1412 races=Skyborne entry=12.78 exit=13.02 quests=4 deferredIn=0 ~  25min HS=0 death=0 stacked=0
+    left for later (level too low): [899, 4921, 6541, 95774]
+    left for later (level too low): [891]
+    left for later (level too low): [852]
+    left for later (level too low): [876]
+    pruned 875 Harpy Lieutenants (51% of grinding XP/h)
+    -> keep hearth (unbound) instead of binding at The Crossroads
+[15] The Barrens - Crossroads               map=1413 races=all entry=11.50 exit=17.01 quests=45 deferredIn=11 ~ 197min HS=0 death=0 stacked=12
 [--] Druid: Bear Form                       class chain (DRUID): 6 quests
 [--] Warlock: Voidwalker                    class chain (WARLOCK): 4 quests
 [--] Shaman: Call of Fire (fire totems)     class chain (SHAMAN): 4 quests
 [--] Warrior: Defensive Stance              class chain (WARRIOR): 1 quests
-[20] Ragefire Chasm (dungeon)               map=213 races=all entry=17.56 exit=17.87 quests=0 deferredIn=3 ~  70min HS=0 death=0 stacked=0
-    left for later (level too low): [6382]
-    pruned 6541 Report to Kadrak (16% of grinding XP/h)
-    -> set hearth at Camp Taurajo (worth ~1 min more than keeping the old bind)
-[21] The Barrens - Camp Taurajo             map=1413 races=all entry=17.87 exit=19.23 quests=25 deferredIn=0 ~  73min HS=1 death=0 stacked=6
+[20] Ragefire Chasm (dungeon)               map=213 races=all entry=17.01 exit=17.32 quests=0 deferredIn=4 ~  71min HS=0 death=0 stacked=0
+    catch-up grind 17.32 -> 18.0 before questing (48 min; quests here ~level 20) on the mobs of Hezrul Bloodmark
+    left for later (level too low): [879, 893, 906, 6382]
+    pruned 6541 Report to Kadrak (53% of grinding XP/h)
+    -> set hearth at Camp Taurajo (worth ~5 min more than keeping the old bind)
+[21] The Barrens - Camp Taurajo             map=1413 races=all entry=17.32 exit=21.90 quests=28 deferredIn=21 ~ 271min HS=1 death=0 stacked=3
 [--] Druid: Great Cat Spirit                class chain (DRUID): 2 quests
 [--] Druid: Aquatic Form                    class chain (DRUID): 4 quests
 [--] Warlock: Succubus                      class chain (WARLOCK): 7 quests
 [--] Shaman: Call of Water (water totems)   class chain (SHAMAN): 7 quests
     -> set hearth at Thunder Bluff (worth ~0 min more than keeping the old bind)
-[26] Thunder Bluff (quests for Wailing Caverns) map=1456 races=all entry=19.23 exit=19.62 quests=3 deferredIn=5 ~   4min HS=0 death=0 stacked=0
-[27] Wailing Caverns (dungeon)              map=279 races=all entry=19.62 exit=19.93 quests=0 deferredIn=6 ~ 135min HS=0 death=0 stacked=0
+[26] Thunder Bluff (quests for Wailing Caverns) map=1456 races=all entry=21.90 exit=22.28 quests=3 deferredIn=6 ~   5min HS=0 death=0 stacked=0
+[27] Wailing Caverns (dungeon)              map=279 races=all entry=22.28 exit=22.59 quests=0 deferredIn=6 ~ 137min HS=0 death=0 stacked=0
     -> hearth to Thunder Bluff for Thunder Bluff (turn in Wailing Caverns)
-[28] Thunder Bluff (turn in Wailing Caverns) map=1456 races=all entry=19.93 exit=20.28 quests=0 deferredIn=2 ~   3min HS=0 death=0 stacked=0
+[28] Thunder Bluff (turn in Wailing Caverns) map=1456 races=all entry=22.59 exit=22.89 quests=0 deferredIn=2 ~   3min HS=0 death=0 stacked=0
     -> keep hearth (Thunder Bluff) instead of binding at Ratchet
-[29] The Barrens (turn in Wailing Caverns)  map=1413 races=all entry=20.28 exit=21.92 quests=0 deferredIn=4 ~   6min HS=0 death=0 stacked=0
-    pruned 6301 Cycle of Rebirth (59% of grinding XP/h)
+[29] The Barrens (turn in Wailing Caverns)  map=1413 races=all entry=22.89 exit=24.51 quests=0 deferredIn=8 ~  33min HS=0 death=0 stacked=0
     -> keep hearth (Thunder Bluff) instead of binding at Sun Rock Retreat
-[30] Stonetalon Mountains                   map=1442 races=all entry=21.92 exit=22.66 quests=9 deferredIn=7 ~  64min HS=0 death=0 stacked=0
-    pruned 25 Stonetalon Standstill (48% of grinding XP/h)
-    -> set hearth at Splintertree Post (worth ~10 min more than keeping the old bind)
-[31] Ashenvale                              map=1440 races=all entry=22.66 exit=24.80 quests=15 deferredIn=1 ~ 109min HS=1 death=0 stacked=0
-[32] Blackfathom Deeps (dungeon)            map=221 races=all entry=24.80 exit=25.10 quests=0 deferredIn=2 ~  62min HS=0 death=0 stacked=0
-[33] Ashenvale (turn in Blackfathom Deeps)  map=1440 races=all entry=25.10 exit=25.36 quests=0 deferredIn=2 ~   0min HS=0 death=0 stacked=0
-    -> set hearth at Ratchet (worth ~6 min more than keeping the old bind)
-[34] The Barrens - Wrap up                  map=1413 races=all entry=25.36 exit=26.21 quests=7 deferredIn=8 ~  44min HS=1 death=0 stacked=2
+[30] Stonetalon Mountains                   map=1442 races=all entry=24.51 exit=25.19 quests=10 deferredIn=7 ~  67min HS=0 death=0 stacked=0
+    -> set hearth at Splintertree Post (worth ~9 min more than keeping the old bind)
+[31] Ashenvale                              map=1440 races=all entry=25.19 exit=27.17 quests=16 deferredIn=1 ~ 118min HS=1 death=0 stacked=0
+[32] Blackfathom Deeps (dungeon)            map=221 races=all entry=27.17 exit=27.48 quests=0 deferredIn=2 ~  62min HS=0 death=0 stacked=0
+[33] Ashenvale (turn in Blackfathom Deeps)  map=1440 races=all entry=27.48 exit=27.71 quests=0 deferredIn=2 ~   0min HS=0 death=0 stacked=0
+    -> set hearth at The Crossroads (worth ~7 min more than keeping the old bind)
+[34] The Barrens - Wrap up                  map=1413 races=all entry=27.71 exit=28.59 quests=8 deferredIn=8 ~  73min HS=1 death=0 stacked=2
     left for later (level too low): [1361, 1431, 2996, 4737]
-    -> keep hearth (Ratchet) instead of binding at Orgrimmar
-[35] Orgrimmar - 20s                        map=1454 races=all entry=26.21 exit=26.33 quests=5 deferredIn=2 ~   6min HS=0 death=0 stacked=0
-    pruned 4865 Serpent Wild (45% of grinding XP/h)
-    pruned 1150 Test of Endurance (55% of grinding XP/h)
-    -> keep hearth (Ratchet) instead of binding at Freewind Post
-[36] Thousand Needles                       map=1441 races=all entry=26.33 exit=29.54 quests=12 deferredIn=1 ~ 209min HS=0 death=0 stacked=0
-[37] Razorfen Kraul (dungeon)               map=301 races=all entry=29.54 exit=29.85 quests=0 deferredIn=2 ~  62min HS=0 death=0 stacked=0
-    -> hearth to Ratchet for The Barrens (turn in Razorfen Kraul)
-    -> keep hearth (Ratchet) instead of binding at The Crossroads
-[38] The Barrens (turn in Razorfen Kraul)   map=1413 races=all entry=29.85 exit=30.17 quests=1 deferredIn=6 ~  23min HS=0 death=0 stacked=0
-    -> set hearth at Undercity (worth ~4 min more than keeping the old bind)
-[39] Undercity - 20s                        map=1458 races=all entry=30.17 exit=30.57 quests=3 deferredIn=3 ~   3min HS=0 death=0 stacked=1
-[40] Ruins of Lordaeron (dungeon)           map=916611 races=all entry=30.57 exit=30.88 quests=0 deferredIn=2 ~  51min HS=0 death=0 stacked=0
-[41] Shadowfang Keep (dungeon)              map=310 races=all entry=30.88 exit=31.18 quests=0 deferredIn=2 ~  64min HS=0 death=0 stacked=0
-    -> hearth to Undercity for Undercity (turn in Shadowfang Keep)
-[42] Undercity (turn in Shadowfang Keep)    map=1458 races=all entry=31.18 exit=31.40 quests=1 deferredIn=2 ~   2min HS=0 death=0 stacked=0
-    -> keep hearth (Undercity) instead of binding at The Sepulcher
-[43] Silverpine Forest (turn in Shadowfang Keep) map=1421 races=all entry=31.40 exit=31.58 quests=0 deferredIn=2 ~   0min HS=0 death=0 stacked=0
-    pruned 539 Battle of Hillsbrad (36% of grinding XP/h)
-    pruned 532 Battle of Hillsbrad (35% of grinding XP/h)
-    pruned 529 Battle of Hillsbrad (35% of grinding XP/h)
-    pruned 528 Battle of Hillsbrad (31% of grinding XP/h)
-    pruned 527 Battle of Hillsbrad (53% of grinding XP/h)
-    -> keep hearth (Undercity) instead of binding at Tarren Mill
-[44] Hillsbrad Foothills                    map=1424 races=all entry=31.58 exit=32.21 quests=10 deferredIn=0 ~  45min HS=0 death=0 stacked=0
+    -> keep hearth (The Crossroads) instead of binding at Orgrimmar
+[35] Orgrimmar - 20s                        map=1454 races=all entry=28.59 exit=28.69 quests=1 deferredIn=2 ~   1min HS=0 death=0 stacked=0
+    pruned 4865 Serpent Wild (62% of grinding XP/h)
+    -> keep hearth (The Crossroads) instead of binding at Freewind Post
+[36] Thousand Needles                       map=1441 races=all entry=28.69 exit=30.03 quests=13 deferredIn=1 ~  95min HS=0 death=0 stacked=0
+[37] Razorfen Kraul (dungeon)               map=301 races=all entry=30.03 exit=30.34 quests=0 deferredIn=2 ~  62min HS=0 death=0 stacked=0
+    -> keep hearth (The Crossroads) instead of binding at Ratchet
+[38] The Barrens (turn in Razorfen Kraul)   map=1413 races=all entry=30.34 exit=30.63 quests=1 deferredIn=4 ~  16min HS=0 death=0 stacked=0
+    left for later (level too low): [1164]
+    -> keep hearth (The Crossroads) instead of binding at Undercity
+[39] Undercity - 20s                        map=1458 races=all entry=30.63 exit=31.03 quests=3 deferredIn=2 ~   2min HS=0 death=0 stacked=0
+[40] Ruins of Lordaeron (dungeon)           map=916611 races=all entry=31.03 exit=31.34 quests=0 deferredIn=2 ~  51min HS=0 death=0 stacked=0
+[41] Shadowfang Keep (dungeon)              map=310 races=all entry=31.34 exit=31.65 quests=0 deferredIn=2 ~  64min HS=0 death=0 stacked=0
+    -> keep hearth (The Crossroads) instead of binding at The Sepulcher
+[42] Silverpine Forest (turn in Shadowfang Keep) map=1421 races=all entry=31.65 exit=31.83 quests=0 deferredIn=2 ~   0min HS=0 death=0 stacked=0
+    pruned 539 Battle of Hillsbrad (55% of grinding XP/h)
+    pruned 532 Battle of Hillsbrad (54% of grinding XP/h)
+    pruned 529 Battle of Hillsbrad (54% of grinding XP/h)
+    pruned 528 Battle of Hillsbrad (48% of grinding XP/h)
+    -> keep hearth (The Crossroads) instead of binding at Tarren Mill
+[43] Hillsbrad Foothills                    map=1424 races=all entry=31.83 exit=32.46 quests=11 deferredIn=0 ~  51min HS=0 death=0 stacked=0
 [--] Rogue: Poisons                         class chain (ROGUE): 5 quests
-    pruned 535 Valik (33% of grinding XP/h)
-[46] Alterac Mountains                      map=1416 races=all entry=32.21 exit=32.27 quests=0 deferredIn=0 ~   0min HS=0 death=0 stacked=0
-[47] City of Dalaran (dungeon)              map=916544 races=all entry=32.27 exit=32.58 quests=0 deferredIn=1 ~  48min HS=0 death=0 stacked=0
-    -> hearth to Undercity for Undercity (turn in City of Dalaran)
-[48] Undercity (turn in City of Dalaran)    map=1458 races=all entry=32.58 exit=32.76 quests=2 deferredIn=2 ~   2min HS=0 death=0 stacked=0
-    left for later (level too low): [663]
-    pruned 677 Call to Arms (48% of grinding XP/h)
-    pruned 639 Sigil of Strom (45% of grinding XP/h)
-    pruned 671 Foul Magics (47% of grinding XP/h)
-    pruned 642 The Princess Trapped (52% of grinding XP/h)
+    pruned 535 Valik (50% of grinding XP/h)
+[45] Alterac Mountains                      map=1416 races=all entry=32.46 exit=32.52 quests=0 deferredIn=0 ~   0min HS=0 death=0 stacked=0
+[46] City of Dalaran (dungeon)              map=916544 races=all entry=32.52 exit=32.83 quests=0 deferredIn=1 ~  48min HS=0 death=0 stacked=0
+    -> set hearth at Undercity (worth ~4 min more than keeping the old bind)
+[47] Undercity (turn in City of Dalaran)    map=1458 races=all entry=32.83 exit=33.13 quests=1 deferredIn=4 ~   2min HS=0 death=0 stacked=0
+    catch-up grind 33.13 -> 35.1 before questing (274 min; quests here ~level 38) on the mobs of Foul Magics
     -> keep hearth (Undercity) instead of binding at Hammerfall
-[49] Arathi Highlands                       map=1417 races=all entry=32.76 exit=33.56 quests=7 deferredIn=3 ~  68min HS=0 death=0 stacked=0
-[50] Scarlet Monastery (dungeon)            map=302 races=all entry=33.56 exit=33.87 quests=0 deferredIn=2 ~ 115min HS=0 death=0 stacked=0
+[48] Arathi Highlands                       map=1417 races=all entry=33.13 exit=36.48 quests=12 deferredIn=2 ~ 394min HS=0 death=0 stacked=0
+[49] Scarlet Monastery (dungeon)            map=302 races=all entry=36.48 exit=36.79 quests=0 deferredIn=1 ~  99min HS=0 death=0 stacked=0
     -> hearth to Undercity for Undercity (turn in Scarlet Monastery)
-[51] Undercity (turn in Scarlet Monastery)  map=1458 races=all entry=33.87 exit=34.42 quests=2 deferredIn=3 ~   3min HS=0 death=0 stacked=0
-    pruned 577 Some Assembly Required (32% of grinding XP/h)
-    pruned 192 Panther Mastery (50% of grinding XP/h)
-    pruned 201 Investigate the Camp (51% of grinding XP/h)
-    pruned 582 Headhunting (61% of grinding XP/h)
-    pruned 581 Hunt for Yenniku (47% of grinding XP/h)
-    pruned 191 Panther Mastery (64% of grinding XP/h)
-    pruned 190 Panther Mastery (57% of grinding XP/h)
+[50] Undercity (turn in Scarlet Monastery)  map=1458 races=all entry=36.79 exit=36.96 quests=2 deferredIn=1 ~   2min HS=0 death=0 stacked=0
+    pruned 577 Some Assembly Required (44% of grinding XP/h)
     -> set hearth at Grom'gol Base Camp (worth ~5 min more than keeping the old bind)
-[52] Stranglethorn Vale                     map=1434 races=all entry=34.42 exit=35.79 quests=15 deferredIn=0 ~ 133min HS=1 death=0 stacked=0
-    pruned 1366 Centaur Bounty (63% of grinding XP/h)
-    -> set hearth at Shadowprey Village (worth ~2 min more than keeping the old bind)
-[53] Desolace                               map=1443 races=all entry=35.79 exit=37.14 quests=25 deferredIn=0 ~ 116min HS=1 death=0 stacked=0
-    pruned 1150 Test of Endurance (39% of grinding XP/h)
-    pruned 98070 Stop the Screeching (35% of grinding XP/h)
-    pruned 1175 A Bump in the Road (55% of grinding XP/h)
-    pruned 1110 Rocket Car Parts (57% of grinding XP/h)
+[51] Stranglethorn Vale                     map=1434 races=all entry=36.96 exit=38.68 quests=21 deferredIn=0 ~ 209min HS=1 death=0 stacked=0
+    pruned 6143 Other Fish to Fry (26% of grinding XP/h)
+    pruned 5561 Kodo Roundup (31% of grinding XP/h)
+    pruned 1369 Broken Tears (57% of grinding XP/h)
+    pruned 1370 Stealing Supplies (53% of grinding XP/h)
+    pruned 1368 Gelkis Alliance (37% of grinding XP/h)
+    pruned 1366 Centaur Bounty (64% of grinding XP/h)
+    -> set hearth at Shadowprey Village (worth ~4 min more than keeping the old bind)
+[52] Desolace                               map=1443 races=all entry=38.68 exit=39.49 quests=18 deferredIn=0 ~ 130min HS=1 death=0 stacked=0
+    pruned 98070 Stop the Screeching (49% of grinding XP/h)
+    pruned 1110 Rocket Car Parts (61% of grinding XP/h)
     -> keep hearth (Shadowprey Village) instead of binding at Freewind Post
-[54] Thousand Needles - Shimmering Flats    map=1441 races=all entry=37.14 exit=37.20 quests=4 deferredIn=0 ~   6min HS=0 death=0 stacked=0
+[53] Thousand Needles - Shimmering Flats    map=1441 races=all entry=39.49 exit=39.65 quests=5 deferredIn=0 ~  24min HS=0 death=0 stacked=0
 [--] Shaman: Call of Air (air totems)       class chain (SHAMAN): 1 quests
-[56] Razorfen Downs (dungeon)               map=300 races=all entry=37.20 exit=37.51 quests=0 deferredIn=2 ~  75min HS=0 death=0 stacked=0
+[55] Razorfen Downs (dungeon)               map=300 races=all entry=39.65 exit=39.96 quests=0 deferredIn=2 ~  75min HS=0 death=0 stacked=0
     -> keep hearth (Shadowprey Village) instead of binding at Ratchet
-[57] The Barrens (turn in Razorfen Downs)   map=1413 races=all entry=37.51 exit=37.77 quests=0 deferredIn=4 ~  19min HS=0 death=0 stacked=0
-    pruned 1202 The Theramore Docks (53% of grinding XP/h)
-    pruned 1177 Hungry! (53% of grinding XP/h)
-[58] Dustwallow Marsh                       map=1445 races=all entry=37.77 exit=38.53 quests=13 deferredIn=0 ~  64min HS=0 death=0 stacked=0
+[56] The Barrens (turn in Razorfen Downs)   map=1413 races=all entry=39.96 exit=40.19 quests=0 deferredIn=4 ~  12min HS=0 death=0 stacked=0
+[57] Dustwallow Marsh                       map=1445 races=all entry=40.19 exit=41.09 quests=15 deferredIn=0 ~  82min HS=0 death=0 stacked=0
 [--] Warlock: Felhunter                     class chain (WARLOCK): 7 quests
 [--] Warrior: Berserker Stance              class chain (WARRIOR): 2 quests
     -> keep hearth (Shadowprey Village) instead of binding at Stonard
-[61] Swamp of Sorrows                       map=1435 races=all entry=38.53 exit=39.27 quests=8 deferredIn=0 ~  66min HS=0 death=0 stacked=0
-    left for later (level too low): [782]
-    pruned 1419 Coyote Thieves (58% of grinding XP/h)
-    pruned 712 Study of the Elements: Rock (58% of grinding XP/h)
+[60] Swamp of Sorrows                       map=1435 races=all entry=41.09 exit=41.73 quests=8 deferredIn=0 ~  59min HS=0 death=0 stacked=0
     -> set hearth at Kargath (worth ~5 min more than keeping the old bind)
-[62] Badlands                               map=1418 races=all entry=39.27 exit=39.83 quests=7 deferredIn=2 ~  61min HS=0 death=0 stacked=0
-[63] Uldaman (dungeon)                      map=230 races=all entry=39.83 exit=40.14 quests=0 deferredIn=4 ~ 134min HS=0 death=0 stacked=0
+[61] Badlands                               map=1418 races=all entry=41.73 exit=42.58 quests=10 deferredIn=2 ~  97min HS=0 death=0 stacked=0
+[62] Uldaman (dungeon)                      map=230 races=all entry=42.58 exit=42.89 quests=0 deferredIn=4 ~ 135min HS=0 death=0 stacked=0
     -> hearth to Kargath for Badlands (turn in Uldaman)
-[64] Badlands (turn in Uldaman)             map=1418 races=all entry=40.14 exit=40.53 quests=0 deferredIn=2 ~   1min HS=0 death=0 stacked=0
-    pruned 671 Foul Magics (43% of grinding XP/h)
+[63] Badlands (turn in Uldaman)             map=1418 races=all entry=42.89 exit=43.23 quests=0 deferredIn=2 ~   1min HS=0 death=0 stacked=0
     -> keep hearth (Kargath) instead of binding at Hammerfall
-[65] Arathi Highlands 2                     map=1417 races=all entry=40.53 exit=41.38 quests=12 deferredIn=1 ~  84min HS=0 death=0 stacked=0
-    pruned 587 Up to Snuff (46% of grinding XP/h)
-    pruned 613 Cracking Maury's Foot (48% of grinding XP/h)
-    pruned 572 Mok'thardin's Enchantment (49% of grinding XP/h)
-    pruned 577 Some Assembly Required (51% of grinding XP/h)
-    pruned 576 Keep An Eye Out (54% of grinding XP/h)
-    pruned 196 Raptor Mastery (61% of grinding XP/h)
-    pruned 617 Akiris by the Bundle (55% of grinding XP/h)
-    pruned 600 Venture Company Mining (58% of grinding XP/h)
-    -> keep hearth (Kargath) instead of binding at Grom'gol Base Camp
-[66] Stranglethorn Vale 2                   map=1434 races=all entry=41.38 exit=42.22 quests=12 deferredIn=4 ~  60min HS=0 death=0 stacked=0
+[64] Arathi Highlands 2                     map=1417 races=all entry=43.23 exit=43.80 quests=10 deferredIn=1 ~  58min HS=0 death=0 stacked=0
+    -> set hearth at Booty Bay (worth ~3 min more than keeping the old bind)
+[65] Stranglethorn Vale 2                   map=1434 races=all entry=43.80 exit=45.57 quests=25 deferredIn=4 ~ 212min HS=2 death=0 stacked=0
     left for later (level too low): [8151, 8250, 8254]
-    -> keep hearth (Kargath) instead of binding at Orgrimmar
-[67] Orgrimmar - 40s                        map=1454 races=all entry=42.22 exit=42.34 quests=4 deferredIn=1 ~   3min HS=0 death=0 stacked=0
-    left for later (level too low): [2605, 2606, 2641, 2661, 2662, 3362, 5863]
-    pruned 8366 Southsea Shakedown (57% of grinding XP/h)
-    -> set hearth at Gadgetzan (worth ~8 min more than keeping the old bind)
-[68] Tanaris                                map=1446 races=all entry=42.34 exit=43.21 quests=20 deferredIn=2 ~  81min HS=1 death=0 stacked=0
-[69] Zul'Farrak (dungeon)                   map=219 races=all entry=43.21 exit=43.52 quests=0 deferredIn=4 ~ 143min HS=0 death=0 stacked=0
+    -> keep hearth (Booty Bay) instead of binding at Orgrimmar
+[66] Orgrimmar - 40s                        map=1454 races=all entry=45.57 exit=45.69 quests=4 deferredIn=1 ~   3min HS=0 death=0 stacked=0
+    catch-up grind 45.69 -> 46.0 before questing (54 min; quests here ~level 48) on the mobs of Wastewander Justice
+    pruned 3362 Thistleshrub Valley (59% of grinding XP/h)
+    -> set hearth at Gadgetzan (worth ~5 min more than keeping the old bind)
+[67] Tanaris                                map=1446 races=all entry=45.69 exit=47.12 quests=27 deferredIn=2 ~ 169min HS=0 death=0 stacked=0
+[68] Zul'Farrak (dungeon)                   map=219 races=all entry=47.12 exit=47.43 quests=0 deferredIn=4 ~ 146min HS=0 death=0 stacked=0
     -> hearth to Gadgetzan for Tanaris (turn in Zul'Farrak)
-[70] Tanaris (turn in Zul'Farrak)           map=1446 races=all entry=43.52 exit=44.22 quests=0 deferredIn=4 ~   3min HS=0 death=0 stacked=0
-    pruned 3063 Vengeance on the Northspring (51% of grinding XP/h)
-    pruned 7734 Improved Quality (63% of grinding XP/h)
-    -> keep hearth (Gadgetzan) instead of binding at Camp Mojache
-[71] Feralas                                map=1444 races=all entry=44.22 exit=45.49 quests=20 deferredIn=2 ~ 152min HS=0 death=0 stacked=0
-[72] Maraudon (dungeon)                     map=280 races=all entry=45.49 exit=45.80 quests=0 deferredIn=5 ~ 120min HS=0 death=0 stacked=0
-    -> keep hearth (Gadgetzan) instead of binding at Shadowprey Village
-[73] Desolace (turn in Maraudon)            map=1443 races=all entry=45.80 exit=46.22 quests=0 deferredIn=4 ~   6min HS=0 death=0 stacked=0
-    -> keep hearth (Gadgetzan) instead of binding at Undercity
-[74] Undercity - 40s                        map=1458 races=all entry=46.22 exit=46.42 quests=3 deferredIn=3 ~   2min HS=0 death=0 stacked=0
-    pruned 7844 Cannibalistic Cousins (54% of grinding XP/h)
-    -> keep hearth (Gadgetzan) instead of binding at Revantusk Village
-[75] The Hinterlands                        map=1425 races=all entry=46.42 exit=47.65 quests=15 deferredIn=2 ~ 115min HS=0 death=0 stacked=0
-[76] Searing Gorge                          map=1427 races=all entry=47.65 exit=48.30 quests=8 deferredIn=0 ~  66min HS=0 death=0 stacked=0
-    pruned 5534 Kim'jael's "Missing" Equipment (62% of grinding XP/h)
-[77] Azshara                                map=1447 races=all entry=48.30 exit=50.29 quests=9 deferredIn=0 ~ 268min HS=0 death=0 stacked=0
-    -> hearth to Gadgetzan for Tanaris 2
-    pruned 8366 Southsea Shakedown (38% of grinding XP/h)
-    pruned 379 Slake That Thirst (52% of grinding XP/h)
-[78] Tanaris 2                              map=1446 races=all entry=50.29 exit=50.76 quests=5 deferredIn=4 ~  39min HS=0 death=0 stacked=0
+[69] Tanaris (turn in Zul'Farrak)           map=1446 races=all entry=47.43 exit=48.03 quests=0 deferredIn=4 ~   3min HS=0 death=0 stacked=0
+    -> set hearth at Camp Mojache (worth ~3 min more than keeping the old bind)
+[70] Feralas                                map=1444 races=all entry=48.03 exit=49.24 quests=22 deferredIn=2 ~ 175min HS=1 death=0 stacked=0
+[71] Maraudon (dungeon)                     map=280 races=all entry=49.24 exit=49.55 quests=0 deferredIn=5 ~ 121min HS=0 death=0 stacked=0
+    -> keep hearth (Camp Mojache) instead of binding at Shadowprey Village
+[72] Desolace (turn in Maraudon)            map=1443 races=all entry=49.55 exit=49.92 quests=0 deferredIn=4 ~   6min HS=0 death=0 stacked=0
+    -> keep hearth (Camp Mojache) instead of binding at Undercity
+[73] Undercity - 40s                        map=1458 races=all entry=49.92 exit=50.08 quests=3 deferredIn=3 ~   2min HS=0 death=0 stacked=0
+    -> keep hearth (Camp Mojache) instead of binding at Revantusk Village
+[74] The Hinterlands                        map=1425 races=all entry=50.08 exit=51.26 quests=16 deferredIn=3 ~ 142min HS=0 death=0 stacked=0
+[75] Searing Gorge                          map=1427 races=all entry=51.26 exit=51.82 quests=8 deferredIn=0 ~  68min HS=0 death=0 stacked=0
+[76] Azshara                                map=1447 races=all entry=51.82 exit=52.30 quests=10 deferredIn=0 ~  89min HS=0 death=0 stacked=0
+    pruned 3362 Thistleshrub Valley (56% of grinding XP/h)
+    pruned 379 Slake That Thirst (59% of grinding XP/h)
+    -> keep hearth (Camp Mojache) instead of binding at Gadgetzan
+[77] Tanaris 2                              map=1446 races=all entry=52.30 exit=52.54 quests=1 deferredIn=5 ~   5min HS=0 death=0 stacked=0
     left for later (level too low): [8276]
-    -> keep hearth (Gadgetzan) instead of binding at Orgrimmar
-[79] Orgrimmar - 50s                        map=1454 races=all entry=50.76 exit=51.10 quests=3 deferredIn=7 ~   3min HS=0 death=0 stacked=0
-[80] Un'Goro Crater                         map=1449 races=all entry=51.10 exit=52.15 quests=21 deferredIn=0 ~ 100min HS=0 death=0 stacked=0
-    pruned 8462 Speak to Nafien (13% of grinding XP/h)
-    pruned 5157 Collection of the Corrupt Water (62% of grinding XP/h)
-    pruned 5887 Salve via Hunting (60% of grinding XP/h)
-    pruned 5155 Forces of Jaedenar (51% of grinding XP/h)
-[81] Felwood                                map=1448 races=all entry=52.15 exit=52.77 quests=9 deferredIn=2 ~  68min HS=0 death=0 stacked=0
-    pruned 3801 Dark Iron Legacy (40% of grinding XP/h)
-[82] Burning Steppes                        map=1428 races=all entry=52.77 exit=52.93 quests=3 deferredIn=1 ~   7min HS=0 death=0 stacked=0
-[83] Blasted Lands                          map=1419 races=all entry=52.93 exit=53.39 quests=7 deferredIn=0 ~  32min HS=0 death=0 stacked=0
-    pruned 4809 Chillwind Horns (58% of grinding XP/h)
-    -> set hearth at Everlook (worth ~7 min more than keeping the old bind)
-[84] Winterspring                           map=1452 races=all entry=53.39 exit=55.17 quests=12 deferredIn=3 ~ 273min HS=2 death=0 stacked=0
-    pruned 5401 Argent Dawn Commission (53% of grinding XP/h)
-    pruned 4985 The Wildlife Suffers Too (63% of grinding XP/h)
-[85] Western Plaguelands                    map=1422 races=all entry=55.17 exit=55.66 quests=12 deferredIn=0 ~  37min HS=0 death=0 stacked=0
+    -> keep hearth (Camp Mojache) instead of binding at Orgrimmar
+[78] Orgrimmar - 50s                        map=1454 races=all entry=52.54 exit=52.82 quests=3 deferredIn=7 ~   3min HS=0 death=0 stacked=0
+[79] Un'Goro Crater                         map=1449 races=all entry=52.82 exit=53.81 quests=21 deferredIn=0 ~ 105min HS=0 death=0 stacked=0
+    pruned 8462 Speak to Nafien (20% of grinding XP/h)
+[80] Felwood                                map=1448 races=all entry=53.81 exit=54.44 quests=12 deferredIn=2 ~  94min HS=0 death=0 stacked=0
+    pruned 3801 Dark Iron Legacy (52% of grinding XP/h)
+[81] Burning Steppes                        map=1428 races=all entry=54.44 exit=54.59 quests=3 deferredIn=1 ~   7min HS=0 death=0 stacked=0
+[82] Blasted Lands                          map=1419 races=all entry=54.59 exit=55.03 quests=7 deferredIn=0 ~  34min HS=0 death=0 stacked=0
+    -> set hearth at Everlook (worth ~3 min more than keeping the old bind)
+[83] Winterspring                           map=1452 races=all entry=55.03 exit=56.11 quests=13 deferredIn=3 ~ 194min HS=2 death=0 stacked=0
+[84] Western Plaguelands                    map=1422 races=all entry=56.11 exit=56.64 quests=14 deferredIn=0 ~  49min HS=0 death=0 stacked=0
+    catch-up grind 56.64 -> 58.0 before questing (350 min; quests here ~level 60) on the mobs of Zaeldarr the Outcast
     left for later (level too low): [7621, 7622, 9121]
-    -> keep hearth (Everlook) instead of binding at Light's Hope Chapel
-[86] Eastern Plaguelands                    map=1423 races=all entry=55.66 exit=56.73 quests=10 deferredIn=8 ~ 167min HS=0 death=0 stacked=0
-[87] Dire Maul (dungeon)                    map=234 races=all entry=56.73 exit=57.04 quests=0 deferredIn=3 ~  98min HS=0 death=0 stacked=0
-    -> keep hearth (Everlook) instead of binding at Camp Mojache
-[88] Feralas (turn in Dire Maul)            map=1444 races=all entry=57.04 exit=57.30 quests=0 deferredIn=5 ~   1min HS=0 death=0 stacked=0
-    left for later (level too low): [8320, 8321, 8331, 8343, 8361, 8800]
-    left for later (level too low): [8332, 8341, 8348, 8349, 8351, 8352]
-    -> keep hearth (Everlook) instead of binding at Cenarion Hold
-[89] Silithus                               map=1451 races=all entry=57.30 exit=58.22 quests=13 deferredIn=0 ~ 100min HS=0 death=0 stacked=0
-    -> grind 58.22 -> 60.0  (Twilight Avenger and Stonelash Scorpid ~74k xp/h)
+    -> set hearth at Light's Hope Chapel (worth ~3 min more than keeping the old bind)
+[85] Eastern Plaguelands                    map=1423 races=all entry=56.64 exit=58.98 quests=9 deferredIn=8 ~ 517min HS=1 death=0 stacked=0
+[86] Dire Maul (dungeon)                    map=234 races=all entry=58.98 exit=59.29 quests=0 deferredIn=3 ~  98min HS=0 death=0 stacked=0
+    -> keep hearth (Light's Hope Chapel) instead of binding at Camp Mojache
+[87] Feralas (turn in Dire Maul)            map=1444 races=all entry=59.29 exit=59.54 quests=0 deferredIn=5 ~   1min HS=0 death=0 stacked=0
+    -> keep hearth (Light's Hope Chapel) instead of binding at Cenarion Hold
+[88] Silithus                               map=1451 races=all entry=59.54 exit=60.00 quests=25 deferredIn=0 ~ 114min HS=0 death=0 stacked=0
 
-telemetry: 1 SavedVariables file(s), 32 timed steps, 27 measured step keys, 0 player reports
-quest log cap 35: dropped 23 quests: [5761, 6629, 6548, 1062, 1063, 1068, 873, 874, 882, 907, 913, 3261, 95774, 851, 852, 4921, 3281, 865, 1491, 858, 863, 95494, 95495]
+telemetry: 1 SavedVariables file(s), 57 timed steps, 52 measured step keys, 0 player reports
+    flights The Barrens - Crossroads: 2 planned, ~4 min saved
+    flight paths grabbed on the way (Warlock: Voidwalker): Doras
+    flight paths grabbed on the way (Ragefire Chasm): Doras
+    flights The Barrens - Camp Taurajo: 2 planned, ~4 min saved
+    flights Druid: Great Cat Spirit: 1 planned, ~8 min saved
+    flight paths grabbed on the way (Shaman: Call of Water (water totems)): Zarise
+    flights Shaman: Call of Water (water totems): 4 planned, ~10 min saved
+    flight paths grabbed on the way (Thunder Bluff (quests for Wailing Caverns)): Tal
+    flights The Barrens (turn in Wailing Caverns): 2 planned, ~10 min saved
+    flights Ashenvale: 1 planned, ~8 min saved
+    flights The Barrens - Wrap up: 3 planned, ~11 min saved
+    flights Thousand Needles: 1 planned, ~11 min saved
+    flights The Barrens (turn in Razorfen Kraul): 1 planned, ~4 min saved
+    flight paths grabbed on the way (Silverpine Forest (turn in Shadowfang Keep)): Karos Razok
+    flights Arathi Highlands: 1 planned, ~2 min saved
+    flights Scarlet Monastery: 1 planned, ~6 min saved
+    flights Stranglethorn Vale: 3 planned, ~13 min saved
+    flights Shaman: Call of Air (air totems): 2 planned, ~28 min saved
+    flights The Barrens (turn in Razorfen Downs): 2 planned, ~9 min saved
+    flights Warlock: Felhunter: 2 planned, ~4 min saved
+    flights Warrior: Berserker Stance: 2 planned, ~5 min saved
+    flights Arathi Highlands 2: 1 planned, ~5 min saved
+    flights Stranglethorn Vale 2: 2 planned, ~4 min saved
+    flights Tanaris: 1 planned, ~7 min saved
+    flights Maraudon: 1 planned, ~3 min saved
+    flights The Hinterlands: 1 planned, ~4 min saved
+    flights Searing Gorge: 1 planned, ~6 min saved
+    flights Tanaris 2: 1 planned, ~8 min saved
+    flights Orgrimmar - 50s: 1 planned, ~10 min saved
+    flights Un'Goro Crater: 1 planned, ~8 min saved
+    flights Felwood: 1 planned, ~10 min saved
+    flights Blasted Lands: 1 planned, ~3 min saved
+flights: ~207 min saved over running
 
-hearths=20 death-skips=3 stacked quests=27 time saved by hearths/deaths ~106 min
-quest log peak Orc       35 (in The Hinterlands)
-quest log peak Skyborne  35 (in The Hinterlands)
-quest log peak Tauren    35 (in The Hinterlands)
-quest log peak Troll     35 (in The Hinterlands)
-quest log peak Undead    35 (in The Hinterlands)
-estimated /played to 60 for Orc       ~73.7 h (questing + planned grinding, excl. class/vendor stops)
-estimated /played to 60 for Skyborne  ~74.0 h (questing + planned grinding, excl. class/vendor stops)
-estimated /played to 60 for Tauren    ~73.7 h (questing + planned grinding, excl. class/vendor stops)
-estimated /played to 60 for Troll     ~73.7 h (questing + planned grinding, excl. class/vendor stops)
-estimated /played to 60 for Undead    ~76.0 h (questing + planned grinding, excl. class/vendor stops)
+hearths=18 death-skips=2 stacked quests=17 time saved by hearths/deaths ~83 min
+quest log peak Orc       24 (in Tanaris)
+quest log peak Skyborne  24 (in Tanaris)
+quest log peak Tauren    24 (in The Barrens - Camp Taurajo)
+quest log peak Troll     24 (in Tanaris)
+quest log peak Undead    27 (in The Barrens - Camp Taurajo)
+estimated /played to 60 for Orc       ~87.6 h (questing + planned grinding, excl. class/vendor stops)
+estimated /played to 60 for Skyborne  ~87.2 h (questing + planned grinding, excl. class/vendor stops)
+estimated /played to 60 for Tauren    ~87.7 h (questing + planned grinding, excl. class/vendor stops)
+estimated /played to 60 for Troll     ~87.6 h (questing + planned grinding, excl. class/vendor stops)
+estimated /played to 60 for Undead    ~90.1 h (questing + planned grinding, excl. class/vendor stops)

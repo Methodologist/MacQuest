@@ -115,6 +115,13 @@ function UnitFactionGroup() return STATE.faction end
 function UnitOnTaxi() return STATE.taxi end
 function GetTime() return STATE.time end
 function IsShiftKeyDown() return STATE.shift end
+BAGS, USABLE, TAKEN, TAXI_NODES, COMBAT = {}, {}, nil, {}, false
+function GetItemCount(id) return BAGS[id] or 0 end
+function GetItemSpell(id) if USABLE[id] then return "Use", 1 end end
+function GetItemIcon(id) return 134400 end
+function GetTaxiMapID() return 1 end
+function TakeTaxiNode(i) TAKEN = i end
+C_TaxiMap = { GetAllTaxiNodes = function() return TAXI_NODES end }
 function GetPlayerFacing() if SECRET_MODE then return SECRET end return STATE.facing end
 function GetSubZoneText() return "" end
 BIND = ""
@@ -127,6 +134,7 @@ C_Map = {
   GetPlayerMapPosition = function() return CreateVector2D(STATE.x, STATE.y) end,
   GetMapInfo = function(m) return { mapType = 3, name = "Map" .. m, parentMapID = 1414 } end,
   GetMapWorldSize = function() return 5000, 3333 end,
+  GetMapRectOnMap = function() return 0, 1, 0, 1 end,
   GetWorldPosFromMapPos = function(m, v) return (m == 1414 or m < 1430 or m > 1440) and 1 or 0, CreateVector2D(v.x, v.y) end,
   GetMapPosFromWorldPos = function(c, w, m) return m, CreateVector2D(w.x, w.y) end,
   CanSetUserWaypointOnMap = function() return true end,
@@ -140,7 +148,12 @@ HS_CD = 0
 C_Container = { GetItemCooldown = function() if HS_CD > 0 then return STATE.time - 10, HS_CD + 10, 1 end return 0, 0, 1 end }
 DEAD = false
 function UnitIsDeadOrGhost() return DEAD end
-function InCombatLockdown() return false end
+function UnitIsGhost() return STATE.ghost end
+CORPSE = nil
+C_DeathInfo = { GetCorpseMapPosition = function(m)
+  if CORPSE and CORPSE.m == m then return CreateVector2D(CORPSE.x, CORPSE.y) end
+end }
+function InCombatLockdown() return COMBAT end
 function IsInInstance() return false, "none" end
 SECRET = setmetatable({}, { __lt = function() error("attempt to compare a secret number value") end,
   __le = function() error("attempt to compare a secret number value") end,
@@ -154,6 +167,8 @@ function UnitCastingInfo() if SECRET_MODE then return SECRET end return nil end
 function IsIndoors() return false end
 date = os.date
 Minimap = setmetatable({ GetZoom = function() return 0 end, GetWidth = function() return 140 end,
+  GetHeight = function() return 140 end, GetCenter = function() return 1000, 600 end,
+  GetEffectiveScale = function() return 1 end,
   GetFrameLevel = function() return 1 end }, { __index = function() return function() end end })
 
 C_QuestLog = {
@@ -188,6 +203,8 @@ C_QuestLog = {
   end,
 }
 ACCEPTED, SELECTED, TURNED = {}, {}, {}
+NPC_NAME = nil
+function UnitName(u) if u == "npc" then return NPC_NAME end return "Tester" end
 C_GossipInfo = {
   GetActiveQuests = function() return GOSSIP_ACTIVE or {} end,
   GetAvailableQuests = function() return GOSSIP_AVAIL or {} end,
@@ -317,6 +334,66 @@ def main():
     c = current()
     print("  ", c)
     check("Zephras Isle" in c, "Skyborne starts on Zephras Isle")
+
+    # ---------------------------------------------------------------- Alliance
+    print("\n== Alliance: Human warrior level 1")
+    login(faction="Alliance", level=1, race=1, raceFile="Human", **{"class": 1}, map=1429, x=0.48, y=0.43)
+    c = current()
+    print("  ", c)
+    check("Northshire Valley" in c, "Human starts in Northshire Valley")
+    check(L.eval("SpeedLevel.Engine:RouteKey()") == "Alliance_speed", "Alliance characters load the Alliance route")
+    fm_names = L.eval("""(function()
+        local t = {}
+        for _, f in ipairs(SpeedLevel.Travel.fm) do t[f[5]] = true end
+        return (t["Dungar Longdrink"] and "SW" or "") .. (t["Doras"] and "ORG" or "")
+    end)()""")
+    check(fm_names == "SW", f"Alliance travel data: Alliance flight masters only ({fm_names})")
+
+    print("\n== Alliance: Human chooses the Night Elf starting path")
+    L.execute('SpeedLevel.Engine:SetPath("NightElf")')
+    c = current()
+    print("  ", c)
+    check("Shadowglen" in c, "Human on the Night Elf path starts in Shadowglen")
+    check(L.eval("SpeedLevel.Engine:PathName()") == "Night Elf: Teldrassil", "path name shown")
+    L.execute('SpeedLevel.Engine:SetPath("Skyborne")')
+    check(L.eval("SpeedLevel.char.startPath") == "NightElf", "Zephras Isle is not offered to a Human")
+    check([str(x) for x in L.eval("SpeedLevel.Engine:PathChoices()").values()] == ["Human", "Dwarf", "NightElf"],
+          "Human may choose Human / Dwarf-Gnome / Night Elf starts")
+    L.execute('SpeedLevel.Engine:SetPath("auto")')
+    c = current()
+    check("Northshire Valley" in c, f"back to auto: Northshire again ({c})")
+
+    print("\n== Alliance: Dwarf hunter level 1")
+    login(faction="Alliance", level=1, race=3, raceFile="Dwarf", **{"class": 3}, map=1426, x=0.30, y=0.71)
+    c = current()
+    print("  ", c)
+    check("Coldridge Valley" in c, "Dwarf starts in Coldridge Valley")
+
+    print("\n== Alliance: Gnome mage level 1")
+    login(faction="Alliance", level=1, race=7, raceFile="Gnome", **{"class": 8}, map=1426, x=0.30, y=0.71)
+    c = current()
+    print("  ", c)
+    check("Coldridge Valley" in c, "Gnome starts in Coldridge Valley")
+
+    print("\n== Alliance: Night Elf druid level 1")
+    login(faction="Alliance", level=1, race=4, raceFile="NightElf", **{"class": 11}, map=1438, x=0.59, y=0.44)
+    c = current()
+    print("  ", c)
+    check("Shadowglen" in c, "Night Elf starts in Shadowglen")
+
+    print("\n== Alliance: Skyborne level 1")
+    login(faction="Alliance", level=1, race=95, raceFile="Skyborne", **{"class": 3}, map=2521, x=0.43, y=0.23)
+    c = current()
+    print("  ", c)
+    check("Zephras Isle" in c, "Alliance Skyborne starts on Zephras Isle")
+
+    print("\n== Alliance: Human level 20 lands in the shared 20s route")
+    login(faction="Alliance", level=20, race=1, raceFile="Human", **{"class": 1}, map=1437, x=0.10, y=0.60)
+    c = current()
+    print("  ", c)
+    check("[Northshire" not in c and "[Elwynn" not in c, "a level 20 Human is not sent back to the starting zone")
+    # back to the Horde state the following tests expect (as left by the Skyborne test above)
+    login(faction="Horde", level=1, race=96, raceFile="Skyborne", **{"class": 7}, map=2521, x=0.43, y=0.69)
 
     print("\n== Orc level 14, Valley + Durotar quests all turned in")
     done = [int(m) for m in L.eval("""(function()
@@ -655,16 +732,38 @@ def main():
     check(L.eval("SpeedLevel.Engine:Mode()") == "speed_dungeons", "old 'dungeons' setting maps to speed + dungeons")
     L.execute("SpeedLevel.char.mode = 'speed'")
 
-    print("\n== first-start dungeon prompt")
-    L.execute("POPUPS = {}")
+    print("\n== minimap button")
+    check(L.eval("SpeedLevel.MinimapButton.button ~= nil"), "minimap button created at login")
+    check(not any("minimap button unavailable" in o for o in out), "minimap button set up without errors")
+    L.execute("OPENED = false; local o = SpeedLevel.Options.Open; SpeedLevel.Options.Open = function() OPENED = true end; "
+              "SpeedLevel.MinimapButton.button._scripts.OnClick(SpeedLevel.MinimapButton.button, 'LeftButton'); "
+              "SpeedLevel.Options.Open = o")
+    check(L.eval("OPENED") is True, "left-click opens settings")
+    L.execute("SlashCmdList.SPEEDLEVEL('minimap')")
+    check(L.eval("SpeedLevel.db.minimapButton") is False, "/sl minimap hides it (and remembers)")
+    L.execute("SlashCmdList.SPEEDLEVEL('minimap')")
+    check(L.eval("SpeedLevel.db.minimapButton") is True, "/sl minimap shows it again")
+
+    print("\n== first-start setup window")
     login(level=1, race=2, raceFile="Orc", **{"class": 1})
-    check(L.eval("POPUPS[1]") == "SPEEDLEVEL_DUNGEONS", "new character is asked about dungeon runs")
-    L.execute("StaticPopupDialogs.SPEEDLEVEL_DUNGEONS.OnAccept()")
-    check(L.eval("SpeedLevel.Engine:Mode()") == "speed_dungeons" and L.eval("SpeedLevel.char.dungeonsAsked") is True,
-          "'Include dungeons' turns them on and is remembered")
-    L.execute("POPUPS = {}; SpeedLevel.ready = false; FireEvent('PLAYER_LOGIN'); RunTimers()")
-    check(L.eval("#POPUPS") == 0, "not asked again on the next login")
-    L.execute("SpeedLevel.Engine:SetDungeons(false)")
+    check(L.eval("SpeedLevel.Setup.frame ~= nil"), "new character gets the setup window")
+    check(L.eval("SpeedLevel.Setup.style") == "speed" and L.eval("SpeedLevel.Setup.dungeons") is False
+          and L.eval("SpeedLevel.Setup.path") == "auto", "setup starts from Speed, solo, own starting zones")
+    L.execute("SpeedLevel.Setup.style = 'thorough'; SpeedLevel.Setup.dungeons = true; SpeedLevel.Setup.path = 'Tauren'")
+    L.execute("SpeedLevel.Setup:Finish(true)")
+    check(L.eval("SpeedLevel.Engine:Mode()") == "thorough_dungeons" and L.eval("SpeedLevel.char.dungeonsAsked") is True,
+          "'Start leveling' applies style + dungeons and is remembered")
+    check(L.eval("SpeedLevel.Engine:PathRace()") == "Tauren", "and the chosen starting zones (Orc on the Tauren path)")
+    check(L.eval("SpeedLevel.Setup.frame == nil"), "window closed")
+    L.execute("SpeedLevel.ready = false; FireEvent('PLAYER_LOGIN'); RunTimers()")
+    check(L.eval("SpeedLevel.Setup.frame == nil"), "not shown again on the next login")
+    L.execute("SlashCmdList.SPEEDLEVEL('setup')")
+    check(L.eval("SpeedLevel.Setup.frame ~= nil") and L.eval("SpeedLevel.Setup.style") == "thorough"
+          and L.eval("SpeedLevel.Setup.dungeons") is True and L.eval("SpeedLevel.Setup.path") == "Tauren",
+          "/sl setup reopens it with the current choices")
+    L.execute("SpeedLevel.Setup:Finish(false)")
+    check(L.eval("SpeedLevel.Engine:Mode()") == "thorough_dungeons", "closing without 'Start leveling' changes nothing")
+    L.execute("SpeedLevel.char.startPath = nil; SpeedLevel.Engine:SetMode('speed')")
 
     print("\n== class quest chains")
     def chain_titles():
@@ -691,15 +790,274 @@ def main():
     end)()""")
     check(res == "other class", f"other classes' chain steps are skipped ({res})")
 
+    print("\n== pickups the giver does not offer are parked")
+    login(level=1, race=2, raceFile="Orc", **{"class": 1})
+    first = L.eval("(function() local st, i = SpeedLevel.Engine:Current() return i .. '|' .. st.t .. '|' .. tostring(st.q) .. '|' .. tostring(st.npc) end)()")
+    fi, ft, fq, fnpc = first.split("|")
+    check(ft == "A", f"first step is a pickup ({first})")
+    L.execute(f"NPC_NAME = '{fnpc}'; SELECTED = {{}}; GOSSIP_AVAIL = {{}}; FireEvent('GOSSIP_SHOW')")
+    st = L.eval(f"select(2, SpeedLevel.Engine:ComputeStatus({fi}))")
+    check(st == "not offered yet", f"giver offers nothing -> pickup parked ({st})")
+    check(L.eval(f"SpeedLevel.Engine:Current() ~= SpeedLevel.Engine.steps[{fi}]"), "guide moves on")
+    L.execute(f"GOSSIP_AVAIL = {{ {{ questID = {fq}, isTrivial = false }} }}; FireEvent('GOSSIP_SHOW')")
+    sel = list(L.eval("SELECTED").values())
+    check(sel == [int(fq)], f"offered later -> un-parked and accepted ({sel})")
+    L.execute(f"SpeedLevel.char.notOffered[{fq}] = 1; STATE.level = 2; SpeedLevel:Update()")
+    st2 = L.eval(f"select(2, SpeedLevel.Engine:ComputeStatus({fi}))")
+    check(st2 != "not offered yet", f"comes back at the next level ({st2})")
+    L.execute("NPC_NAME = nil; GOSSIP_AVAIL = {}")
+
+    print("\n== route list (scroll ahead)")
+    login(level=1, race=2, raceFile="Orc", **{"class": 1})
+    L.execute("SlashCmdList.SPEEDLEVEL('list')")
+    shown = L.eval("SpeedLevel.RouteList.frame:IsShown()")
+    check(shown, "/sl list opens the route list")
+    info = L.eval("""(function()
+        local RL, E = SpeedLevel.RouteList, SpeedLevel.Engine
+        local list = RL:Build()
+        local secs, steps, other = 0, 0, 0
+        for _, e in ipairs(list) do
+            if e.sec then
+                secs = secs + 1
+                if not E:SectionApplies(E.sections[e.sec]) then other = other + 1 end
+            else steps = steps + 1 end
+        end
+        local focusRow
+        for r, row in ipairs(RL.frame.rows) do if row.stepIndex == E:Focus() then focusRow = r end end
+        return secs .. "|" .. steps .. "|" .. other .. "|" .. tostring(focusRow)
+    end)()""")
+    secs, steps, other, frow = info.split("|")
+    check(int(secs) > 40 and int(steps) > 1000 and other == "0", f"lists every zone for this character, no others ({info})")
+    check(frow != "nil", f"opens on the current step (row {frow})")
+    L.execute("SpeedLevel.RouteList.frame._scripts.OnMouseWheel(SpeedLevel.RouteList.frame, -1)")
+    off = L.eval("SpeedLevel.RouteList.offset")
+    check(off and off >= 3, f"mouse wheel scrolls ahead (offset {off})")
+    res = L.eval("""(function()
+        local RL, E = SpeedLevel.RouteList, SpeedLevel.Engine
+        for _, row in ipairs(RL.frame.rows) do
+            if row.stepIndex and row.stepIndex > SpeedLevel.char.cursor + 3 and E:Status(row.stepIndex) == E.ACTIVE then
+                local target = row.stepIndex
+                row._scripts.OnClick(row, "LeftButton")
+                return target .. "|" .. SpeedLevel.char.cursor
+            end
+        end
+    end)()""")
+    if res:
+        t, c = res.split("|")
+        check(t == c, f"clicking a step makes it current ({res})")
+    L.execute("SpeedLevel.RouteList:Toggle(false)")
+
+    print("\n== travel advice: flight paths and hearthstone")
+    login(level=30, race=2, raceFile="Orc", **{"class": 1}, map=1413, x=0.515, y=0.303)
+    adv = lambda: L.eval("""(function()
+        local a = SpeedLevel.Advisor:Advise({ m = 1441, x = 46.0, y = 50.0 })
+        if not a then return "walk" end
+        return a.kind .. "|" .. (a.label or "") .. "|" .. math.floor(a.saves)
+    end)()""")
+    L.execute("BIND = ''; SpeedLevel.char.knownTaxi = {}; for _, f in ipairs(SpeedLevel.Advisor.FlightMasters()) do SpeedLevel.char.knownTaxi[f.key] = false end")
+    check(adv() == "walk", f"unknown flight paths are never suggested ({adv()})")
+    L.execute("""for _, f in ipairs(SpeedLevel.Advisor.FlightMasters()) do
+        if f.npc == 3615 or f.npc == 4317 then SpeedLevel.char.knownTaxi[f.key] = true end
+    end""")
+    a = adv()
+    check(a.startswith("fly|Fly to"), f"Crossroads -> Freewind: fly when both flight paths are known ({a})")
+    tgt = L.eval("""(function()
+        local SL = SpeedLevel
+        local t = SL.Engine:CurrentTarget()
+        return t and (t.via or "") or "none"
+    end)()""")
+    print(f"    current step target via: {tgt}")
+    L.execute("STATE.x = 0.505; STATE.y = 0.310")
+    near = L.eval("(function() local a = SpeedLevel.Advisor:Advise({ m = 1413, x = 52.0, y = 32.0 }) return a and a.kind or 'walk' end)()")
+    check(near == "walk", f"short trips are walked ({near})")
+    L.execute("SpeedLevel.char.knownTaxi = {}; for _, f in ipairs(SpeedLevel.Advisor.FlightMasters()) do SpeedLevel.char.knownTaxi[f.key] = false end BIND = 'Freewind Post'; HS_CD = 0")
+    hs = L.eval("""(function()
+        local SL = SpeedLevel
+        local a = SL.Advisor:Advise({ m = 1441, x = 46.0, y = 50.0 })
+        return a and (a.kind .. "|" .. a.label) or "walk"
+    end)()""")
+    planned = L.eval("""(function()
+        local E = SpeedLevel.Engine
+        for j = SpeedLevel.char.cursor, math.min(#E.steps, SpeedLevel.char.cursor + 40) do
+            if E.steps[j].t == "USEHS" then return true end
+        end
+        return false
+    end)()""")
+    check(not planned or hs == "walk", f"no hearth advice when the route uses the hearth soon ({hs})")
+    L.execute("""local E = SpeedLevel.Engine
+        for j = SpeedLevel.char.cursor, math.min(#E.steps, SpeedLevel.char.cursor + 40) do
+            if E.steps[j].t == "USEHS" then SpeedLevel.char.manualSkip[j] = true end
+        end
+        E:Invalidate()""")
+    hs = L.eval("""(function()
+        local a = SpeedLevel.Advisor:Advise({ m = 1441, x = 46.0, y = 50.0 })
+        return a and (a.kind .. "|" .. a.label) or "walk"
+    end)()""")
+    check(hs == "hearth|Hearth to Freewind Post", f"hearth when it is set near the target ({hs})")
+    L.execute("HS_CD = 1200")
+    hs2 = L.eval("(function() local a = SpeedLevel.Advisor:Advise({ m = 1441, x = 46.0, y = 50.0 }) return a and a.kind or 'walk' end)()")
+    check(hs2 == "walk", f"no hearth advice while it is on cooldown ({hs2})")
+    L.execute("HS_CD = 0; BIND = ''")
+
+    print("\n== planned flights")
+    login(level=15, race=2, raceFile="Orc", **{"class": 1}, map=1413, x=0.63, y=0.37)
+    fi = L.eval("""(function()
+        for i, st in ipairs(SpeedLevel.Engine.steps) do
+            if st.t == "FLY" and st.fto and SpeedLevel.Engine:SectionApplies(SpeedLevel.Engine.sections[st.sec]) then return i end
+        end
+    end)()""")
+    check(fi is not None, f"the route plans flights ({fi})")
+    L.execute(f"""SpeedLevel.Engine:Jump({fi})
+        local fst = SpeedLevel.Engine.steps[{fi}]
+        for j = 1, {fi} - 1 do
+            local s2 = SpeedLevel.Engine.steps[j]
+            if s2.t == "FP" and (s2.npc == fst.npc or s2.npc == fst.fto) then SpeedLevel.Engine:Flag(j) end
+        end
+        SpeedLevel:Update()""")
+    info = L.eval(f"""(function()
+        local E = SpeedLevel.Engine
+        local st = E.steps[{fi}]
+        local s, why = E:ComputeStatus({fi})
+        return s .. "|" .. tostring(why) .. "|" .. E:ShortLabel(st) .. "|" .. st.npc .. "|" .. st.fto
+    end)()""")
+    s_, why, label, dep, dst = info.split("|")
+    check(s_ == "3" or why == "nil", f"flight step is active once both flight paths were learned ({info})")
+    check(label.startswith("Fly to "), f"labelled with the destination ({label})")
+    L.execute(f"""for _, f in ipairs(SpeedLevel.Advisor.FlightMasters()) do
+        if f.npc == {dst} then SpeedLevel.char.knownTaxi[f.key] = false end
+    end""")
+    why2 = L.eval(f"select(2, SpeedLevel.Engine:ComputeStatus({fi}))")
+    check(why2 == "flight path not learned", f"skipped when the flight map says a path is not learned ({why2})")
+    L.execute(f"""SpeedLevel.char.knownTaxi = {{}}; SpeedLevel.Advisor.passedFor = nil
+        local st = SpeedLevel.Engine.steps[{fi}]
+        STATE.map = st.tm; STATE.x = st.tx / 100; STATE.y = st.ty / 100""")
+    why3 = L.eval(f"select(2, SpeedLevel.Engine:ComputeStatus({fi}))")
+    check(why3 == "already there", f"done once you are at the destination ({why3})")
+
+    print("\n== objectives in different places: a stop each; turn-in waits for all")
+    login(level=10, race=2, raceFile="Orc", **{"class": 1}, map=1411, x=0.47, y=0.48, log=[(837, False)])
+    cs = L.eval("""(function()
+        local t = {}
+        for i, st in ipairs(SpeedLevel.Engine.steps) do
+            if st.q == 837 and st.t == "C" then t[#t+1] = i .. "=" .. tostring(st.oname) end
+        end
+        return table.concat(t, ";")
+    end)()""") or ""
+    stops = [x.split("=", 1) for x in cs.split(";") if x]
+    check(len(stops) >= 2 and all(o != "nil" for _, o in stops), f"split into stops with their own objectives ({cs})")
+    ti = L.eval("SpeedLevel.Engine.questSteps[837].T")
+    def set_objs(done_names):
+        names = ["Razormane Quilboar", "Razormane Scout", "Razormane Battleguard", "Razormane Dustrunner"]
+        rows = ",".join('{ text = "%s slain: %s", finished = %s }' % (n, "4/4" if n in done_names else "0/4", "true" if n in done_names else "false") for n in names)
+        L.execute("for _, e in ipairs(STATE.log) do if e.id == 837 then e.objectives = { " + rows + " } end end; SpeedLevel:Update()")
+    first = stops[0][1].split("|")
+    set_objs(first)
+    s1 = L.eval(f"select(2, SpeedLevel.Engine:ComputeStatus({stops[0][0]}))")
+    s2 = L.eval(f"SpeedLevel.Engine:ComputeStatus({stops[1][0]})")
+    st_t = L.eval(f"select(2, SpeedLevel.Engine:ComputeStatus({ti}))")
+    check(s1 == "objective done", f"first stop done when its objectives are ({s1})")
+    check(s2 == 3, f"second stop still active ({s2})")
+    check(st_t == "objectives not finished", f"turn-in waits while objectives remain ({st_t})")
+    set_objs(["Razormane Quilboar", "Razormane Scout", "Razormane Battleguard", "Razormane Dustrunner"])
+    st_t2 = L.eval(f"SpeedLevel.Engine:ComputeStatus({ti})")
+    check(st_t2 == 3, f"turn-in becomes active once every objective is done ({st_t2})")
+
+    print("\n== dead: arrow back to your corpse")
+    login(level=12, race=2, raceFile="Orc", **{"class": 1}, map=1413, x=0.50, y=0.30)
+    L.execute("CORPSE = { m = 1413, x = 0.55, y = 0.40 }; STATE.ghost = true; DEAD = true; SpeedLevel:Update()")
+    t = L.eval("(function() local t = SpeedLevel.Engine:CurrentTarget() return t and (t.m .. ':' .. t.x .. ',' .. t.y .. '|' .. tostring(t.corpse)) end)()")
+    check(t == "1413:55,40|true", f"ghost: the arrow points at your corpse ({t})")
+    L.execute("SpeedLevel.char.deathStep = 1; SpeedLevel:Update()")
+    t2 = L.eval("(function() local t = SpeedLevel.Engine:CurrentTarget() return t and tostring(t.corpse) end)()")
+    check(t2 != "true", f"planned death-skip: no corpse run ({t2})")
+    L.execute("SpeedLevel.char.deathStep = nil; STATE.ghost = false; DEAD = false; CORPSE = nil; SpeedLevel:Update()")
+    t3 = L.eval("(function() local t = SpeedLevel.Engine:CurrentTarget() return t and tostring(t.corpse) end)()")
+    check(t3 != "true", f"alive again: back to the route ({t3})")
+
+    print("\n== never red: quests 5+ levels above you wait")
+    login(level=30, race=2, raceFile="Orc", **{"class": 1}, map=1443, x=0.5, y=0.5)
+    res = L.eval("""(function()
+        local E = SpeedLevel.Engine
+        for i, st in ipairs(E.steps) do
+            local qs = st.q and E.questSteps[st.q]
+            if st.t == "A" and qs and qs.C and E:QuestLevel(st.q) >= 35 and E:SectionApplies(E.sections[st.sec]) then
+                local d = SpeedLevel.Quests[st.q]
+                if not d or not d[3] or d[3] <= 30 then
+                    return i .. "|" .. E:QuestLevel(st.q) .. "|" .. tostring(select(2, E:ComputeStatus(i)))
+                end
+            end
+        end
+    end)()""")
+    check(res is not None, f"found a red pickup to test ({res})")
+    if res:
+        i, ql, why = res.split("|")
+        check(why == f"red for you - comes back at level {int(ql) - 4}", f"red pickup waits ({why})")
+        L.execute(f"STATE.level = {int(ql) - 4}; SpeedLevel:Update()")
+        why2 = L.eval(f"(function() local _, w = SpeedLevel.Engine:ComputeStatus({i}) return tostring(w) end)()")
+        check(not why2.startswith("red"), f"comes back once it is orange at most ({why2})")
+
+    print("\n== quest item button")
+    login(level=34, race=2, raceFile="Orc", **{"class": 1}, map=1443, x=0.5, y=0.5)
+    pick = L.eval("""(function()
+        local E = SpeedLevel.Engine
+        for i, st in ipairs(E.steps) do
+            if st.t == "C" and st.q and SpeedLevel.QuestItems[st.q] and E:SectionApplies(E.sections[st.sec]) then
+                return i .. "|" .. st.q .. "|" .. SpeedLevel.QuestItems[st.q][1]
+            end
+        end
+    end)()""")
+    check(pick is not None, f"route has quests with usable items ({pick})")
+    ci, cq, item = pick.split("|")
+    ql = L.eval(f"SpeedLevel.Engine:QuestLevel({cq})")
+    login(level=max(1, int(ql)), race=2, raceFile="Orc", **{"class": 1}, map=1411, x=0.5, y=0.5, log=[(int(cq), False)])
+    L.execute(f"SpeedLevel.Engine:Jump({ci})")
+    L.execute(f"BAGS[{item}] = 1; USABLE[{item}] = true; SpeedLevel:Update()")
+    b = L.eval("(function() local b = SpeedLevel.QuestItem.button return b and (tostring(b.itemID) .. '|' .. tostring(b:IsShown())) end)()")
+    check(b == f"{item}|true", f"button shows the quest's item ({b})")
+    L.execute(f"COMBAT = true; BAGS[{item}] = 0; SpeedLevel:Update()")
+    b2 = L.eval("tostring(SpeedLevel.QuestItem.button.itemID) .. '|' .. tostring(SpeedLevel.QuestItem.pending)")
+    check(b2 == f"{item}|true", f"no changes in combat, applied later ({b2})")
+    L.execute("COMBAT = false; FireEvent('PLAYER_REGEN_ENABLED')")
+    b3 = L.eval("tostring(SpeedLevel.QuestItem.button.itemID) .. '|' .. tostring(SpeedLevel.QuestItem.button:IsShown())")
+    check(b3 == "false|false", f"after combat: item gone from bags -> button hidden ({b3})")
+    L.execute(f"BAGS[{item}] = nil; USABLE[{item}] = nil")
+
+    print("\n== auto-select the planned flight")
+    login(level=15, race=2, raceFile="Orc", **{"class": 1}, map=1413, x=0.63, y=0.37)
+    fi = L.eval("""(function()
+        for i, st in ipairs(SpeedLevel.Engine.steps) do
+            if st.t == "FLY" and st.fto and SpeedLevel.Engine:SectionApplies(SpeedLevel.Engine.sections[st.sec]) then return i end
+        end
+    end)()""")
+    L.execute(f"""SpeedLevel.Engine:Jump({fi})
+        local fst = SpeedLevel.Engine.steps[{fi}]
+        for j = 1, {fi} - 1 do
+            local s2 = SpeedLevel.Engine.steps[j]
+            if s2.t == "FP" and (s2.npc == fst.npc or s2.npc == fst.fto) then SpeedLevel.Engine:Flag(j) end
+        end
+        SpeedLevel:Update()
+        local st = SpeedLevel.Engine.steps[{fi}]
+        TAXI_NODES = {{
+            {{ slotIndex = 3, name = "Here", state = 0, position = CreateVector2D(st.x / 100, st.y / 100) }},
+            {{ slotIndex = 7, name = "There", state = 1, position = CreateVector2D(st.tx / 100, st.ty / 100) }},
+        }}
+        TAKEN = nil; FireEvent("TAXIMAP_OPENED")""")
+    check(L.eval("TAKEN") == 7, f"opening the flight map takes the planned flight ({L.eval('TAKEN')})")
+    L.execute("TAKEN = nil; STATE.shift = true; FireEvent('TAXIMAP_OPENED'); STATE.shift = false")
+    check(L.eval("TAKEN") is None, "Shift: you choose yourself")
+    L.execute("TAXI_NODES[2].state = 2; TAKEN = nil; FireEvent('TAXIMAP_OPENED')")
+    check(L.eval("TAKEN") is None, "unreachable destination: not taken")
+    L.execute("TAXI_NODES = {}")
+
     print("\n== time to 60")
     login(level=4, race=2, raceFile="Orc", **{"class": 1}, xp=600, xpMax=2100)
     secs = L.eval("(function() local t = SpeedLevel.UI:TimeTo60(5000, 3600); return t end)()")
     naive = (4084700 - 4000) / 5000 * 3600
     print(f"    level 4 at 5k XP/h: {secs / 3600:.0f} h  (naive remaining-XP / current-rate: {naive / 3600:.0f} h)")
     check(secs / 3600 < 200 and secs / 3600 > 30, f"time to 60 stays sensible at low level ({secs / 3600:.0f} h)")
-    fast = L.eval("(function() local t = SpeedLevel.UI:TimeTo60(40000, 3600); return t end)()")
-    slow = L.eval("(function() local t = SpeedLevel.UI:TimeTo60(12000, 3600); return t end)()")
-    mid = L.eval("(function() local t = SpeedLevel.UI:TimeTo60(20000, 3600); return t end)()")
+    fast = L.eval("(function() local t = SpeedLevel.UI:TimeTo60(16000, 3600); return t end)()")
+    slow = L.eval("(function() local t = SpeedLevel.UI:TimeTo60(9000, 3600); return t end)()")
+    mid = L.eval("(function() local t = SpeedLevel.UI:TimeTo60(12000, 3600); return t end)()")
     check(fast < mid < slow, f"faster pace -> sooner, slower -> later ({fast/3600:.0f}h < {mid/3600:.0f}h < {slow/3600:.0f}h)")
 
     print("\n== real terrain: Camp Narache -> Bloodhoof (Red Cloud Mesa cliff)")

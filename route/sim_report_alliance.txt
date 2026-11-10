@@ -1,0 +1,67 @@
+Human Warrior      speed              reached 60                  1328 steps   90.6 h (grind 38.5 h)  orange  53  issues 0
+Human Paladin      speed              reached 60                  1313 steps   90.4 h (grind 38.2 h)  orange  54  issues 0
+Dwarf Hunter       speed              reached 60                  1305 steps   91.6 h (grind 39.7 h)  orange  54  issues 0
+Gnome Warlock      speed              reached 60                  1333 steps   91.5 h (grind 38.7 h)  orange  52  issues 0
+NightElf Druid     speed              reached 60                  1386 steps   90.8 h (grind 37.3 h)  orange  63  issues 0
+Skyborne Hunter    speed              reached 60                  1286 steps   91.6 h (grind 40.1 h)  orange  61  issues 0
+Human Warrior      speed_dungeons     reached 60                  1380 steps   89.9 h (grind 27.2 h)  orange  49  issues 0
+Human Paladin      speed_dungeons     reached 60                  1372 steps   89.9 h (grind 26.7 h)  orange  49  issues 0
+Dwarf Hunter       speed_dungeons     reached 60                  1359 steps   91.0 h (grind 28.2 h)  orange  51  issues 0
+Gnome Warlock      speed_dungeons     reached 60                  1371 steps   90.7 h (grind 27.6 h)  orange  49  issues 0
+NightElf Druid     speed_dungeons     reached 60                  1446 steps   90.0 h (grind 25.9 h)  orange  55  issues 0
+Skyborne Hunter    speed_dungeons     reached 60                  1345 steps   91.2 h (grind 28.3 h)  orange  57  issues 0
+Human Warrior      thorough           reached 60                  1386 steps   89.2 h (grind 34.2 h)  orange  46  issues 0
+Human Paladin      thorough           reached 60                  1372 steps   89.0 h (grind 33.9 h)  orange  46  issues 0
+Dwarf Hunter       thorough           reached 60                  1366 steps   90.1 h (grind 35.2 h)  orange  46  issues 0
+Gnome Warlock      thorough           reached 60                  1378 steps   90.5 h (grind 34.9 h)  orange  47  issues 0
+NightElf Druid     thorough           reached 60                  1443 steps   89.7 h (grind 33.3 h)  orange  55  issues 0
+Skyborne Hunter    thorough           reached 60                  1347 steps   90.1 h (grind 35.6 h)  orange  53  issues 0
+Human Warrior      thorough_dungeons  reached 60                  1430 steps   90.1 h (grind 23.0 h)  orange  55  issues 0
+Human Paladin      thorough_dungeons  reached 60                  1411 steps   89.7 h (grind 22.7 h)  orange  53  issues 0
+Dwarf Hunter       thorough_dungeons  reached 60                  1400 steps   90.7 h (grind 24.0 h)  orange  54  issues 0
+Gnome Warlock      thorough_dungeons  reached 60                  1417 steps   91.3 h (grind 23.7 h)  orange  55  issues 0
+NightElf Druid     thorough_dungeons  reached 60                  1484 steps   90.4 h (grind 22.2 h)  orange  59  issues 0
+Skyborne Hunter    thorough_dungeons  reached 60                  1386 steps   90.9 h (grind 24.2 h)  orange  60  issues 0
+
+Pickups left behind waiting for a level (zone: count over all runs):
+    48  Desolace
+    36  Feralas
+    12  Ironforge (turn in Gnomeregan)
+    12  Stormwind (turn in City of Dalaran)
+    12  Un'Goro Crater
+    10  Redridge Mountains
+     6  Felwood
+     5  Ironforge (quests for Gnomeregan)
+     4  Dun Morogh
+     1  Darnassus
+
+Quests picked up but then dropped (turn-in skipped), by zone:
+     6  Maraudon - turn-in: objectives skipped; objective: grey
+     6  Felwood - turn-in: objectives skipped; objective: grey
+     4  Wetlands - turn-in: objectives skipped; objective: grey
+
+Level on arrival vs plan (avg difference, biggest first):
+  -1.83  Hunter: Taming the Beast (Skyborne)
+  -1.25  Stormwind (Skyborne)
+  -1.25  Dalaran (Skyborne)
+  -1.11  Blackfathom Deeps
+  -1.08  Dun Morogh (turn in Gnomeregan)
+  -1.06  Stormwind (quests for Gnomeregan)
+  -1.05  Ironforge (quests for Gnomeregan)
+  -1.05  Ironforge (turn in Gnomeregan)
+  -1.04  Gnomeregan
+  -1.04  Darnassus (quests for Gnomeregan)
+  -0.93  Stonetalon Mountains
+  -0.87  Duskwood
+
+Slowest zones (Speed, average hours):
+   9.45 h  Tanaris
+   7.92 h  Azshara
+   7.69 h  Western Plaguelands
+   7.44 h  Stranglethorn Vale
+   5.53 h  Eastern Plaguelands
+   5.32 h  Wetlands
+   4.53 h  Un'Goro Crater
+   3.23 h  Redridge Mountains
+   3.19 h  Silithus
+   3.01 h  Stranglethorn Vale 2

@@ -46,7 +46,7 @@ BUILD = "1.60.1.70862"
 PRODUCT = "wowf"
 HAZARD_LIQUIDS = {3, 4, 19, 20, 21}   # magma / slime families (LiquidType ids)
 OPEN_WORLD = {0, 1, 2991}             # Eastern Kingdoms, Kalimdor, Zephras Isle
-UNDERGROUND = {1458}                  # Undercity
+UNDERGROUND = {1458, 1455}            # Undercity, Ironforge (inside the mountain)
 TACTTOOL_URL = "https://github.com/wowdev/TACTSharp/releases/download/0.2.0-alpha1/TACTTool-Release-win-x64.zip"
 
 
@@ -393,7 +393,7 @@ def main():
     else:
         import re
         wanted = sorted({int(m) for m in re.findall(r"\bmap=(\d+)", "".join(
-            p.read_text(encoding="utf-8") for p in (ROOT / "SpeedLevel" / "Data").glob("Route_Horde_*.lua")))})
+            p.read_text(encoding="utf-8") for p in (ROOT / "SpeedLevel" / "Data").glob("Route_*.lua")))})
     zones = {}
     for um in wanted:
         rows = [r for r in assign.get(um, []) if r["UiMin_0"] == "0" and r["UiMax_0"] == "1"]

@@ -11,7 +11,8 @@ local RACE_MASK = {
     [95] = 4294967296, [96] = 8589934592,
 }
 -- names used by the route's section race filters
-local RACE_NAME = { [2] = "Orc", [5] = "Undead", [6] = "Tauren", [8] = "Troll", [96] = "Skyborne" }
+local RACE_NAME = { [2] = "Orc", [5] = "Undead", [6] = "Tauren", [8] = "Troll", [96] = "Skyborne",
+    [1] = "Human", [3] = "Dwarf", [4] = "NightElf", [7] = "Gnome", [95] = "Skyborne" }
 
 -- mask & bit for values above 2^31 without the 32-bit bit library
 local function hasBit(mask, bitValue)
@@ -153,7 +154,11 @@ function P:IsQuestReady(questID)
     if not e or e.failed then return false end
     if e.complete then return true end
     local objs = self:Objectives(questID)
-    return objs ~= nil and #objs == 0
+    if objs == nil then return false end
+    for _, o in ipairs(objs) do
+        if not o.finished then return false end
+    end
+    return true          -- no objectives (deliveries, talk-to) or every one finished
 end
 
 function P:Objectives(questID)

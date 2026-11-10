@@ -31,6 +31,46 @@ local function idByTitle(title)
     end
 end
 
+-- ------------------------------------------------------------------ is the pickup really offered?
+-- The quest database can be wrong for Forever (a higher required level, a hidden prerequisite) and
+-- some givers only offer their quest at times (the Gizelton caravans).  When you talk to the giver of
+-- a pickup the guide wants and the quest is not in the list, the step is parked instead of insisting;
+-- it comes back at your next level, or as soon as the NPC does offer it.
+
+function A:SeenOffers(offered)
+    local no = SL.char.notOffered
+    if not no then return end
+    local changed = false
+    for q in pairs(offered) do
+        if no[q] then no[q] = nil; changed = true end
+    end
+    if changed then SL.Engine:Invalidate() end
+end
+
+function A:MissingOffers(offered)
+    if not SL.ready then return end
+    local name = SL.Clean(UnitName and UnitName("npc"))
+    if not name then return end
+    local E, P = SL.Engine, SL.Player
+    SL.char.notOffered = SL.char.notOffered or {}
+    local parked = false
+    for _, idx in ipairs(E:Upcoming(6)) do
+        local st = E.steps[idx]
+        if st and st.t == "A" and st.npc == name and not offered[st.q] and not P:InLog(st.q)
+            and not P:IsCompleted(st.q) and E:Status(idx) == E.ACTIVE then
+            SL.char.notOffered[st.q] = P.level
+            if SL.Telemetry.NotOffered then SL.Telemetry:NotOffered(st.q, P.level) end
+            SL:Print(name .. " does not offer |cffffd100" .. E:QuestName(st.q) .. "|r to you right now - "
+                .. "parked; it comes back at your next level, or when they offer it.")
+            parked = true
+        end
+    end
+    if parked then
+        E:Invalidate()
+        SL:RequestUpdate()
+    end
+end
+
 -- ------------------------------------------------------------------ gossip (modern NPC dialog)
 
 SL:On("GOSSIP_SHOW", function()
@@ -44,12 +84,18 @@ SL:On("GOSSIP_SHOW", function()
         end
     end
     local avail = C_GossipInfo.GetAvailableQuests and C_GossipInfo.GetAvailableQuests() or {}
+    local offered = {}
+    for _, info in ipairs(avail) do
+        if info.questID then offered[info.questID] = true end
+    end
+    A:SeenOffers(offered)
     for _, info in ipairs(avail) do
         if A:ShouldAccept(info.questID, info.isTrivial) then
             C_GossipInfo.SelectAvailableQuest(info.questID)
             return
         end
     end
+    A:MissingOffers(offered)
 end)
 
 -- ------------------------------------------------------------------ quest greeting (multi-quest NPCs)
@@ -63,14 +109,21 @@ SL:On("QUEST_GREETING", function()
             return
         end
     end
+    local offered, list = {}, {}
     for i = 1, (GetNumAvailableQuests() or 0) do
         local isTrivial, _, _, _, q = GetAvailableQuestInfo(i)
         q = q or idByTitle(GetAvailableTitle(i))
-        if A:ShouldAccept(q, isTrivial) then
+        if q then offered[q] = true end
+        list[i] = { q = q, trivial = isTrivial }
+    end
+    A:SeenOffers(offered)
+    for i, e in ipairs(list) do
+        if A:ShouldAccept(e.q, e.trivial) then
             SelectAvailableQuest(i)
             return
         end
     end
+    A:MissingOffers(offered)
 end)
 
 -- ------------------------------------------------------------------ quest frame

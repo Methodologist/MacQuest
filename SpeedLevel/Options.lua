@@ -23,7 +23,11 @@ local CHECKS = {
     { "mapRoute", "Route line on world map", "Dashed line from you through the next steps, in order." },
     { "terrainArrow", "Terrain-aware arrow", "Steer the arrow around mountains, water and zone edges using terrain data and the paths you have walked." },
     { "minimapPins", "Minimap pins", "Numbered pins for the next steps on the minimap." },
+    { "minimapButton", "Minimap button", "The logo on the edge of the minimap: left-click for settings, right-click to show / hide the guide, drag to move it.",
+      function() SL.MinimapButton:Apply() end },
     { "sound", "Step sound", "Play a soft sound when a step completes." },
+    { "itemButton", "Quest item button", "A button next to the guide for the current quest's usable item (Kombobulator, torches, flasks...). Bind a key with a macro: /click SpeedLevelItemButton" },
+    { "autoFly", "Auto-select flights", "On a 'Fly to' step, opening the flight map takes you to the destination. Hold Shift to pick yourself." },
     { "telemetry", "Record step timings", "Log time per step (and skips) so the route generator can be tuned from real play." },
 }
 
@@ -35,7 +39,7 @@ function O:Init()
     title:SetText("SpeedLevel " .. SL.version)
     local sub = panel:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
     sub:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -6)
-    sub:SetText("Horde 1-60 speed-leveling route for WoW Forever. /sl for commands.")
+    sub:SetText("Horde and Alliance 1-60 speed-leveling routes for WoW Forever. /sl for commands.")
 
     local y = -60
     local colY = { -60, -60 }
@@ -54,6 +58,7 @@ function O:Init()
         fs:SetText(label)
         cb:SetScript("OnClick", function(self)
             SL.db[key] = self:GetChecked() and true or false
+            if c[4] then c[4]() end
             SL:Update()
         end)
         cb:SetScript("OnEnter", function(self)
@@ -138,6 +143,36 @@ function O:Init()
     dcb:SetScript("OnLeave", function() GameTooltip:Hide() end)
     panel.dungeonCheck = dcb
 
+    -- starting path: click to cycle Auto -> each race start this character may take
+    local pathBtn = CreateFrame("Button", nil, panel, "UIPanelButtonTemplate")
+    pathBtn:SetSize(250, 22)
+    pathBtn:SetPoint("TOPLEFT", 300, y - 92)
+    local function pathLabel()
+        local auto = not SL.char.startPath
+        pathBtn:SetText("Start: " .. SL.Engine:PathName() .. (auto and " (auto)" or ""))
+    end
+    pathBtn:SetScript("OnClick", function()
+        local choices = SL.Engine:PathChoices()
+        local cur = SL.char.startPath
+        local nextP = choices[1]
+        if cur then
+            nextP = nil      -- after the last choice: back to auto
+            for k, c in ipairs(choices) do
+                if c == cur then nextP = choices[k + 1] break end
+            end
+        end
+        SL.Engine:SetPath(nextP or "auto")
+        pathLabel()
+    end)
+    pathBtn:SetScript("OnEnter", function(self)
+        GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+        GameTooltip:AddLine("Starting zones")
+        GameTooltip:AddLine("Auto follows your race. Click to follow another race's starting zones instead (you travel there yourself); quests only that race can take are skipped.", 1, 1, 1, true)
+        GameTooltip:Show()
+    end)
+    pathBtn:SetScript("OnLeave", function() GameTooltip:Hide() end)
+    panel.pathLabel = pathLabel
+
     local resync = CreateFrame("Button", nil, panel, "UIPanelButtonTemplate")
     resync:SetSize(200, 22)
     resync:SetPoint("TOPLEFT", 20, y - 150)
@@ -148,6 +183,7 @@ function O:Init()
         for _, cb in ipairs(self.checks) do cb:SetChecked(SL.db[cb.key]) end
         for _, b in ipairs(self.modeButtons or {}) do b:SetEnabled(b.mode ~= SL.Engine:Style()) end
         if self.dungeonCheck then self.dungeonCheck:SetChecked(SL.Engine:Dungeons()) end
+        if self.pathLabel then self.pathLabel() end
         for _, s in ipairs(self.sliders) do
             s:SetValue(SL.db[s.key] or 1)
             s.setLabel(SL.db[s.key] or 1)

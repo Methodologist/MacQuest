@@ -163,6 +163,7 @@ def load(wow=None):
     reports = []
     walk = defaultdict(set)   # uiMapID -> {cell index (1-based)}
     qxp = {}                  # questID -> base XP measured in game
+    notoff = {}               # questID -> highest level its giver did not offer it at
     files = find_files(wow)
     for fn in files:
         try:
@@ -187,6 +188,11 @@ def load(wow=None):
                 qxp[int(q)] = int(xp)
             except (TypeError, ValueError):
                 pass
+        for q, lv in (tel.get("notOffered") or {}).items() if isinstance(tel.get("notOffered"), dict) else []:
+            try:
+                notoff[int(q)] = max(notoff.get(int(q), 0), int(lv))
+            except (TypeError, ValueError):
+                pass
         wd = root.get("walkData") or {}
         items = wd.items() if isinstance(wd, dict) else enumerate(wd, 1)
         for m, cells in items:
@@ -196,7 +202,8 @@ def load(wow=None):
                 walk[m].update(i + 1 for i, v in enumerate(cells) if v)
     measured = {k: statistics.median(v) for k, v in samples.items() if v}
     return {"files": files, "measured": measured, "samples": {k: len(v) for k, v in samples.items()},
-            "skips": {k: tuple(v) for k, v in skips.items()}, "reports": reports, "walk": dict(walk), "questXP": qxp}
+            "skips": {k: tuple(v) for k, v in skips.items()}, "reports": reports, "walk": dict(walk), "questXP": qxp,
+            "notOffered": notoff}
 
 
 def quest_seconds(tel, qid):

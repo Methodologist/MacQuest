@@ -1,28 +1,36 @@
 ## Interface: 16001
 ## Title: SpeedLevel
-## Notes: Step-by-step 1-60 speed-leveling guide for WoW Forever (Horde). Guide arrow, auto accept/turn-in, skips quests you have done or that are grey for your level.
+## Notes: Step-by-step 1-60 speed-leveling guide for WoW Forever (Horde and Alliance). Guide arrow, auto accept/turn-in, skips quests you have done or that are grey for your level.
 ## Author: Methodologist
-## Version: 0.6.0
+## Version: 1.0.0
 ## Category: Quests
 ## X-License: GPL-3.0
 ## X-Website: https://github.com/Methodologist/MacQuest
 ## SavedVariables: SpeedLevelDB
 ## SavedVariablesPerCharacter: SpeedLevelCharDB
-## IconTexture: Interface\Icons\Ability_Rogue_Sprint
+## IconTexture: Interface\AddOns\SpeedLevel\Media\Logo
 ## AddonCompartmentFunc: SpeedLevel_OnCompartmentClick
 ## AddonCompartmentFuncOnEnter: SpeedLevel_OnCompartmentEnter
 ## AddonCompartmentFuncOnLeave: SpeedLevel_OnCompartmentLeave
 
 Core.lua
-Data\Quests.lua
+Data\Quests_Horde.lua
+Data\Quests_Alliance.lua
+Data\Travel_Horde.lua
+Data\Travel_Alliance.lua
 Data\Route_Horde_speed.lua
 Data\Route_Horde_speed_dungeons.lua
 Data\Route_Horde_thorough.lua
 Data\Route_Horde_thorough_dungeons.lua
+Data\Route_Alliance_speed.lua
+Data\Route_Alliance_speed_dungeons.lua
+Data\Route_Alliance_thorough.lua
+Data\Route_Alliance_thorough_dungeons.lua
 Data\Terrain.lua
 Data\TerrainHi.lua
 Player.lua
 Engine.lua
+Travel.lua
 Automation.lua
 Telemetry.lua
 Pathing.lua
@@ -30,5 +38,9 @@ PathingHi.lua
 Arrow.lua
 MapPins.lua
 MapPins.xml
+MinimapButton.lua
 UI.lua
+RouteList.lua
+QuestItem.lua
 Options.lua
+Setup.lua

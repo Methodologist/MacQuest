@@ -10,3 +10,8 @@ __pycache__/
 
 # TACTTool download cache (raw Blizzard CDN files)
 cache/
+
+# plan backups / optimizer output and raw simulator dumps (regenerable)
+route/*.bak
+route/*.optimized
+route/sim_report*.json

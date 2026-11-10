@@ -1,0 +1,218 @@
+    left for later (level too low): [5623]
+    -> keep hearth (unbound) instead of binding at Goldshire
+[00] Northshire Valley                      map=1429 races=Human entry= 1.00 exit= 6.76 quests=22 deferredIn=0 ~  38min HS=0 death=0 stacked=0
+    left for later (level too low): [1638, 1685, 1860, 2205, 2998, 5635, 94774]
+    -> keep hearth (unbound) instead of binding at Goldshire
+[01] Elwynn Forest                          map=1429 races=Human entry= 6.76 exit=13.71 quests=43 deferredIn=0 ~ 166min HS=0 death=0 stacked=0
+[--] Hunter: Taming the Beast (Human)       class chain (HUNTER): 4 quests
+    -> keep hearth (unbound) instead of binding at Stormwind City
+[03] Stormwind City                         map=1453 races=Human entry=13.71 exit=13.86 quests=3 deferredIn=1 ~   5min HS=0 death=0 stacked=0
+[--] Warlock: Voidwalker                    class chain (WARLOCK): 2 quests
+[--] Warrior: Defensive Stance (Human)      class chain (WARRIOR): 7 quests
+    -> keep hearth (unbound) instead of binding at Kharanos
+[06] Coldridge Valley                       map=1426 races=Dwarf,Gnome entry= 1.00 exit= 6.99 quests=28 deferredIn=0 ~  46min HS=0 death=0 stacked=0
+[--] Shaman: Call of Earth (earth totems)   class chain (SHAMAN): 2 quests
+    left for later (level too low): [1879, 2997, 94449, 96243]
+    left for later (level too low): [2218, 6075]
+    left for later (level too low): [94817]
+    -> set hearth at Kharanos (worth ~5 min more than keeping the old bind)
+[08] Dun Morogh                             map=1426 races=Dwarf,Gnome entry= 6.99 exit=13.05 quests=37 deferredIn=0 ~ 142min HS=1 death=0 stacked=0
+[--] Hunter: Taming the Beast (Dwarf)       class chain (HUNTER): 4 quests
+    -> keep hearth (Kharanos) instead of binding at Ironforge
+[10] Ironforge                              map=1455 races=Dwarf,Gnome entry=13.05 exit=13.18 quests=2 deferredIn=1 ~   2min HS=0 death=0 stacked=0
+[--] Warrior: Defensive Stance (Dwarf, Gnome) class chain (WARRIOR): 1 quests
+    left for later (level too low): [199, 250]
+    -> keep hearth (Kharanos) instead of binding at Thelsamar
+[12] Loch Modan                             map=1432 races=Dwarf,Gnome entry=13.18 exit=16.84 quests=17 deferredIn=1 ~ 117min HS=0 death=0 stacked=0
+[--] Shaman: Call of Fire (fire totems)     class chain (SHAMAN): 4 quests
+    left for later (level too low): [5622]
+    -> keep hearth (unbound) instead of binding at Dolanaar
+[14] Shadowglen                             map=1438 races=NightElf entry= 1.00 exit= 7.65 quests=22 deferredIn=0 ~  59min HS=0 death=0 stacked=0
+    -> keep hearth (unbound) instead of binding at Dolanaar
+[15] Teldrassil                             map=1438 races=NightElf entry= 7.65 exit=13.33 quests=43 deferredIn=0 ~ 128min HS=0 death=0 stacked=0
+[--] Hunter: Taming the Beast (Night Elf)   class chain (HUNTER): 4 quests
+    left for later (level too low): [730]
+    -> keep hearth (unbound) instead of binding at Darnassus
+[17] Darnassus                              map=1457 races=NightElf entry=13.33 exit=14.03 quests=4 deferredIn=7 ~  14min HS=0 death=0 stacked=0
+[--] Warrior: Defensive Stance (Night Elf)  class chain (WARRIOR): 1 quests
+    -> set hearth at Auberdine (worth ~3 min more than keeping the old bind)
+[19] Darkshore                              map=1439 races=NightElf entry=14.03 exit=19.24 quests=49 deferredIn=1 ~ 189min HS=1 death=0 stacked=0
+[--] Druid: Bear Form                       class chain (DRUID): 4 quests
+    left for later (level too low): [93159, 93160, 93172]
+    left for later (level too low): [94003]
+    left for later (level too low): [98512]
+    left for later (level too low): [92642, 92643, 92644, 92645, 92699, 92701, 92727, 92741, 92834, 92840, 92849, 92850, 92860, 92880, 92881, 93320, 93948, 93949, 94568, 99260]
+    left for later (level too low): [93165, 94006, 94484, 94485, 94486, 94487, 94488, 94489, 94638, 94896, 94897]
+    left for later (level too low): [93791, 93797]
+    dropped (grey by the time you get there): [92470, 92471, 92472, 92473, 96638]
+    -> set hearth at Coriella Calmbreeze (worth ~1 min more than keeping the old bind)
+[21] Zephras Isle                           map=2521 races=Skyborne entry= 1.00 exit=12.36 quests=44 deferredIn=0 ~ 152min HS=1 death=0 stacked=0
+[--] Hunter: Taming the Beast (Skyborne)    class chain (HUNTER): 5 quests
+    -> keep hearth (Coriella Calmbreeze) instead of binding at Isirami Fairwind
+[23] Dalaran (Skyborne)                     map=1416 races=Skyborne entry=12.36 exit=12.42 quests=1 deferredIn=0 ~   1min HS=0 death=0 stacked=0
+    left for later (level too low): [1920, 2281, 97234, 97237]
+    -> set hearth at Stormwind City (worth ~3 min more than keeping the old bind)
+[24] Stormwind (Skyborne)                   map=1453 races=Skyborne entry=12.42 exit=12.92 quests=5 deferredIn=1 ~   8min HS=0 death=0 stacked=0
+    -> keep hearth (unbound) instead of binding at Sentinel Hill
+[25] Westfall                               map=1436 races=Human,Skyborne entry=13.39 exit=17.70 quests=22 deferredIn=2 ~ 149min HS=0 death=0 stacked=0
+    -> set hearth at Stormwind City (worth ~5 min more than keeping the old bind)
+[26] Stormwind (quests for The Deadmines)   map=1453 races=all entry=17.66 exit=18.04 quests=3 deferredIn=4 ~   4min HS=0 death=0 stacked=0
+[27] The Deadmines (dungeon)                map=291 races=all entry=18.04 exit=18.35 quests=0 deferredIn=3 ~  67min HS=0 death=0 stacked=0
+    -> hearth to Stormwind City for Stormwind (turn in The Deadmines)
+[28] Stormwind (turn in The Deadmines)      map=1453 races=all entry=18.35 exit=18.85 quests=0 deferredIn=3 ~   2min HS=0 death=0 stacked=0
+    left for later (level too low): [34, 128, 150, 180, 219, 1699, 1702]
+    -> keep hearth (unbound) instead of binding at Lakeshire
+[29] Redridge Mountains                     map=1433 races=Dwarf,Gnome,Human,Skyborne entry=18.85 exit=21.32 quests=18 deferredIn=1 ~ 108min HS=0 death=0 stacked=0
+    catch-up grind 18.85 -> 20.8 before questing (167 min; quests here ~level 23) on the mobs of The Ancient Statuette
+    -> set hearth at Astranaar (worth ~3 min more than keeping the old bind)
+[30] Ashenvale (Night Elf)                  map=1440 races=NightElf entry=18.85 exit=22.83 quests=14 deferredIn=3 ~ 259min HS=1 death=0 stacked=0
+    -> hearth to Astranaar for Druid: Aquatic Form
+[--] Druid: Aquatic Form                    class chain (DRUID): 4 quests
+    catch-up grind 21.62 -> 23.6 before questing (157 min; quests here ~level 26) on the mobs of Young Crocolisk Skins
+    -> set hearth at Menethil Harbor (worth ~10 min more than keeping the old bind)
+[32] Wetlands                               map=1437 races=all entry=21.62 exit=26.84 quests=30 deferredIn=0 ~ 318min HS=2 death=0 stacked=0
+    -> keep hearth (Menethil Harbor) instead of binding at Ironforge
+[33] Ironforge - 20s                        map=1455 races=all entry=26.84 exit=26.90 quests=6 deferredIn=0 ~   3min HS=0 death=0 stacked=0
+    left for later (level too low): [1241, 1242, 1243, 1274]
+    -> keep hearth (Menethil Harbor) instead of binding at Stormwind City
+[34] Stormwind - 20s                        map=1453 races=all entry=26.90 exit=27.25 quests=12 deferredIn=6 ~  14min HS=0 death=0 stacked=0
+[--] Warlock: Succubus                      class chain (WARLOCK): 4 quests
+[36] The Stockade (dungeon)                 map=225 races=all entry=27.25 exit=27.56 quests=0 deferredIn=3 ~ 101min HS=0 death=0 stacked=0
+    -> keep hearth (Menethil Harbor) instead of binding at Stormwind City
+[37] Stormwind (turn in The Stockade)       map=1453 races=all entry=27.56 exit=28.47 quests=0 deferredIn=2 ~   2min HS=0 death=0 stacked=0
+    -> keep hearth (Menethil Harbor) instead of binding at Lakeshire
+[38] Redridge Mountains 2                   map=1433 races=all entry=28.47 exit=29.47 quests=10 deferredIn=3 ~  72min HS=0 death=0 stacked=0
+    -> set hearth at Darkshire (worth ~4 min more than keeping the old bind)
+[39] Duskwood                               map=1431 races=all entry=29.47 exit=31.14 quests=27 deferredIn=2 ~ 129min HS=1 death=0 stacked=0
+    -> hearth to Darkshire for Rogue: Poisons
+[--] Rogue: Poisons                         class chain (ROGUE): 5 quests
+    -> keep hearth (Darkshire) instead of binding at Southshore
+[41] Hillsbrad Foothills                    map=1424 races=all entry=31.14 exit=32.08 quests=10 deferredIn=1 ~  60min HS=0 death=0 stacked=0
+    -> keep hearth (Darkshire) instead of binding at Stormwind City
+[42] Stormwind (quests for Gnomeregan)      map=1453 races=all entry=32.08 exit=32.32 quests=2 deferredIn=6 ~   6min HS=0 death=0 stacked=0
+    -> set hearth at Ironforge (worth ~3 min more than keeping the old bind)
+[43] Ironforge (quests for Gnomeregan)      map=1455 races=all entry=32.32 exit=32.39 quests=5 deferredIn=2 ~   2min HS=0 death=0 stacked=0
+    -> keep hearth (Ironforge) instead of binding at Darnassus
+[44] Darnassus (quests for Gnomeregan)      map=1457 races=all entry=32.39 exit=32.45 quests=2 deferredIn=1 ~   2min HS=0 death=0 stacked=0
+[45] Gnomeregan (dungeon)                   map=226 races=all entry=32.45 exit=32.76 quests=0 deferredIn=7 ~  86min HS=0 death=0 stacked=0
+    -> hearth to Ironforge for Ironforge (turn in Gnomeregan)
+    dropped (grey by the time you get there): [971]
+[46] Ironforge (turn in Gnomeregan)         map=1455 races=all entry=32.76 exit=33.15 quests=1 deferredIn=5 ~   2min HS=0 death=0 stacked=0
+    -> keep hearth (Ironforge) instead of binding at Kharanos
+[47] Dun Morogh (turn in Gnomeregan)        map=1426 races=all entry=33.15 exit=33.34 quests=0 deferredIn=3 ~   0min HS=0 death=0 stacked=0
+    -> keep hearth (Ironforge) instead of binding at Astranaar
+[48] Ashenvale                              map=1440 races=all entry=33.34 exit=33.73 quests=6 deferredIn=0 ~  50min HS=0 death=0 stacked=0
+[49] Blackfathom Deeps (dungeon)            map=221 races=all entry=33.73 exit=34.04 quests=0 deferredIn=1 ~  71min HS=0 death=0 stacked=0
+    -> set hearth at Stonetalon Peak (worth ~4 min more than keeping the old bind)
+[50] Stonetalon Mountains                   map=1442 races=all entry=34.04 exit=34.21 quests=1 deferredIn=0 ~  18min HS=1 death=0 stacked=0
+    -> set hearth at Booty Bay (worth ~13 min more than keeping the old bind)
+[51] Stranglethorn Vale                     map=1434 races=all entry=34.21 exit=36.36 quests=31 deferredIn=1 ~ 202min HS=2 death=0 stacked=0
+    -> keep hearth (Booty Bay) instead of binding at Nijel's Point
+[52] Desolace                               map=1443 races=all entry=36.36 exit=38.04 quests=26 deferredIn=0 ~ 195min HS=0 death=0 stacked=0
+[53] Arathi Highlands                       map=1417 races=all entry=38.04 exit=38.65 quests=7 deferredIn=1 ~  58min HS=0 death=0 stacked=0
+    -> set hearth at Amisi Azuregaze (worth ~0 min more than keeping the old bind)
+[54] Alterac Mountains                      map=1416 races=all entry=38.65 exit=38.77 quests=3 deferredIn=1 ~   5min HS=0 death=0 stacked=0
+    -> keep hearth (Amisi Azuregaze) instead of binding at Stormwind City
+[55] Stormwind (quests for City of Dalaran) map=1453 races=all entry=38.77 exit=38.86 quests=2 deferredIn=1 ~   5min HS=0 death=0 stacked=0
+[56] City of Dalaran (dungeon)              map=916544 races=all entry=38.86 exit=39.16 quests=0 deferredIn=4 ~  60min HS=0 death=0 stacked=0
+    -> keep hearth (Amisi Azuregaze) instead of binding at Stormwind City
+[57] Stormwind (turn in City of Dalaran)    map=1453 races=all entry=39.16 exit=39.28 quests=1 deferredIn=2 ~   4min HS=0 death=0 stacked=0
+    -> hearth to Amisi Azuregaze for Alterac Mountains (turn in City of Dalaran)
+    -> keep hearth (Amisi Azuregaze) instead of binding at Isirami Fairwind
+[58] Alterac Mountains (turn in City of Dalaran) map=1416 races=all entry=39.28 exit=39.46 quests=0 deferredIn=2 ~   0min HS=0 death=0 stacked=0
+[59] Scarlet Monastery (dungeon)            map=302 races=all entry=39.46 exit=39.77 quests=0 deferredIn=1 ~  91min HS=0 death=0 stacked=0
+[60] Thousand Needles - Shimmering Flats    map=1441 races=all entry=39.77 exit=39.96 quests=3 deferredIn=0 ~  23min HS=0 death=0 stacked=0
+[61] Razorfen Downs (dungeon)               map=300 races=all entry=39.96 exit=40.27 quests=0 deferredIn=1 ~  62min HS=0 death=0 stacked=0
+    -> set hearth at Theramore Isle (worth ~2 min more than keeping the old bind)
+[62] Dustwallow Marsh                       map=1445 races=all entry=40.27 exit=40.92 quests=14 deferredIn=0 ~  62min HS=1 death=0 stacked=0
+[--] Warlock: Felhunter                     class chain (WARLOCK): 7 quests
+[--] Warrior: Berserker Stance              class chain (WARRIOR): 2 quests
+[65] Swamp of Sorrows                       map=1435 races=all entry=40.92 exit=41.31 quests=6 deferredIn=0 ~  34min HS=0 death=0 stacked=0
+[66] Badlands                               map=1418 races=all entry=41.31 exit=42.12 quests=16 deferredIn=0 ~  77min HS=0 death=0 stacked=0
+    -> keep hearth (Theramore Isle) instead of binding at Ironforge
+[67] Ironforge (quests for Uldaman)         map=1455 races=all entry=42.12 exit=42.30 quests=1 deferredIn=3 ~   1min HS=0 death=0 stacked=0
+[68] Uldaman (dungeon)                      map=230 races=all entry=42.30 exit=42.61 quests=0 deferredIn=4 ~ 133min HS=0 death=0 stacked=0
+[69] Badlands (turn in Uldaman)             map=1418 races=all entry=42.61 exit=43.01 quests=0 deferredIn=3 ~   3min HS=0 death=0 stacked=0
+[70] Arathi Highlands 2                     map=1417 races=all entry=43.01 exit=43.35 quests=7 deferredIn=0 ~  27min HS=0 death=0 stacked=0
+    -> set hearth at Booty Bay (worth ~4 min more than keeping the old bind)
+[71] Stranglethorn Vale 2                   map=1434 races=all entry=43.35 exit=44.67 quests=18 deferredIn=2 ~ 152min HS=1 death=0 stacked=0
+    left for later (level too low): [8151, 8250, 8254]
+    -> keep hearth (Booty Bay) instead of binding at Stormwind City
+[72] Stormwind - 40s                        map=1453 races=all entry=44.67 exit=44.82 quests=4 deferredIn=1 ~   3min HS=0 death=0 stacked=0
+    catch-up grind 44.82 -> 46.0 before questing (230 min; quests here ~level 48) on the mobs of Wastewander Justice
+    -> set hearth at Gadgetzan (worth ~5 min more than keeping the old bind)
+[73] Tanaris                                map=1446 races=all entry=44.82 exit=47.20 quests=27 deferredIn=2 ~ 366min HS=0 death=0 stacked=0
+[74] Zul'Farrak (dungeon)                   map=219 races=all entry=47.20 exit=47.51 quests=0 deferredIn=4 ~ 146min HS=0 death=0 stacked=0
+    -> hearth to Gadgetzan for Tanaris (turn in Zul'Farrak)
+[75] Tanaris (turn in Zul'Farrak)           map=1446 races=all entry=47.51 exit=48.11 quests=0 deferredIn=4 ~   3min HS=0 death=0 stacked=0
+    -> set hearth at Feathermoon Stronghold (worth ~5 min more than keeping the old bind)
+[76] Feralas                                map=1444 races=all entry=48.11 exit=49.27 quests=27 deferredIn=1 ~ 140min HS=1 death=0 stacked=0
+[77] Maraudon (dungeon)                     map=280 races=all entry=49.27 exit=49.58 quests=0 deferredIn=4 ~ 114min HS=0 death=0 stacked=0
+    -> keep hearth (Feathermoon Stronghold) instead of binding at Nijel's Point
+[78] Desolace (turn in Maraudon)            map=1443 races=all entry=49.58 exit=49.96 quests=0 deferredIn=5 ~   7min HS=0 death=0 stacked=0
+    left for later (level too low): [5090]
+    -> keep hearth (Feathermoon Stronghold) instead of binding at Ironforge
+[79] Ironforge - 40s                        map=1455 races=all entry=49.96 exit=50.07 quests=2 deferredIn=1 ~   1min HS=0 death=0 stacked=0
+[--] Shaman: Call of Air (air totems)       class chain (SHAMAN): 1 quests
+    -> keep hearth (Feathermoon Stronghold) instead of binding at Aerie Peak
+[81] The Hinterlands                        map=1425 races=all entry=50.07 exit=50.35 quests=5 deferredIn=2 ~  37min HS=0 death=0 stacked=0
+[82] Searing Gorge                          map=1427 races=all entry=50.35 exit=50.99 quests=11 deferredIn=0 ~  78min HS=0 death=0 stacked=0
+[83] Azshara                                map=1447 races=all entry=50.99 exit=51.37 quests=6 deferredIn=0 ~  82min HS=0 death=0 stacked=0
+    -> keep hearth (Feathermoon Stronghold) instead of binding at Gadgetzan
+[84] Tanaris 2                              map=1446 races=all entry=51.37 exit=51.61 quests=2 deferredIn=4 ~   3min HS=0 death=0 stacked=0
+    left for later (level too low): [1015]
+    -> keep hearth (Feathermoon Stronghold) instead of binding at Stormwind City
+[85] Stormwind - 50s                        map=1453 races=all entry=51.61 exit=51.67 quests=5 deferredIn=0 ~   3min HS=0 death=0 stacked=0
+[86] Un'Goro Crater                         map=1449 races=all entry=51.67 exit=52.62 quests=20 deferredIn=1 ~ 119min HS=0 death=0 stacked=0
+[87] Felwood                                map=1448 races=all entry=52.62 exit=53.36 quests=13 deferredIn=2 ~ 126min HS=0 death=0 stacked=0
+[88] Burning Steppes                        map=1428 races=all entry=53.36 exit=53.72 quests=7 deferredIn=1 ~  41min HS=0 death=0 stacked=0
+[89] Western Plaguelands                    map=1422 races=all entry=53.72 exit=56.24 quests=33 deferredIn=2 ~ 428min HS=0 death=0 stacked=0
+[90] Blasted Lands                          map=1419 races=all entry=56.24 exit=56.62 quests=7 deferredIn=1 ~  34min HS=0 death=0 stacked=0
+    -> keep hearth (Feathermoon Stronghold) instead of binding at Everlook
+[91] Winterspring                           map=1452 races=all entry=56.62 exit=57.48 quests=18 deferredIn=4 ~ 123min HS=0 death=0 stacked=0
+    catch-up grind 57.48 -> 58.0 before questing (123 min; quests here ~level 60) on the mobs of Zaeldarr the Outcast
+    left for later (level too low): [7621, 7622, 9121]
+    -> keep hearth (Feathermoon Stronghold) instead of binding at Light's Hope Chapel
+[92] Eastern Plaguelands                    map=1423 races=all entry=57.48 exit=58.86 quests=7 deferredIn=9 ~ 268min HS=0 death=0 stacked=0
+    -> keep hearth (Feathermoon Stronghold) instead of binding at Darnassus
+[93] Darnassus (quests for Dire Maul)       map=1457 races=all entry=58.86 exit=59.03 quests=1 deferredIn=5 ~   3min HS=0 death=0 stacked=0
+[94] Dire Maul (dungeon)                    map=234 races=all entry=59.03 exit=59.34 quests=0 deferredIn=3 ~  98min HS=0 death=0 stacked=0
+[95] Feralas (turn in Dire Maul)            map=1444 races=all entry=59.34 exit=59.58 quests=0 deferredIn=4 ~   1min HS=1 death=0 stacked=0
+    -> keep hearth (Feathermoon Stronghold) instead of binding at Cenarion Hold
+[96] Silithus                               map=1451 races=all entry=59.58 exit=60.00 quests=25 deferredIn=0 ~ 122min HS=0 death=0 stacked=0
+
+telemetry: 1 SavedVariables file(s), 57 timed steps, 52 measured step keys, 0 player reports
+dropped 1 quests whose objectives would be grey on the later visit: [5621]
+    flight paths grabbed on the way (Teldrassil): Vesprystus
+    flights Druid: Bear Form: 1 planned, ~4 min saved
+    flight paths grabbed on the way (Stormwind (quests for The Deadmines)): Dungar Longdrink
+    flights Stormwind (quests for Gnomeregan): 1 planned, ~18 min saved
+    flights Ironforge (quests for Gnomeregan): 1 planned, ~6 min saved
+    flights Alterac Mountains: 1 planned, ~3 min saved
+    flights Stormwind (quests for City of Dalaran): 1 planned, ~17 min saved
+    flights City of Dalaran: 1 planned, ~15 min saved
+    flight paths grabbed on the way (Warlock: Felhunter): Bragok
+    flights Warlock: Felhunter: 2 planned, ~4 min saved
+    flights Stormwind - 40s: 1 planned, ~5 min saved
+    flights Feralas: 1 planned, ~5 min saved
+    flights Shaman: Call of Air (air totems): 1 planned, ~4 min saved
+    flights The Hinterlands: 1 planned, ~3 min saved
+    flights Searing Gorge: 1 planned, ~6 min saved
+    flights Tanaris 2: 1 planned, ~10 min saved
+    flights Felwood: 1 planned, ~9 min saved
+    flights Western Plaguelands: 1 planned, ~8 min saved
+    flights Blasted Lands: 1 planned, ~12 min saved
+    flights Dire Maul: 1 planned, ~8 min saved
+flights: ~136 min saved over running
+
+hearths=20 death-skips=0 stacked quests=0 time saved by hearths/deaths ~104 min
+quest log peak Dwarf     23 (in Blasted Lands)
+quest log peak Gnome     23 (in Blasted Lands)
+quest log peak Human     23 (in Blasted Lands)
+quest log peak NightElf  23 (in Blasted Lands)
+quest log peak Skyborne  23 (in Blasted Lands)
+estimated /played to 60 for Dwarf     ~81.2 h (questing + planned grinding, excl. class/vendor stops)
+estimated /played to 60 for Gnome     ~81.2 h (questing + planned grinding, excl. class/vendor stops)
+estimated /played to 60 for Human     ~82.1 h (questing + planned grinding, excl. class/vendor stops)
+estimated /played to 60 for NightElf  ~85.1 h (questing + planned grinding, excl. class/vendor stops)
+estimated /played to 60 for Skyborne  ~81.2 h (questing + planned grinding, excl. class/vendor stops)

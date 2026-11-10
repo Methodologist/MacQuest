@@ -1,0 +1,53 @@
+# Push a version tag (git tag v0.7.0 && git push origin v0.7.0) to build Mac Quest, attach the zip
+# to a GitHub release and upload it to CurseForge.
+#
+# One-time setup (repo Settings -> Secrets and variables -> Actions):
+#   secret   CF_API_TOKEN     CurseForge API token
+#   variable CF_PROJECT_ID    the CurseForge project id
+#   variable CF_GAME_VERSION  (optional) game version name as CurseForge lists it
+name: release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Check the tag matches the .toc version
+        run: |
+          v=$(grep -oP '## Version:\s*\K\S+' SpeedLevel/SpeedLevel.toc)
+          [ "v$v" = "${GITHUB_REF_NAME}" ] || { echo "tag ${GITHUB_REF_NAME} but .toc says $v"; exit 1; }
+          echo "VERSION=$v" >> "$GITHUB_ENV"
+
+      - name: Package
+        run: python tools/package.py
+
+      - name: Release notes (this version's CHANGELOG.md section)
+        run: |
+          python -c "import sys; sys.path.insert(0, 'tools'); import curseforge_upload as c; open('dist/release_notes.md', 'w', encoding='utf-8').write(c.changelog('$VERSION'))"
+
+      - name: GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: Mac Quest ${{ env.VERSION }}
+          files: dist/MacQuest-${{ env.VERSION }}.zip
+          body_path: dist/release_notes.md
+
+      - name: CurseForge
+        if: ${{ vars.CF_PROJECT_ID != '' }}
+        env:
+          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CF_PROJECT_ID: ${{ vars.CF_PROJECT_ID }}
+          CF_GAME_VERSION: ${{ vars.CF_GAME_VERSION }}
+        run: python tools/curseforge_upload.py dist/MacQuest-${{ env.VERSION }}.zip

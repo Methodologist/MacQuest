@@ -1,0 +1,626 @@
+# SpeedLevel - Alliance 1-60 zone plan (WoW Forever)
+#
+# Same format as horde.plan (see the keyword list there).  build_route.py --faction alliance fills
+# each SEGMENT with every worthwhile Alliance quest whose giver is on that map and whose level fits.
+#
+# Races: Human Dwarf Gnome NightElf Skyborne (default: all Alliance)
+# uiMaps: Elwynn 1429, Dun Morogh 1426, Teldrassil 1438, Darkshore 1439, Westfall 1436, Loch Modan 1432,
+#         Redridge 1433, Duskwood 1431, Wetlands 1437, Stormwind 1453, Ironforge 1455, Darnassus 1457
+
+# ===================================================================== HUMAN
+SEGMENT Northshire Valley
+  races Human
+  map 1429
+  levels 1 7
+  entry 1
+  start npc Deputy Willem
+  region 38 20 60 50
+
+SEGMENT Elwynn Forest
+  races Human
+  map 1429
+  levels 3 12
+  start npc Innkeeper Farley
+  pre GOTO 42.1 65.9 "Run south to Goldshire"
+  pre HEARTH "Innkeeper Farley"
+  post TRAIN "Train new spells (Goldshire or Stormwind)"
+
+SEGMENT Stormwind City
+  races Human
+  map 1453
+  levels 8 14
+  start npc Dungar Longdrink
+  pre GOTO 32.0 50.0 "Run north-west up the road into Stormwind" map=1429
+  pre FP "Dungar Longdrink"
+  post TRAIN "Train new spells in Stormwind"
+
+# ===================================================================== DWARF / GNOME
+SEGMENT Coldridge Valley
+  races Dwarf Gnome
+  map 1426
+  levels 1 7
+  entry 1
+  start npc Sten Stoutarm
+  region 18 60 40 88
+
+SEGMENT Dun Morogh
+  races Dwarf Gnome
+  map 1426
+  levels 3 12
+  start npc Innkeeper Belm
+  pre GOTO 46.7 53.6 "Run north through the tunnel to Kharanos"
+  pre HEARTH "Innkeeper Belm"
+  post TRAIN "Train new spells (Kharanos or Ironforge)"
+
+SEGMENT Ironforge
+  races Dwarf Gnome
+  map 1455
+  levels 8 14
+  start npc Gryth Thurden
+  pre GOTO 53.5 35.0 "Run up the road into Ironforge" map=1426
+  pre FP "Gryth Thurden"
+  post TRAIN "Train new spells in Ironforge"
+
+SEGMENT Loch Modan
+  races Dwarf Gnome
+  map 1432
+  levels 9 18
+  start npc Thorgrum Borrelson
+  pre GOTO 84.0 51.0 "Leave Dun Morogh east through the North Gate tunnel into Loch Modan (Thelsamar)" map=1426
+  pre FP "Thorgrum Borrelson"
+  pre HEARTH "Innkeeper Hearthstove"
+
+# ===================================================================== NIGHT ELF
+SEGMENT Shadowglen
+  races NightElf
+  map 1438
+  levels 1 7
+  entry 1
+  start npc Conservator Ilthalaine
+  region 50 26 68 50
+
+SEGMENT Teldrassil
+  races NightElf
+  map 1438
+  levels 3 12
+  start npc Innkeeper Keldamyr
+  pre GOTO 55.6 59.8 "Run south-west to Dolanaar"
+  pre HEARTH "Innkeeper Keldamyr"
+  post TRAIN "Train new spells (Dolanaar or Darnassus)"
+
+SEGMENT Darnassus
+  races NightElf
+  map 1457
+  levels 8 14
+  start npc Innkeeper Saelienne
+  pre GOTO 39.0 51.0 "Run west into Darnassus" map=1438
+  post TRAIN "Train new spells in Darnassus"
+
+SEGMENT Darkshore
+  races NightElf
+  map 1439
+  levels 9 19
+  start npc Caylais Moonfeather
+  pre FP "Vesprystus" "Take the portal down to Rut'theran Village and grab the flight path"
+  pre BOAT 55.0 96.5 "Take the boat from Rut'theran Village to Auberdine" map=1438 to=1439
+  pre FP "Caylais Moonfeather"
+  pre HEARTH "Innkeeper Shaussiy"
+
+# ===================================================================== SKYBORNE (Alliance)
+SEGMENT Zephras Isle
+  races Skyborne
+  map 2521
+  levels 1 13
+  entry 1
+  start npc Ailee Farheart
+  prune 0.6
+  post NOTE "When you are done on Zephras Isle, follow 'The Magical City of Dalaran' to Alterac"
+
+SEGMENT Dalaran (Skyborne)
+  races Skyborne
+  map 1416
+  levels 10 14
+  start npc Denaaris Stargale
+  noauto
+  include 94947
+
+SEGMENT Stormwind (Skyborne)
+  races Skyborne
+  map 1453
+  levels 10 15
+  start npc Highlord Bolvar Fordragon
+  pre FP "Dungar Longdrink"
+  post TRAIN "Train new spells in Stormwind"
+
+# ===================================================================== WESTFALL (Human, Skyborne)
+SEGMENT Westfall
+  races Human Skyborne
+  map 1436
+  levels 9 18
+  start npc Gryan Stoutmantle
+  pre GOTO 56.3 47.5 "Run south through Elwynn to Sentinel Hill in Westfall" map=1436
+  pre FP "Thor"
+  pre HEARTH "Innkeeper Heather"
+
+
+SEGMENT The Deadmines
+  modes dungeons
+  dungeon 1581
+  map 291
+  levels 16 24
+  entrance 1436 42.5 71.7
+  runtime 60
+
+# ===================================================================== 16-21: REDRIDGE (Eastern Kingdoms races)
+SEGMENT Redridge Mountains
+  races Human Dwarf Gnome Skyborne
+  map 1433
+  levels 14 23
+  start npc Ariena Stormfeather
+  pre NOTE "Travel to Lakeshire in Redridge (east from Elwynn; Dwarves and Gnomes take the tram to Stormwind)"
+  pre FP "Dungar Longdrink" "Grab the Stormwind flight path when you pass through"
+  pre FP "Ariena Stormfeather"
+  pre HEARTH "Innkeeper Brianna"
+
+# ===================================================================== 19-24: ASHENVALE (Night Elves)
+SEGMENT Ashenvale (Night Elf)
+  races NightElf
+  map 1440
+  levels 18 25
+  start npc Daelyshia
+  pre NOTE "Run south from Darkshore into Ashenvale (Astranaar)"
+  pre FP "Daelyshia"
+  pre HEARTH "Innkeeper Kimlya"
+
+# ===================================================================== 21-30: WETLANDS / CITIES / DUSKWOOD / HILLSBRAD
+SEGMENT Wetlands
+  map 1437
+  levels 20 29
+  start npc Shellei Brondir
+  pre NOTE "Travel to Menethil Harbor in the Wetlands (boat from Auberdine, or north through Loch Modan)"
+  pre FP "Shellei Brondir"
+  pre HEARTH "Innkeeper Helbrek"
+
+SEGMENT Ironforge - 20s
+  map 1455
+  levels 16 30
+  start npc Gryth Thurden
+  pre NOTE "Head to Ironforge (fly, or run north through the Wetlands and Loch Modan)"
+  pre FP "Gryth Thurden"
+  post TRAIN "Train new spells in Ironforge"
+
+SEGMENT Stormwind - 20s
+  map 1453
+  levels 16 30
+  start npc Dungar Longdrink
+  pre BOAT 76.5 51.5 "Take the Deeprun Tram to Stormwind" map=1455 to=1453
+  pre FP "Dungar Longdrink"
+  post TRAIN "Train new spells in Stormwind"
+
+
+SEGMENT The Stockade
+  modes dungeons
+  dungeon 717
+  map 225
+  levels 22 30
+  entrance 1453 52.4 70.0
+  runtime 45
+
+SEGMENT Redridge Mountains 2
+  map 1433
+  levels 18 28
+  start npc Ariena Stormfeather
+  pre FLY "Dungar Longdrink" "Fly to Lakeshire"
+  pre FP "Ariena Stormfeather"
+
+SEGMENT Duskwood
+  map 1431
+  levels 20 32
+  start npc Felicia Maline
+  pre NOTE "Travel to Darkshire in Duskwood (south-west from Redridge)"
+  pre FP "Felicia Maline"
+  pre HEARTH "Innkeeper Trelayne"
+
+SEGMENT Hillsbrad Foothills
+  map 1424
+  levels 22 34
+  start npc Darla Harris
+  pre NOTE "Travel to Southshore in Hillsbrad (fly to Menethil, then north through the Wetlands and Arathi)"
+  pre FP "Darla Harris"
+  pre HEARTH "Innkeeper Anderson"
+
+
+SEGMENT Gnomeregan
+  modes dungeons
+  dungeon 721 133
+  map 226
+  levels 24 34
+  entrance 1426 24.3 39.8
+  runtime 75
+
+SEGMENT Ashenvale
+  map 1440
+  levels 20 31
+  start npc Daelyshia
+  pre NOTE "Travel to Astranaar in Ashenvale (boat from Menethil Harbor to Auberdine, then fly)"
+  pre FP "Caylais Moonfeather" "Grab the Auberdine flight path when you arrive"
+  pre FP "Daelyshia"
+  pre HEARTH "Innkeeper Kimlya"
+
+
+SEGMENT Blackfathom Deeps
+  modes dungeons
+  dungeon 719
+  map 221
+  levels 22 32
+  entrance 1440 14.5 14.2
+  runtime 60
+
+SEGMENT Stonetalon Mountains
+  map 1442
+  levels 20 30
+  start npc Teloren
+  pre NOTE "Travel west from Astranaar into the Stonetalon Mountains (Stonetalon Peak)"
+  pre FP "Teloren"
+
+# ===================================================================== 30-40: STRANGLETHORN / DESOLACE / NEEDLES
+SEGMENT Stranglethorn Vale
+  map 1434
+  levels 30 39
+  start npc Gyll
+  pre NOTE "Travel to Stranglethorn Vale (boat Auberdine - Menethil, then south through Duskwood; Booty Bay has the flight path)"
+  pre FP "Gyll"
+  pre HEARTH "Innkeeper Skindle"
+
+SEGMENT Desolace
+  map 1443
+  levels 28 40
+  start npc Baritanas Skyriver
+  pre NOTE "Travel to Nijel's Point in Desolace (fly to Stonetalon Peak, then run south)"
+  pre FP "Baritanas Skyriver"
+  pre HEARTH "Innkeeper Lyshaerya"
+
+SEGMENT Arathi Highlands
+  map 1417
+  levels 28 37
+  start npc Cedrik Prose
+  pre NOTE "Travel to Refuge Pointe in the Arathi Highlands (boat Auberdine - Menethil, then north-east)"
+  pre FP "Cedrik Prose"
+
+SEGMENT Alterac Mountains
+  map 1416
+  levels 28 38
+  start 58 70
+  prune 1.3
+
+
+SEGMENT City of Dalaran
+  modes dungeons
+  dungeon 16544
+  map 916544
+  levels 30 36
+  entrance 1416 8.5 59.2
+  runtime 45
+
+
+SEGMENT Scarlet Monastery
+  modes dungeons
+  dungeon 796
+  map 302
+  levels 28 42
+  entrance 1420 82.6 33.8
+  runtime 90
+
+SEGMENT Thousand Needles - Shimmering Flats
+  map 1441
+  levels 29 38
+  start 78 77
+  pre NOTE "Travel to the Shimmering Flats in Thousand Needles (south-east, from Tanaris or Feralas)"
+
+
+SEGMENT Razorfen Downs
+  modes dungeons
+  dungeon 722
+  map 300
+  levels 33 42
+  entrance 1413 49 93.9
+  runtime 60
+
+# ===================================================================== 35-45
+SEGMENT Dustwallow Marsh
+  map 1445
+  levels 34 44
+  start npc Baldruc
+  pre NOTE "Travel to Theramore Isle in Dustwallow Marsh (boat from Menethil Harbor)"
+  pre FP "Baldruc"
+  pre HEARTH "Innkeeper Janene"
+
+SEGMENT Swamp of Sorrows
+  map 1435
+  levels 34 44
+  start 26 33
+  pre NOTE "Travel to the Swamp of Sorrows (east from Duskwood, or south from Redridge)"
+
+SEGMENT Badlands
+  map 1418
+  levels 35 46
+  start 42 52
+  pre NOTE "Travel to the Badlands (south from Loch Modan)"
+
+
+SEGMENT Uldaman
+  modes dungeons
+  dungeon 1337 1517
+  map 230
+  levels 36 48
+  entrance 1418 44.6 12.1
+  runtime 90
+
+SEGMENT Arathi Highlands 2
+  map 1417
+  levels 33 45
+  start npc Cedrik Prose
+
+SEGMENT Stranglethorn Vale 2
+  map 1434
+  levels 35 47
+  start npc Gyll
+  pre FLY "Cedrik Prose" "Fly to Booty Bay"
+
+SEGMENT Stormwind - 40s
+  map 1453
+  levels 34 48
+  start npc Dungar Longdrink
+  pre NOTE "Head back to Stormwind to train and turn in"
+  post TRAIN "Train new spells in Stormwind"
+
+# ===================================================================== 42-52
+SEGMENT Tanaris
+  map 1446
+  levels 40 50
+  start npc Bera Stonehammer
+  pre NOTE "Travel to Gadgetzan in Tanaris (boat to Theramore, then fly or run south)"
+  pre FP "Bera Stonehammer"
+  pre HEARTH "Innkeeper Fizzgrimble"
+
+
+SEGMENT Zul'Farrak
+  modes dungeons
+  dungeon 1176 978
+  map 219
+  levels 42 50
+  entrance 1446 38.7 20.1
+  runtime 75
+
+SEGMENT Feralas
+  map 1444
+  levels 40 50
+  start npc Fyldren Moonfeather
+  pre NOTE "Travel to Feathermoon Stronghold in Feralas"
+  pre FP "Fyldren Moonfeather"
+  pre HEARTH "Innkeeper Shyria"
+  pre FP "Thyssiana" "Grab the Thalanaar flight path when you are on the east side of Feralas"
+
+
+SEGMENT Maraudon
+  modes dungeons
+  dungeon 2100
+  map 280
+  levels 42 52
+  entrance 1443 29.1 62.5
+  runtime 90
+
+SEGMENT Ironforge - 40s
+  map 1455
+  levels 36 50
+  start npc Gryth Thurden
+  pre NOTE "Travel to Ironforge"
+
+SEGMENT The Hinterlands
+  map 1425
+  levels 42 52
+  start npc Guthrum Thunderfist
+  pre NOTE "Travel to Aerie Peak in the Hinterlands (through Hillsbrad)"
+  pre FP "Guthrum Thunderfist"
+  pre HEARTH "Innkeeper Thulfram"
+
+SEGMENT Searing Gorge
+  map 1427
+  levels 43 53
+  start npc Lanie Reed
+  pre NOTE "Travel to Thorium Point in the Searing Gorge"
+  pre FP "Lanie Reed"
+
+SEGMENT Azshara
+  map 1447
+  levels 45 55
+  start npc Jarrodenus
+  pre FP "Jarrodenus"
+
+SEGMENT Tanaris 2
+  map 1446
+  levels 44 54
+  start npc Bera Stonehammer
+
+SEGMENT Stormwind - 50s
+  map 1453
+  levels 44 56
+  start npc Dungar Longdrink
+  pre NOTE "Head to Stormwind to train and turn in"
+  post TRAIN "Train new spells in Stormwind"
+
+# ===================================================================== 48-60
+SEGMENT Un'Goro Crater
+  map 1449
+  levels 47 57
+  start npc Gryfe
+  pre NOTE "Run from Tanaris into Un'Goro Crater (Marshal's Refuge)"
+  pre FP "Gryfe"
+
+
+SEGMENT Sunken Temple
+  modes dungeons
+  dungeon 1477 1417
+  map 220
+  levels 45 55
+  entrance 1435 69.9 53.5
+  runtime 90
+
+SEGMENT Felwood
+  map 1448
+  levels 47 58
+  start npc Mishellena
+  pre FP "Mishellena"
+
+SEGMENT Burning Steppes
+  map 1428
+  levels 49 58
+  start npc Borgus Stoutarm
+  pre FP "Borgus Stoutarm"
+
+
+SEGMENT Blackrock Depths
+  modes dungeons
+  dungeon 1584 1585
+  map 242
+  levels 48 60
+  entrance 1427 34.8 85.3
+  runtime 120
+
+SEGMENT Lower Blackrock Spire
+  modes dungeons
+  dungeon 1583
+  map 253
+  levels 52 60
+  entrance 1427 34.8 85.3
+  runtime 90
+
+SEGMENT Western Plaguelands
+  map 1422
+  levels 51 60
+  start npc Bibilfaz Featherwhistle
+  pre FP "Bibilfaz Featherwhistle"
+
+SEGMENT Blasted Lands
+  map 1419
+  levels 48 60
+  start npc Alexandra Constantine
+  pre FP "Alexandra Constantine"
+
+SEGMENT Winterspring
+  map 1452
+  levels 52 60
+  start npc Maethrya
+  pre FP "Maethrya"
+
+SEGMENT Eastern Plaguelands
+  map 1423
+  levels 53 60
+  start npc Khaelyn Steelwing
+  pre FP "Khaelyn Steelwing"
+
+
+SEGMENT Dire Maul
+  modes dungeons
+  dungeon 2557
+  map 234
+  levels 52 60
+  entrance 1444 59.2 45.1
+  runtime 90
+
+SEGMENT Silithus
+  map 1451
+  levels 55 60
+  start npc Cloud Skydancer
+  pre FP "Cloud Skydancer"
+  endlevel 60
+
+# ===================================================================== CLASS CHAINS
+
+CLASSCHAIN Warrior: Defensive Stance (Human)
+  class WARRIOR
+  finals 1667
+  after Stormwind City
+
+CLASSCHAIN Warrior: Defensive Stance (Dwarf, Gnome)
+  class WARRIOR
+  finals 1679
+  after Ironforge
+
+CLASSCHAIN Warrior: Defensive Stance (Night Elf)
+  class WARRIOR
+  finals 1684
+  after Darnassus
+
+CLASSCHAIN Warrior: Berserker Stance
+  class WARRIOR
+  finals 1719
+  after Dustwallow Marsh
+
+CLASSCHAIN Shaman: Call of Earth (earth totems)
+  class SHAMAN
+  finals 94375
+  after Coldridge Valley
+
+CLASSCHAIN Shaman: Call of Fire (fire totems)
+  class SHAMAN
+  finals 94468
+  after Loch Modan
+
+CLASSCHAIN Shaman: Call of Air (air totems)
+  class SHAMAN
+  finals 94789
+  after Ironforge - 40s
+
+CLASSCHAIN Warlock: Voidwalker
+  class WARLOCK
+  finals 1689
+  after Stormwind City
+
+CLASSCHAIN Warlock: Succubus
+  class WARLOCK
+  finals 1739 65603
+  after Stormwind - 20s
+
+CLASSCHAIN Warlock: Felhunter
+  class WARLOCK
+  finals 1795
+  after Dustwallow Marsh
+
+CLASSCHAIN Druid: Bear Form
+  class DRUID
+  finals 6001
+  after Darkshore
+
+CLASSCHAIN Druid: Aquatic Form
+  class DRUID
+  finals 5061
+  after Ashenvale (Night Elf)
+
+CLASSCHAIN Hunter: Taming the Beast (Human)
+  class HUNTER
+  finals 94793
+  after Elwynn Forest
+
+CLASSCHAIN Hunter: Taming the Beast (Dwarf)
+  class HUNTER
+  finals 6086
+  after Dun Morogh
+
+CLASSCHAIN Hunter: Taming the Beast (Night Elf)
+  class HUNTER
+  finals 6103
+  after Teldrassil
+
+CLASSCHAIN Hunter: Taming the Beast (Skyborne)
+  class HUNTER
+  finals 94050 94007
+  after Zephras Isle
+
+CLASSCHAIN Rogue: Poisons
+  class ROGUE
+  finals 2609
+  after Duskwood
+
+# Paladin "Tome of Divinity" (Redemption) is not routed: it starts from an item the trainer hands
+# out, and the Dwarf version's giver wanders between Ironforge and Loch Modan.

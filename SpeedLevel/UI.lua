@@ -109,7 +109,7 @@ end
 function UI:TimeTo60(rate, sampleSeconds)
     local P = SL.Player
     if P.level >= 60 then return 0 end
-    local lm = SL.LevelMinutes and SL.LevelMinutes[SL.Engine:Mode()]
+    local lm = SL.LevelMinutes and SL.LevelMinutes[SL.Engine:RouteKey()]
     if not lm then
         return rate and rate > 0 and xpTo60() / rate * 3600 or nil
     end
@@ -183,6 +183,9 @@ local function stepTooltip(owner, idx)
     GameTooltip:AddLine("Right-click: skip this step", 0.5, 0.8, 1)
     GameTooltip:Show()
 end
+
+-- shared with the route list
+UI.setIcon, UI.flatTexture, UI.TYPE_COLOR, UI.StepTooltip = setIcon, flatTexture, TYPE_COLOR, stepTooltip
 
 local function onStepClick(self, button)
     if not self.stepIndex then return end
@@ -296,11 +299,37 @@ function UI:Init()
     f.accent:SetPoint("TOPLEFT")
     f.accent:SetPoint("TOPRIGHT")
 
-    -- header: section title (click for section picker) + progress
+    -- brand: logo (click: route list, right-click: settings) + name + version
+    f.logo = CreateFrame("Button", nil, f)
+    f.logo:SetSize(32, 32)
+    f.logo:SetPoint("TOPLEFT", 7, -6)
+    f.logo:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+    f.logo.tex = f.logo:CreateTexture(nil, "ARTWORK")
+    f.logo.tex:SetAllPoints()
+    f.logo.tex:SetTexture("Interface\\AddOns\\SpeedLevel\\Media\\Logo")
+    f.logo:SetScript("OnClick", function(_, button)
+        if button == "RightButton" then SL.Options:Open() else SL.RouteList:Toggle() end
+    end)
+    f.logo:SetScript("OnEnter", function(self)
+        GameTooltip:SetOwner(self, "ANCHOR_TOP")
+        GameTooltip:AddLine("MacQuest " .. (SL.version or ""))
+        GameTooltip:AddLine("Click: route list   Right-click: settings", 0.5, 0.8, 1)
+        GameTooltip:Show()
+    end)
+    f.logo:SetScript("OnLeave", function() GameTooltip:Hide() end)
+    f.brand = f:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
+    f.brand:SetPoint("TOPLEFT", f.logo, "TOPRIGHT", 7, -1)
+    f.brand:SetText("MacQuest")
+    f.brand:SetTextColor(1, 0.82, 0.30)
+    f.brandVer = f:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
+    f.brandVer:SetPoint("BOTTOMLEFT", f.brand, "BOTTOMRIGHT", 5, 1)
+    f.brandVer:SetText(SL.version and ("v" .. SL.version) or "")
+
+    -- zone title under the brand (click for section picker) + progress
     f.titleBtn = CreateFrame("Button", nil, f)
-    f.titleBtn:SetPoint("TOPLEFT", 10, -8)
-    f.titleBtn:SetSize(WIDTH - 110, 16)
-    f.title = f.titleBtn:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    f.titleBtn:SetPoint("TOPLEFT", 46, -24)
+    f.titleBtn:SetSize(WIDTH - 56, 14)
+    f.title = f.titleBtn:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
     f.title:SetPoint("LEFT")
     f.title:SetJustifyH("LEFT")
     f.title:SetWordWrap(false)
@@ -318,28 +347,28 @@ function UI:Init()
     f.titleBtn:SetScript("OnLeave", function() GameTooltip:Hide() end)
 
     f.secInfo = f:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
-    f.secInfo:SetPoint("TOPRIGHT", -10, -10)
+    f.secInfo:SetPoint("TOPRIGHT", -10, -12)
 
     f.secBar = makeBar(f, 2, cr, cg, cb)
-    f.secBar:SetPoint("TOPLEFT", 10, -27)
-    f.secBar:SetPoint("TOPRIGHT", -10, -27)
+    f.secBar:SetPoint("TOPLEFT", 10, -43)
+    f.secBar:SetPoint("TOPRIGHT", -10, -43)
 
     -- XP block
     f.xpText = f:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-    f.xpText:SetPoint("TOPLEFT", 10, -33)
-    f.xpText:SetPoint("TOPRIGHT", -10, -33)
+    f.xpText:SetPoint("TOPLEFT", 10, -49)
+    f.xpText:SetPoint("TOPRIGHT", -10, -49)
     f.xpText:SetJustifyH("LEFT")
     f.xpBar = makeBar(f, 5, 0.58, 0.32, 0.95)
-    f.xpBar:SetPoint("TOPLEFT", 10, -47)
-    f.xpBar:SetPoint("TOPRIGHT", -10, -47)
+    f.xpBar:SetPoint("TOPLEFT", 10, -63)
+    f.xpBar:SetPoint("TOPRIGHT", -10, -63)
     f.rested = flatTexture(f.xpBar, "ARTWORK", 0.25, 0.5, 1, 0.45)
     f.rested:SetPoint("TOPLEFT", f.xpBar, "TOPLEFT")
     f.rested:SetHeight(5)
 
     -- current step card
     local card = CreateFrame("Frame", nil, f)
-    card:SetPoint("TOPLEFT", 8, -58)
-    card:SetPoint("TOPRIGHT", -8, -58)
+    card:SetPoint("TOPLEFT", 8, -74)
+    card:SetPoint("TOPRIGHT", -8, -74)
     card.bg = flatTexture(card, "BACKGROUND", 1, 1, 1, 0.05)
     card.bg:SetAllPoints()
     card.stripe = flatTexture(card, "ARTWORK", 1, 1, 1, 1)
@@ -385,14 +414,17 @@ function UI:Init()
         SL:Update()
     end)
     f.btnOpt = iconButton(f, "Interface\\Buttons\\UI-OptionsButton", "Settings (/sl options)", function() SL.Options:Open() end)
+    f.btnList = iconButton(f, "Interface\\Buttons\\UI-GuildButton-PublicNote-Up", "Route list: scroll through every step (/sl list)",
+        function() SL.RouteList:Toggle() end)
     f.btnBack:SetPoint("BOTTOMLEFT", 8, 6)
     f.btnDone:SetPoint("LEFT", f.btnBack, "RIGHT", 6, 0)
     f.btnSkip:SetPoint("LEFT", f.btnDone, "RIGHT", 6, 0)
     f.btnOpt:SetPoint("BOTTOMRIGHT", -8, 6)
     f.btnCompact:SetPoint("RIGHT", f.btnOpt, "LEFT", -6, 0)
+    f.btnList:SetPoint("RIGHT", f.btnCompact, "LEFT", -6, 0)
     f.hint = f:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
     f.hint:SetPoint("LEFT", f.btnSkip, "RIGHT", 8, 0)
-    f.hint:SetPoint("RIGHT", f.btnCompact, "LEFT", -6, 0)
+    f.hint:SetPoint("RIGHT", f.btnList, "LEFT", -6, 0)
     f.hint:SetJustifyH("LEFT")
     f.hint:SetWordWrap(false)
 
@@ -648,7 +680,7 @@ function UI:Refresh()
     lastCursor = SL.char.cursor
 
     -- upcoming
-    local total = -58 - cardH
+    local total = -74 - cardH
     local shown = 0
     if not compact and (SL.db.stepsShown or 6) > 0 then
         local inGroup = {}
@@ -718,4 +750,6 @@ function UI:Refresh()
     end
     f.btnCompact.tex:SetTexture(compact and "Interface\\Buttons\\UI-PlusButton-Up" or "Interface\\Buttons\\UI-MinusButton-Up")
     f:SetHeight(-total + 30)
+    if SL.RouteList then SL.RouteList:Refresh() end
+    if SL.QuestItem then SL.QuestItem:Refresh() end
 end

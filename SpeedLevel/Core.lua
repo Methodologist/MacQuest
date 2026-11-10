@@ -1,4 +1,4 @@
--- SpeedLevel / Mac Quest - Horde 1-60 leveling guide for WoW Forever
+-- SpeedLevel / Mac Quest - Horde and Alliance 1-60 leveling guide for WoW Forever
 -- Copyright (C) 2026 Methodologist
 --
 -- This program is free software: you can redistribute it and/or modify it under the terms of the
@@ -40,7 +40,10 @@ SL.defaults = {
     mapRoute = true,         -- dashed route line between those pins
     terrainArrow = true,     -- steer the arrow around mountains / water using the terrain grid
     minimapPins = true,      -- ... and on the minimap
+    minimapButton = true,    -- logo button on the minimap edge (left-click: settings)
     telemetry = true,        -- record time per step for route tuning
+    itemButton = true,       -- clickable button for the current quest's usable item
+    autoFly = true,          -- on a "Fly to" step, pick the destination when the flight map opens
 }
 
 SL.charDefaults = {
@@ -52,6 +55,7 @@ SL.charDefaults = {
     lastTrained = 0,
     initialized = false,
     mode = "speed",    -- route mode: speed | dungeons | thorough
+    notOffered = {},   -- [questID] = level at which its giver did not offer it
     waiting = {},      -- [stepIndex] = true: passed while waiting for a level, re-shown when ready
 }
 
@@ -160,16 +164,22 @@ end)
 
 SL:On("PLAYER_LOGIN", function()
     SL.Player:Init()
-    if SL.Player.faction ~= "Horde" then
-        SL:Print("only a Horde route is included so far - the guide is disabled on this character.")
+    local faction = SL.Player.faction
+    if not (SL.Routes and SL.Routes[faction .. "_speed"]) then
+        SL:Print("no route for " .. tostring(faction) .. " characters - the guide is disabled on this character.")
         return
     end
+    -- this faction's flight masters and inns (zone rectangles are the same for everyone)
+    SL.Travel = SL.TravelBy and SL.TravelBy[faction] or SL.Travel
     SL.Engine:Init()
     SL.UI:Init()
+    if SL.db.listShown then C_Timer.After(1, function() SL.RouteList:Toggle(true) end) end
     SL.Arrow:Init()
     SL.Telemetry:Init()
     local okPath, errPath = pcall(SL.Pathing.Init, SL.Pathing)
     if not okPath then SL:Print("terrain pathing unavailable (" .. tostring(errPath) .. ")") end
+    local okBtn, errBtn = pcall(SL.MinimapButton.Init, SL.MinimapButton)
+    if not okBtn then SL:Print("minimap button unavailable (" .. tostring(errBtn) .. ")") end
     local okPins, errPins = pcall(SL.MapPins.Init, SL.MapPins)
     if not okPins then SL:Print("map pins unavailable (" .. tostring(errPins) .. ")") end
     -- the settings panel is optional: never let a missing UI template take the guide down
@@ -182,17 +192,15 @@ SL:On("PLAYER_LOGIN", function()
         SL.char.initialized = true
         SL:Print("welcome! Finding your place in the route from your level and completed quests... (/sl for help)")
     end
-    -- ask once per character whether dungeon runs belong in the route (changeable any time)
-    if not SL.char.dungeonsAsked and StaticPopupDialogs then
-        StaticPopupDialogs["SPEEDLEVEL_DUNGEONS"] = {
-            text = "Include dungeon runs in your leveling route?\n\nDungeon quests are picked up beforehand, the arrow leads to each entrance, and turn-ins follow. Class quests that unlock abilities are always included.\n\nYou can change this any time in settings or with /sl dungeons on|off.",
-            button1 = "Include dungeons", button2 = "Solo route",
-            OnAccept = function() SL.char.dungeonsAsked = true; SL.Engine:SetDungeons(true) end,
-            OnCancel = function() SL.char.dungeonsAsked = true; SL.Engine:SetDungeons(false) end,
-            timeout = 0, whileDead = true, hideOnEscape = false,
-        }
-        C_Timer.After(3, function()
-            if not SL.char.dungeonsAsked then StaticPopup_Show("SPEEDLEVEL_DUNGEONS") end
+    -- first run on this character: the setup window (route style, dungeons, starting zones)
+    if not SL.char.dungeonsAsked and not SL.char.setupDone then
+        C_Timer.After(2, function()
+            if SL.char.setupDone or SL.char.dungeonsAsked then return end
+            local ok, err = pcall(SL.Setup.Show, SL.Setup)
+            if not ok then
+                SL:Print("setup window unavailable (" .. tostring(err) .. ") - use /sl mode, /sl dungeons, /sl start.")
+                SL.char.dungeonsAsked = true
+            end
         end)
     end
     -- quest-completion data can arrive a moment after login
@@ -222,10 +230,14 @@ local function help()
     print("  /sl lock         lock / unlock the window")
     print("  /sl mode <m>     route style: speed (fastest) or thorough (no cuts, no death-skips)")
     print("  /sl dungeons on|off  include dungeon runs (with their quests) in the route")
+    print("  /sl setup        open the setup window (route style, dungeons, starting zones)")
+    print("  /sl start <race|auto>  follow another race's starting zones (e.g. /sl start nightelf)")
+    print("  /sl list         scrollable list of the whole route (look ahead, jump, skip)")
     print("  /sl compact      toggle the compact one-line window")
     print("  /sl report <note> flag the current step as wrong (saved for route fixes)")
     print("  /sl telemetry    show / clear recorded step timings")
     print("  /sl errors       list errors caught this session")
+    print("  /sl minimap      show / hide the minimap button")
     print("  /sl options      open settings")
 end
 
@@ -275,6 +287,21 @@ SlashCmdList.SPEEDLEVEL = function(msg)
         else
             SL:Print("route: |cffffd100" .. SL.Engine.MODE_NAMES[SL.Engine:Mode()] .. "|r.  /sl mode speed | thorough,  /sl dungeons on | off")
         end
+    elseif cmd == "list" then
+        SL.RouteList:Toggle()
+    elseif cmd == "setup" or cmd == "welcome" then
+        SL.Setup:Show()
+    elseif cmd == "start" or cmd == "path" then
+        local a = (arg or ""):lower():gsub("[%s%-_']", "")
+        local alias = { auto = "auto", human = "Human", dwarf = "Dwarf", gnome = "Dwarf", nightelf = "NightElf",
+            nelf = "NightElf", elf = "NightElf", orc = "Orc", troll = "Orc", tauren = "Tauren", undead = "Undead",
+            forsaken = "Undead", skyborne = "Skyborne" }
+        if a == "" then
+            SL:Print("starting path: |cffffd100" .. SL.Engine:PathName() .. "|r" ..
+                (SL.char.startPath and "" or " (auto)") .. ".  /sl start <race> or /sl start auto")
+        else
+            SL.Engine:SetPath(alias[a] or a)
+        end
     elseif cmd == "dungeons" then
         local a = (arg or ""):lower()
         local on = (a == "on") or (a ~= "off" and not SL.Engine:Dungeons())
@@ -292,6 +319,8 @@ SlashCmdList.SPEEDLEVEL = function(msg)
         SL.Telemetry:Report(arg)
     elseif cmd == "telemetry" then
         if arg == "clear" then SL.Telemetry:Clear() else SL.Telemetry:Summary() end
+    elseif cmd == "minimap" then
+        SL.MinimapButton:Toggle()
     elseif cmd == "pins" then
         SL.db.mapPins = not SL.db.mapPins
         SL.db.minimapPins = SL.db.mapPins

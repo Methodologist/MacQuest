@@ -79,6 +79,12 @@ INN_BIND = {
     9356: "Kargath", 7733: "Gadgetzan", 7737: "Camp Mojache", 14731: "Revantusk Village",
     11118: "Everlook", 16256: "Light's Hope Chapel", 15174: "Cenarion Hold",
     6929: "Orgrimmar", 6746: "Thunder Bluff", 6741: "Undercity",
+    # Alliance
+    295: "Goldshire", 1247: "Kharanos", 6736: "Dolanaar", 6734: "Thelsamar",
+    8931: "Sentinel Hill", 6727: "Lakeshire", 6790: "Darkshire", 1464: "Menethil Harbor", 6737: "Auberdine",
+    6738: "Astranaar", 16458: "Stonetalon Peak", 2352: "Southshore", 11103: "Nijel's Point",
+    6272: "Theramore Isle", 7736: "Feathermoon Stronghold", 7744: "Aerie Peak",
+    6740: "Stormwind City", 5111: "Ironforge", 6735: "Darnassus",
 }
 BIND_COST = 20            # talk to the innkeeper
 ALLOW_DEATH = True        # off in the "thorough" mode
@@ -129,15 +135,31 @@ def walk_time(m, a, b, level):
     return yards(m, a, b) * DETOUR / speed(level)
 
 
+# real grinding vs the pure kill-time formula: eating / drinking, running between packs, other players
+GRIND_EFFICIENCY = 0.65   # measured play will refine this (telemetry)
+ORANGE_PENALTY = 0.7     # objective time x1.7 at +3 levels, x2.4 at +4
+
+
 def node_time(n, level):
     if n.kind in ("A", "T"):
         return 6.0
     if n.kind == "C":
+        if getattr(n, "free", False):
+            return 20.0          # its kills were done during the grind on the same mobs
         m = br.TEL["measured"].get(f"C:{n.qid}") if getattr(br, "TEL", None) else None
         if m is not None:
             return m * 0.8   # measured time includes walking to the area; keep ~80% as objective time
-        kills = br.quest_info(n.qid)["kills"]
-        return 20.0 + kills * (14.0 + level * 0.25)
+        info = br.quest_info(n.qid)
+        kills = info["kills"]
+        if getattr(n, "part", None) is not None and info.get("split"):
+            kills = kills * len(n.part) / len(info["split"])     # the killing is shared out over the stops
+        t = 20.0 + kills * (14.0 + level * 0.25)
+        # orange quests (3-4 levels above you): slower kills, more resting, real risk of dying -
+        # so they only stay in the route when they pay off well
+        diff = (br.qget(n.qid).get("level") or 0) - level
+        if diff >= 3:
+            t *= 1.0 + ORANGE_PENALTY * (diff - 2)
+        return t
     return 0.0
 
 
@@ -183,7 +205,7 @@ def graveyards():
     if _graves is None:
         _graves = defaultdict(list)
         for nid, e in br.N.items():
-            if e.get("name") in ("Spirit Healer",) and e.get("friendly") in ("AH", "H"):
+            if e.get("name") in ("Spirit Healer",) and e.get("friendly") in br.FRIEND:
                 for m, pts in br.spawns_of("npc", nid).items():
                     _graves[m].extend(pts)
     return _graves
@@ -210,7 +232,7 @@ def grind_spot(m, level, near=None):
     CELL = 4.0
     cells = defaultdict(lambda: {"n": 0, "best": 0.0, "mobs": defaultdict(int), "pts": [], "lv": [99, 0]})
     for nid, e in br.N.items():
-        if (e.get("rank") or 0) != 0 or e.get("friendly") == "H":
+        if (e.get("rank") or 0) != 0 or e.get("friendly") == br.FCFG["letter"]:
             continue
         # "AH" = neutral: fine for wildlife, but not townsfolk (they have services or a title)
         if e.get("friendly") == "AH" and (e.get("flags") or e.get("sub")):
@@ -244,7 +266,7 @@ def grind_spot(m, level, near=None):
                     if o:
                         n += o["n"] * 0.5
         density = min(1.0, n / 14.0)        # ~14 mobs in reach keeps you killing non-stop
-        xph = c["best"] * density * 3600
+        xph = c["best"] * density * 3600 * GRIND_EFFICIENCY
         score = xph
         if near is not None:
             cx = sum(p[0] for p in c["pts"]) / len(c["pts"])

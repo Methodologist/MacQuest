@@ -34,10 +34,15 @@ E.MODE_NAMES = { speed = "Speed", thorough = "Thorough", speed_dungeons = "Speed
     thorough_dungeons = "Thorough + Dungeons" }
 E.STYLE_NAMES = { speed = "Speed", thorough = "Thorough" }
 
+-- routes are stored per faction: SL.Routes["Horde_speed"], SL.Routes["Alliance_thorough"], ...
+function E:RouteKey(mode)
+    return (SL.Player.faction or "Horde") .. "_" .. (mode or self:Mode())
+end
+
 function E:Mode()
     local m = SL.char.mode or "speed"
     if m == "dungeons" then m = "speed_dungeons" end          -- older setting
-    if not (SL.Routes and SL.Routes["Horde_" .. m]) then m = "speed" end
+    if not (SL.Routes and SL.Routes[self:RouteKey(m)]) then m = "speed" end
     return m
 end
 
@@ -61,7 +66,7 @@ end
 -- switch route mode for this character and re-detect your place in it
 function E:SetMode(mode)
     if mode == "dungeons" then mode = "speed_dungeons" end
-    if not (SL.Routes and SL.Routes["Horde_" .. mode]) then
+    if not (SL.Routes and SL.Routes[self:RouteKey(mode)]) then
         SL:Print("unknown mode '" .. tostring(mode) .. "' - use speed or thorough, and /sl dungeons on|off.")
         return
     end
@@ -78,7 +83,7 @@ end
 
 function E:LoadRoute()
     local mode = self:Mode()
-    local route = SL.Routes and (SL.Routes["Horde_" .. mode] or SL.Routes.Horde_speed) or {}
+    local route = SL.Routes and (SL.Routes[self:RouteKey(mode)] or SL.Routes[self:RouteKey("speed")]) or {}
     local steps, sections, qs = {}, {}, {}
     for si, sec in ipairs(route) do
         local s = {
@@ -112,7 +117,7 @@ function E:LoadRoute()
     self.steps, self.sections, self.questSteps = steps, sections, qs
 
     -- route regenerated (or mode changed) since last session -> per-step flags no longer line up
-    local version = mode .. ":" .. ((SL.RouteVersions and SL.RouteVersions[mode]) or tostring(#steps))
+    local version = mode .. ":" .. ((SL.RouteVersions and SL.RouteVersions[self:RouteKey(mode)]) or tostring(#steps))
     if SL.char.routeVersion ~= version then
         SL.char.routeVersion = version
         SL.char.manualSkip, SL.char.manualDone, SL.char.flags = {}, {}, {}
@@ -135,7 +140,73 @@ end
 function E:SectionApplies(sec)
     if sec.classSet and not sec.classSet[SL.Player.classFile] then return false end
     if not sec.raceSet then return true end
-    return sec.raceSet[SL.Player.raceName] == true
+    return sec.raceSet[self:PathRace()] == true
+end
+
+-- ------------------------------------------------------------------ starting path
+-- Which race's starting zones you follow.  Auto = your own race; any race can choose another
+-- race's start of the same faction (quests only that race can take are skipped as usual).
+-- Zephras Isle is reachable only by Skyborne, so it is never offered to other races.
+E.PATHS = {
+    Horde = {
+        { "Orc", "Orc / Troll: Durotar" }, { "Tauren", "Tauren: Mulgore" },
+        { "Undead", "Undead: Tirisfal Glades" }, { "Skyborne", "Skyborne: Zephras Isle" },
+    },
+    Alliance = {
+        { "Human", "Human: Elwynn Forest" }, { "Dwarf", "Dwarf / Gnome: Dun Morogh" },
+        { "NightElf", "Night Elf: Teldrassil" }, { "Skyborne", "Skyborne: Zephras Isle" },
+    },
+}
+local PATH_OF = { Troll = "Orc", Gnome = "Dwarf" }    -- races that share another race's start
+
+function E:PathAllowed(p)
+    if p == "Skyborne" and SL.Player.raceName ~= "Skyborne" then return false end
+    for _, e in ipairs(self.PATHS[SL.Player.faction] or {}) do
+        if e[1] == p then return true end
+    end
+    return false
+end
+
+function E:PathRace()
+    local p = SL.char and SL.char.startPath
+    if p and self:PathAllowed(p) then
+        -- your own race shares this start (a Troll on the Orc path): keep your own name
+        if (PATH_OF[SL.Player.raceName] or SL.Player.raceName) == p then return SL.Player.raceName end
+        return p
+    end
+    return SL.Player.raceName
+end
+
+function E:PathName(p)
+    p = p or PATH_OF[self:PathRace()] or self:PathRace()
+    for _, e in ipairs(self.PATHS[SL.Player.faction] or {}) do
+        if e[1] == p then return e[2] end
+    end
+    return tostring(p)
+end
+
+-- the paths this character may pick, in order (for the settings button)
+function E:PathChoices()
+    local out = {}
+    for _, e in ipairs(self.PATHS[SL.Player.faction] or {}) do
+        if self:PathAllowed(e[1]) then out[#out + 1] = e[1] end
+    end
+    return out
+end
+
+function E:SetPath(p)
+    if p == "auto" then p = nil end
+    if p and not self:PathAllowed(p) then
+        local names = {}
+        for _, c in ipairs(self:PathChoices()) do names[#names + 1] = c:lower() end
+        SL:Print("unknown starting path - choose auto, " .. table.concat(names, ", ") .. ".")
+        return
+    end
+    SL.char.startPath = p
+    self:LoadRoute()
+    SL:Print("starting path: |cffffd100" .. (p and self:PathName(p) or ("auto (" .. self:PathName() .. ")"))
+        .. "|r - finding your place in the route...")
+    self:Resync()
 end
 
 local function questData(q)
@@ -265,6 +336,13 @@ function E:ComputeStatus(i)
             -- too low to take it yet: WAIT.  The cursor moves on; the pickup comes back as soon as
             -- you reach the level (while you are still in this zone).
             if d and d[3] and d[3] > P.level then return WAIT, "requires level " .. d[3] end
+            -- never a red quest (5+ levels above you) when it has things to fight / do
+            if qs.C and self:QuestLevel(q) >= P.level + 5 then
+                return WAIT, "red for you - comes back at level " .. (self:QuestLevel(q) - 4)
+            end
+            -- you talked to the giver at this level and it did not offer the quest
+            local no = char.notOffered and char.notOffered[q]
+            if no and no >= P.level then return WAIT, "not offered yet" end
             for _, p in ipairs((d and d[6]) or {}) do
                 local ps = self.questSteps[p]
                 if not P:IsCompleted(p) and ps and ps.T and self:Status(ps.T) == WAIT then
@@ -281,6 +359,23 @@ function E:ComputeStatus(i)
             end
             if P:IsQuestReady(q) then return DONE, "objectives complete" end
             if db.skipGrey and P:IsGrey(level) then return SKIP, "grey" end
+            if self:QuestLevel(q) >= P.level + 5 then
+                return WAIT, "red for you - comes back at level " .. (self:QuestLevel(q) - 4)
+            end
+            -- one stop of a quest whose objectives are in different places: done when its own
+            -- objectives (names separated by |) are all finished
+            if st.oname then
+                local objs = P:Objectives(q) or {}
+                local all = #objs > 0
+                for name in st.oname:gmatch("[^|]+") do
+                    local done = false
+                    for _, o in ipairs(objs) do
+                        if o.text and o.finished and o.text:find(name, 1, true) then done = true break end
+                    end
+                    if not done then all = false break end
+                end
+                if all then return DONE, "objective done" end
+            end
             return ACTIVE
         else -- T
             if not inLog then
@@ -291,7 +386,12 @@ function E:ComputeStatus(i)
             end
             if P:IsQuestReady(q) then return ACTIVE end
             if qs.C and self:Status(qs.C) == SKIP then return SKIP, "objectives skipped" end
-            return ACTIVE
+            -- never send you to turn in a quest whose objectives are not all done: the turn-in waits
+            -- and comes back the moment the quest log says it is complete
+            if P:Objectives(q) == nil then return ACTIVE end      -- no objective API: can't tell
+            -- deliveries / talk-to quests have no objective step in the route: always ready
+            if not qs.C then return ACTIVE end
+            return WAIT, "objectives not finished"
         end
     end
 
@@ -328,6 +428,16 @@ function E:ComputeStatus(i)
     if sectionAllQuestsSkipped(st.sec) then return SKIP, "section skipped" end
     if inSectionDoneAfter(i) then return DONE, "moved on" end
     if self:LeftFinishedSection(i) then return DONE, "left the zone" end
+    if t == "FLY" and st.fto then
+        -- a flight the route planned: needs both flight paths; done once you are at the destination
+        local A = SL.Advisor
+        if A and (not A:KnownNpc(st.npc) or not A:KnownNpc(st.fto)) then return SKIP, "flight path not learned" end
+        if st.tm then
+            local d = P:VectorTo(st.tm, st.tx, st.ty)
+            if d and d < 150 then return DONE, "already there" end
+        end
+        return ACTIVE
+    end
     if TRAVEL_IN[t] and self:AlreadyInSection(i) then return DONE, "already there" end
     if t == "BOAT" then
         local m = P:Position()
@@ -502,7 +612,9 @@ function E:WaitingHints()
         local st = self.steps[idx]
         if st and st.t == "A" and self:Status(idx) == WAIT then
             local d = SL.Quests[st.q]
-            out[#out + 1] = { idx = idx, level = d and d[3] or 0 }
+            local no = SL.char.notOffered and SL.char.notOffered[st.q]
+            local red = self.questSteps[st.q] and self.questSteps[st.q].C and (self:QuestLevel(st.q) - 4) or 0
+            out[#out + 1] = { idx = idx, level = math.max(d and d[3] or 0, no and no + 1 or 0, red) }
         end
     end
     table.sort(out, function(a, b) return a.idx < b.idx end)
@@ -722,8 +834,34 @@ function E:StepTarget(st)
     if st.q then return nextWaypoint(st.q) end
 end
 
+-- released and running as a ghost (not a planned death-skip): where your corpse is, else nil
+function E:CorpseTarget()
+    if not (UnitIsGhost and SL.Clean(UnitIsGhost("player"))) then return nil end
+    if SL.char.deathStep then return nil end      -- planned death-skip: resurrect at the spirit healer
+    if not (C_DeathInfo and C_DeathInfo.GetCorpseMapPosition) then return nil end
+    local tried = {}
+    local pm = SL.Player:Position()
+    for _, m in ipairs({ pm, pm and SL.Player:ZoneMap(pm), SL.char.deathMap }) do
+        if m and not tried[m] then
+            tried[m] = true
+            local ok, pos = pcall(C_DeathInfo.GetCorpseMapPosition, m)
+            if ok and pos then
+                local x, y = pos:GetXY()
+                x, y = SL.Clean(x), SL.Clean(y)
+                if x and y and (x > 0 or y > 0) then return m, x * 100, y * 100 end
+            end
+        end
+    end
+end
+
 -- the location the arrow should point at, plus a label
 function E:CurrentTarget()
+    -- dead: getting back to your corpse comes first
+    local cm, cx, cy = self:CorpseTarget()
+    if cm then
+        self.advice = nil
+        return { m = cm, x = cx, y = cy, label = "|cffff6060Your corpse|r - run back to it", corpse = true }
+    end
     local group = self:CurrentGroup()
     if #group == 0 then return nil end
     local first = self.steps[group[1]]
@@ -739,6 +877,30 @@ function E:CurrentTarget()
             end
         end
         if self.steps[group[1]].t ~= "C" then break end -- only objectives pick the nearest
+    end
+    -- a travel note with no spot of its own ("Fly to Sun Rock Retreat and run into Desolace"):
+    -- aim at the next step that has one
+    if not best and TRAVEL_IN[first.t] and not first.m then
+        for j = group[1] + 1, math.min(#self.steps, group[1] + 8) do
+            local m, x, y = self:StepTarget(self.steps[j])
+            if m then
+                best = { m = m, x = x, y = y, step = first, label = self:ShortLabel(first) }
+                break
+            end
+        end
+    end
+    -- faster by flight path or hearthstone?
+    self.advice = nil
+    if best and first.t ~= "FLY" and SL.Advisor then
+        local adv = SL.Advisor:Advise(best)
+        if adv then
+            adv.step = best.step.i
+            self.advice = adv
+            if adv.kind == "fly" then
+                return { m = adv.from.m, x = adv.from.x, y = adv.from.y, step = best.step, label = adv.label, via = "fly" }
+            end
+            best.label = adv.label
+        end
     end
     return best
 end
@@ -772,7 +934,8 @@ function E:ShortLabel(st)
     if t == "A" then return "Accept: " .. self:QuestName(st.q) end
     if t == "T" then return "Turn in: " .. self:QuestName(st.q) end
     if t == "C" then return self:QuestName(st.q) end
-    if t == "FP" or t == "HEARTH" or t == "FLY" then return st.name or t end
+    if t == "FLY" then return st.dest or st.name or t end
+    if t == "FP" or t == "HEARTH" then return st.name or t end
     return st.text or t
 end
 
@@ -836,6 +999,10 @@ function E:StepText(st)
         if st.text and st.text ~= "" then lines[#lines + 1] = "|cffcccccc" .. st.text .. "|r" end
     elseif t == "FLY" then
         text = st.dest and st.dest ~= "" and st.dest or ("Take a flight from " .. (st.name or "the flight master"))
+        if st.fto then
+            lines[#lines + 1] = "|cffccccccTalk to |cffffffff" .. (st.name or "the flight master") .. "|r|cffcccccc"
+                .. (st.text and (" - " .. st.text) or "") .. "|r"
+        end
     elseif t == "GRIND" then
         local P = SL.Player
         local lvl = st.level or 0
@@ -880,6 +1047,9 @@ function E:StepText(st)
     else
         text = st.text or t
     end
+    if self.advice and self.advice.step == st.i and self.advice.line then
+        table.insert(lines, 1, self.advice.line)
+    end
     return ICONS[t], text, lines
 end
 
@@ -899,6 +1069,7 @@ end
 function E:Flag(i)
     if i and self.steps[i] then
         SL.char.flags[i] = true
+        if SL.Advisor then SL.Advisor.passedFor = nil end   -- known flight paths may have changed
         SL:RequestUpdate()
     end
 end
@@ -919,6 +1090,21 @@ function E:ScanTaxi()
     local ok, nodes = pcall(C_TaxiMap.GetAllTaxiNodes, taxiMap)
     if not ok or not nodes then return end
     local reach = Enum.FlightPathState and Enum.FlightPathState.Unreachable or 2
+    SL.db.taxiNames = SL.db.taxiNames or {}
+    for _, fm in ipairs(SL.Advisor and SL.Advisor.FlightMasters() or {}) do
+        local ok2, left, right, top, bottom = pcall(C_Map.GetMapRectOnMap, fm.m, taxiMap)
+        if ok2 and left then
+            local px = left + (right - left) * fm.x / 100
+            local py = top + (bottom - top) * fm.y / 100
+            for _, node in ipairs(nodes) do
+                local nx, ny = node.position:GetXY()
+                if math.abs(nx - px) < 0.012 and math.abs(ny - py) < 0.012 then
+                    if node.name then SL.db.taxiNames[fm.npc] = node.name end
+                    SL.char.knownTaxi[fm.key] = node.state ~= reach
+                end
+            end
+        end
+    end
     for _, st in ipairs(self.steps) do
         if st.t == "FP" and st.m then
             local ok2, left, right, top, bottom = pcall(C_Map.GetMapRectOnMap, st.m, taxiMap)
@@ -953,8 +1139,12 @@ function E:RegisterEvents()
     end)
     SL:On("TAXIMAP_OPENED", function()
         E:ScanTaxi()
+        if SL.Advisor then SL.Advisor:AutoFly() end
         local st = E:CurrentIs("FP")
-        if st and near(st, 60) then E:Flag(st.i) end
+        if st and near(st, 60) then
+            E:Flag(st.i)
+            SL.char.knownTaxi[taxiKey(st.m, st.x, st.y)] = true
+        end
         SL:RequestUpdate()
     end)
     SL:On("TRAINER_SHOW", function()
@@ -965,6 +1155,10 @@ function E:RegisterEvents()
     SL:On("PLAYER_DEAD", function()
         local st = E:CurrentIs("DEATH")
         if st then SL.char.deathStep = st.i end
+        -- remember where you died: the corpse arrow looks it up on that map
+        local m = SL.Player:Position()
+        SL.char.deathMap = m and SL.Player:ZoneMap(m) or m
+        SL:RequestUpdate()
     end)
     local function alive()
         local i = SL.char.deathStep
@@ -972,6 +1166,7 @@ function E:RegisterEvents()
             SL.char.deathStep = nil
             E:Flag(i)
         end
+        SL:RequestUpdate()
     end
     SL:On("PLAYER_UNGHOST", alive)
     SL:On("PLAYER_ALIVE", alive)
@@ -1001,6 +1196,13 @@ function E:Tick()
         local bind = GetBindLocation()
         if bind and sub and sub ~= "" and bind == sub then self:Flag(st.i) end
     end
-    -- keep the arrow / distance text fresh
+    -- keep the arrow / distance text fresh; re-check flight / hearth advice every 3 s
+    self.reaim = (self.reaim or 0) + 1
+    if self.reaim >= 3 then
+        self.reaim = 0
+        local had = self.advice and self.advice.label
+        SL.Arrow:SetTarget(self:CurrentTarget())
+        if (self.advice and self.advice.label) ~= had then SL:RequestUpdate() end
+    end
     SL.UI:RefreshDistance()
 end

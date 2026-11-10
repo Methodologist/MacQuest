@@ -20,8 +20,8 @@ DISPLAY = "Mac Quest"      # what players see
 SLASH = "/mq"
 SLASH_LONG = "/macquest"
 
-FRIEND_README = """Mac Quest - Horde 1-60 speed-leveling guide for WoW Forever
-=============================================================
+FRIEND_README = """Mac Quest - Horde and Alliance 1-60 speed-leveling guide for WoW Forever
+===========================================================================
 
 INSTALL
   1. Close WoW (or be ready to /reload).
@@ -31,7 +31,7 @@ INSTALL
   3. Start WoW Forever, click "AddOns" on the character screen and make sure Mac Quest is ticked.
 
 USE
-  The guide window and arrow appear on Horde characters. It works out where you are from your
+  The guide window and arrow appear on Horde and Alliance characters. It works out where you are from your
   level and the quests you have already done, and skips quests that are grey for you.
 
   /mq                 show / hide the guide
@@ -45,7 +45,7 @@ USE
   to pause auto accept / turn-in. Click the zone name in the window to jump to another zone.
 
 NOTES
-  * Horde only for now. Route data comes from the Questie database for Forever.
+  * Horde and Alliance routes. Route data comes from the Questie database for Forever.
   * If Questie's or RestedXP's auto-accept is also on, turn one of them off.
   * Step timings and /mq report notes are stored only in your own SavedVariables
     (WTF\\Account\\<account>\\SavedVariables\\MacQuest.lua). Share that file if you want the

@@ -69,6 +69,14 @@ function T:Tick()
     end
 end
 
+-- a pickup its giver did not offer at this level: the next route build treats it as needing more
+function T:NotOffered(q, level)
+    if not SL.db.telemetry or not q then return end
+    local t = store()
+    t.notOffered = t.notOffered or {}
+    t.notOffered[q] = math.max(t.notOffered[q] or 0, level or 0)
+end
+
 function T:Skipped(i) if i then self.outcome[i] = "skip" end end
 function T:Manual(i) if i then self.outcome[i] = "manual" end end
 
