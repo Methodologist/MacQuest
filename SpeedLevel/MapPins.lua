@@ -1,4 +1,8 @@
 -- SpeedLevel: numbered pins + route line for the upcoming steps on the world map and minimap
+--
+-- The route reads like a path: your current step is green, later stops turn yellow and the last one
+-- shown is orange - pins and the line between them share that gradient.  Each pin also carries a
+-- small icon for its step type (pick up, turn in, flight master, inn, ...).
 local _, SL = ...
 local MP = {}
 SL.MapPins = MP
@@ -6,7 +10,9 @@ SL.MapPins = MP
 local MEDIA = "Interface\\AddOns\\SpeedLevel\\Media\\"
 local PIN_TEX = MEDIA .. "Pin"
 local GLOW_TEX = MEDIA .. "PinGlow"
+local HALO_TEX = MEDIA .. "PinHalo"
 local TEMPLATE = "SpeedLevelMapPinTemplate"
+-- step-type colours: tooltips only (the pins follow the route gradient)
 local COLORS = {
     A = { 1.00, 0.82, 0.00 }, T = { 0.35, 0.90, 0.35 }, C = { 0.35, 0.65, 1.00 },
     GRIND = { 1.00, 0.45, 0.30 }, DEATH = { 0.75, 0.40, 1.00 },
@@ -16,8 +22,10 @@ local DEFAULT = { 0.85, 0.85, 0.85 }
 local TYPE_NAME = {
     A = "Pick up", T = "Turn in", C = "Objective", GRIND = "Grind", DEATH = "Death-skip",
     FP = "Flight path", FLY = "Flight", HEARTH = "Set hearth", GOTO = "Travel", NOTE = "Note",
-    TRAIN = "Train", BOAT = "Boat / zeppelin",
+    TRAIN = "Train", BOAT = "Boat / zeppelin", DUNGEON = "Dungeon",
 }
+-- step types that get a small icon on their pin (objectives are the plain numbered badge)
+local BADGE = { A = true, T = true, FP = true, FLY = true, HEARTH = true, GRIND = true, DEATH = true, DUNGEON = true }
 local PIN_COUNT = 8
 local MINIMAP_COUNT = 4
 
@@ -29,13 +37,40 @@ local MINIMAP_YARDS = {
 
 local function colorOf(st) return COLORS[st.t] or DEFAULT end
 
+-- route gradient: 0 = your current step (green) .. 0.5 yellow .. 1 = the last stop shown (orange)
+local GRAD = { { 0.30, 0.90, 0.35 }, { 1.00, 0.85, 0.20 }, { 1.00, 0.50, 0.12 } }
+local function gradient(t)
+    t = math.max(0, math.min(1, t or 0))
+    local a, b, f
+    if t < 0.5 then a, b, f = GRAD[1], GRAD[2], t * 2 else a, b, f = GRAD[2], GRAD[3], (t - 0.5) * 2 end
+    return a[1] + (b[1] - a[1]) * f, a[2] + (b[2] - a[2]) * f, a[3] + (b[3] - a[3]) * f
+end
+MP.Gradient = gradient
+
+-- where along the route a target sits (0..1)
+local function routeT(info)
+    local total = info.total or 1
+    if total <= 1 then return 0 end
+    return (info.n - 1) / (total - 1)
+end
+
 local function numberFont(fs, size)
     local font = GameFontNormal and GameFontNormal:GetFont()
     if font then fs:SetFont(font, size, "OUTLINE") end
     fs:SetTextColor(1, 1, 1)
 end
 
--- upcoming steps that have a location: { {n=, idx=, st=, m=, x=, y=}, ... }
+local function setBadge(tex, t)
+    if not tex then return end
+    if BADGE[t] and SL.UI and SL.UI.setIcon then
+        SL.UI.setIcon(tex, t)
+        tex:Show()
+    else
+        tex:Hide()
+    end
+end
+
+-- upcoming steps that have a location: { {n=, total=, idx=, st=, m=, x=, y=}, ... }
 function MP:Targets(count)
     local out = {}
     local E = SL.Engine
@@ -47,6 +82,7 @@ function MP:Targets(count)
             if #out >= count then break end
         end
     end
+    for _, info in ipairs(out) do info.total = #out end
     return out
 end
 
@@ -77,6 +113,86 @@ local function tooltip(owner, info, clickable)
     GameTooltip:Show()
 end
 MP.Tooltip = tooltip
+
+-- "ping": a ring that grows and fades behind the current pin
+local function makePing(tex, fromScale, toScale)
+    local ag = tex:CreateAnimationGroup()
+    local sc = ag:CreateAnimation("Scale")
+    if sc.SetScaleFrom then
+        sc:SetScaleFrom(fromScale, fromScale)
+        sc:SetScaleTo(toScale, toScale)
+    elseif sc.SetFromScale then
+        sc:SetFromScale(fromScale, fromScale)
+        sc:SetToScale(toScale, toScale)
+    end
+    sc:SetDuration(1.5)
+    sc:SetSmoothing("OUT")
+    local fa = ag:CreateAnimation("Alpha")
+    fa:SetFromAlpha(0.9)
+    fa:SetToAlpha(0)
+    fa:SetDuration(1.5)
+    fa:SetSmoothing("IN")
+    ag:SetLooping("REPEAT")
+    return ag
+end
+
+-- ------------------------------------------------------------------ dashed lines with a dark edge
+
+-- a pool of line objects on frame o: o:Dash(...) draws one dash (dark edge underneath, colour on top)
+local function linePool(o)
+    o.lines, o.edges, o.used = {}, {}, 0
+    function o:Reset()
+        for i = 1, self.used do
+            self.lines[i]:Hide()
+            self.edges[i]:Hide()
+        end
+        self.used = 0
+    end
+    function o:Dash(anchor, ax, ay, bx, by, thick, r, g, b, a)
+        self.used = self.used + 1
+        local i = self.used
+        local l, e = self.lines[i], self.edges[i]
+        if not l then
+            e = self:CreateLine(nil, "BORDER")
+            l = self:CreateLine(nil, "ARTWORK")
+            self.lines[i], self.edges[i] = l, e
+        end
+        e:SetColorTexture(0, 0, 0, 0.55 * a)
+        e:SetThickness(thick + math.max(1.5, thick * 0.9))
+        e:SetStartPoint(anchor, self, ax, ay)
+        e:SetEndPoint(anchor, self, bx, by)
+        e:Show()
+        l:SetColorTexture(r, g, b, a)
+        l:SetThickness(thick)
+        l:SetStartPoint(anchor, self, ax, ay)
+        l:SetEndPoint(anchor, self, bx, by)
+        l:Show()
+    end
+    return o
+end
+
+-- draw a dashed polyline.  pts = { {x=, y=, g=, trim=} } in o's coordinates (anchor point given);
+-- g = route-gradient position of each point; trim = keep this far from the point (pin radius)
+local function drawDashed(o, anchor, pts, thick, dash, gap, alpha, maxDashes)
+    for j = 2, #pts do
+        local a, b = pts[j - 1], pts[j]
+        local dx, dy = b.x - a.x, b.y - a.y
+        local len = math.sqrt(dx * dx + dy * dy)
+        local tA, tB = a.trim or 0, b.trim or 0
+        if len > tA + tB then
+            local ux, uy = dx / len, dy / len
+            local pos, n = tA, 0
+            while pos < len - tB and n < (maxDashes or 120) do
+                local e = math.min(pos + dash, len - tB)
+                local f = ((pos + e) / 2) / len
+                local r, g, bb = gradient((a.g or 0) + ((b.g or 0) - (a.g or 0)) * f)
+                o:Dash(anchor, a.x + ux * pos, a.y + uy * pos, a.x + ux * e, a.y + uy * e, thick, r, g, bb, alpha)
+                pos = e + gap
+                n = n + 1
+            end
+        end
+    end
+end
 
 -- ------------------------------------------------------------------ world map (MapCanvas data provider)
 
@@ -115,38 +231,49 @@ function MP:SetupWorldMap()
         self:UseFrameLevelType("PIN_FRAME_LEVEL_AREA_POI")
         if self.SetScalingLimits then self:SetScalingLimits(1, 1.0, 1.3) end
         numberFont(self.Num, 11)
-        -- slow pulse on the glow behind the current target
+        -- slow breathing glow + a repeating ping ring behind the current target
         local ag = self.Glow:CreateAnimationGroup()
         local a = ag:CreateAnimation("Alpha")
         a:SetFromAlpha(0.25)
-        a:SetToAlpha(0.85)
+        a:SetToAlpha(0.7)
         a:SetDuration(0.9)
         a:SetSmoothing("IN_OUT")
         ag:SetLooping("BOUNCE")
         self.pulse = ag
+        if self.Halo then self.ping = makePing(self.Halo, 0.6, 1.35) end
     end
     function SpeedLevelMapPinMixin:OnAcquired(info, x, y)
         self.info = info
         self:SetPosition(x, y)
-        local c = colorOf(info.st)
+        local r, g, b = gradient(routeT(info))
         local current = info.n == 1
-        self:SetSize(current and 26 or 20, current and 26 or 20)
-        self.Ring:SetVertexColor(c[1], c[2], c[3])
+        self:SetSize(current and 28 or 22, current and 28 or 22)
+        self.Ring:SetVertexColor(r, g, b)
         self.Num:SetText(info.n)
         numberFont(self.Num, current and 13 or 11)
-        self:SetAlpha(current and 1 or math.max(0.55, 1 - info.n * 0.06))
+        setBadge(self.Badge, info.st.t)
+        if self.Badge then self.Badge:SetSize(current and 13 or 11, current and 13 or 11) end
+        self:SetAlpha(current and 1 or math.max(0.7, 1 - info.n * 0.04))
         if current then
-            self.Glow:SetVertexColor(c[1], c[2], c[3])
-            self.Glow:SetSize(58, 58)
+            self.Glow:SetVertexColor(r, g, b)
+            self.Glow:SetSize(60, 60)
             self.Glow:Show()
             self.pulse:Play()
+            if self.Halo then
+                self.Halo:SetVertexColor(r, g, b)
+                self.Halo:Show()
+                if self.ping then self.ping:Play() end
+            end
         else
             self.pulse:Stop()
             self.Glow:Hide()
+            if self.ping then self.ping:Stop() end
+            if self.Halo then self.Halo:Hide() end
         end
     end
     function SpeedLevelMapPinMixin:OnReleased()
         if self.pulse then self.pulse:Stop() end
+        if self.ping then self.ping:Stop() end
     end
     function SpeedLevelMapPinMixin:OnMouseEnter()
         if self.info then tooltip(self, self.info, true) end
@@ -176,15 +303,15 @@ function MP:SetupWorldMap()
     function provider:RefreshPins()
         self:RemoveAllData()
         self.points = nil
-        if not SL.ready or not SL.db.mapPins then return end
+        if not SL.ready or not (SL.db.mapPins or SL.db.mapRoute) then return end
         local mapID = self:GetMap():GetMapID()
         if not mapID then return end
         local points = {}
         for _, info in ipairs(MP:Targets(PIN_COUNT)) do
             local x, y = translate(info, mapID)
             if x then
-                self:GetMap():AcquirePin(TEMPLATE, info, x, y)
-                points[#points + 1] = { x = x, y = y, st = info.st, n = info.n }
+                if SL.db.mapPins then self:GetMap():AcquirePin(TEMPLATE, info, x, y) end
+                points[#points + 1] = { x = x, y = y, st = info.st, n = info.n, g = routeT(info) }
             end
         end
         self.points = points
@@ -195,18 +322,16 @@ function MP:SetupWorldMap()
     self.provider = provider
 end
 
--- dashed route line: you -> #1 -> #2 -> ...  drawn on a frame inside the map canvas so it pans and
--- zooms with the map; thickness and dash length are divided by the canvas scale so they stay about
--- the same size on screen at any zoom.
+-- route line: you -> #1 -> #2 -> ...  drawn on a frame inside the map canvas so it pans and zooms
+-- with the map; thickness and dash length are divided by the canvas scale so they stay about the
+-- same size on screen at any zoom.  Drawn whenever the route line setting is on (with or without pins).
 function MP.MakeRouteDrawer(provider)
     function provider:Overlay()
         if not self.overlay then
             local canvas = self:GetMap():GetCanvas()
-            local o = CreateFrame("Frame", nil, canvas)
+            local o = linePool(CreateFrame("Frame", nil, canvas))
             o:SetAllPoints(canvas)
             o:SetFrameLevel((canvas:GetFrameLevel() or 1) + 5)
-            o.lines = {}
-            o.used = 0
             local acc = 0
             o:SetScript("OnUpdate", SL:Guard("world map route", function(_, elapsed)
                 acc = acc + elapsed
@@ -219,70 +344,33 @@ function MP.MakeRouteDrawer(provider)
         return self.overlay
     end
     function provider:HideLines()
-        local o = self.overlay
-        if not o then return end
-        for i = 1, o.used do o.lines[i]:Hide() end
-        o.used = 0
-    end
-    function provider:Line(o)
-        o.used = o.used + 1
-        local l = o.lines[o.used]
-        if not l then
-            l = o:CreateLine(nil, "ARTWORK")
-            o.lines[o.used] = l
-        end
-        l:Show()
-        return l
+        if self.overlay then self.overlay:Reset() end
     end
     function provider:DrawRoute()
         self:HideLines()
-        if not SL.db.mapPins or not SL.db.mapRoute or not self.points or #self.points == 0 then return end
+        if not SL.db.mapRoute or not self.points or #self.points == 0 then return end
         local o = self:Overlay()
         local w, h = o:GetWidth(), o:GetHeight()
         if not w or w == 0 then return end
         local scale = self:GetMap().GetCanvasScale and self:GetMap():GetCanvasScale() or 1
         local k = 1 / math.max(scale, 0.05)
-        local thick, dash, gap, trim = 2.6 * k, 9 * k, 6 * k, 12 * k
+        local trim = (SL.db.mapPins and 13 or 4) * k
         local pts = {}
         local px, py = playerOn(self.mapID)
         if px then
-            pts[1] = { x = px, y = py, player = true }
+            pts[1] = { x = px * w, y = -py * h, g = 0, trim = 0 }
             -- first leg follows the terrain-aware route when there is one
             local PA = SL.Pathing
             if PA and PA.poly and PA.polyMap == self.mapID and #PA.poly > 2 then
-                for k = 2, #PA.poly - 1 do
-                    pts[#pts + 1] = { x = PA.poly[k][1], y = PA.poly[k][2], via = true,
-                        st = self.points[1].st, n = 1 }
+                for i = 2, #PA.poly - 1 do
+                    pts[#pts + 1] = { x = PA.poly[i][1] * w, y = -PA.poly[i][2] * h, g = 0, trim = 0 }
                 end
             end
         end
-        for _, p in ipairs(self.points) do pts[#pts + 1] = p end
-        for j = 2, #pts do
-            local a, b = pts[j - 1], pts[j]
-            local ax, ay, bx, by = a.x * w, -a.y * h, b.x * w, -b.y * h
-            local dx, dy = bx - ax, by - ay
-            local len = math.sqrt(dx * dx + dy * dy)
-            -- stop short of the pins so the dashes do not run under the numbers (not at route bends)
-            local tA = a.via and 0 or trim
-            local tB = b.via and 0 or trim
-            if len > tA + tB then
-                local ux, uy = dx / len, dy / len
-                local c = colorOf(b.st)
-                local alpha = (b.n == 1) and 0.95 or math.max(0.35, 0.8 - b.n * 0.07)
-                local pos = tA
-                local n = 0
-                while pos < len - tB and n < 120 do
-                    local e = math.min(pos + dash, len - tB)
-                    local l = self:Line(o)
-                    l:SetColorTexture(c[1], c[2], c[3], alpha)
-                    l:SetThickness(thick)
-                    l:SetStartPoint("TOPLEFT", o, ax + ux * pos, ay + uy * pos)
-                    l:SetEndPoint("TOPLEFT", o, ax + ux * e, ay + uy * e)
-                    pos = e + gap
-                    n = n + 1
-                end
-            end
+        for _, p in ipairs(self.points) do
+            pts[#pts + 1] = { x = p.x * w, y = -p.y * h, g = p.g, trim = trim }
         end
+        drawDashed(o, "TOPLEFT", pts, 3 * k, 10 * k, 6 * k, 0.95, 120)
     end
 end
 
@@ -295,18 +383,32 @@ end
 
 function MP:SetupMinimap()
     if self.mini or not Minimap then return end
+    -- route line under the pins
+    local lo = linePool(CreateFrame("Frame", nil, Minimap))
+    lo:SetAllPoints(Minimap)
+    lo:SetFrameLevel(Minimap:GetFrameLevel() + 4)
+    self.miniLines = lo
     self.mini = {}
     for i = 1, MINIMAP_COUNT do
         local p = CreateFrame("Frame", nil, Minimap)
-        local size = i == 1 and 20 or 15
+        local size = i == 1 and 21 or 16
         p:SetSize(size, size)
-        p:SetFrameLevel(Minimap:GetFrameLevel() + 5)
+        p:SetFrameLevel(Minimap:GetFrameLevel() + 6 + (MINIMAP_COUNT - i))
         p.glow = p:CreateTexture(nil, "BACKGROUND")
         p.glow:SetTexture(GLOW_TEX)
         p.glow:SetBlendMode("ADD")
         p.glow:SetSize(size * 2.2, size * 2.2)
         p.glow:SetPoint("CENTER")
         p.glow:SetShown(i == 1)
+        p.halo, p.ping = false, false          -- only the current step's pin pings
+        if i == 1 then
+            p.halo = p:CreateTexture(nil, "BORDER")
+            p.halo:SetTexture(HALO_TEX)
+            p.halo:SetBlendMode("ADD")
+            p.halo:SetSize(size * 1.8, size * 1.8)
+            p.halo:SetPoint("CENTER")
+            p.ping = makePing(p.halo, 0.6, 1.3)
+        end
         p.ring = p:CreateTexture(nil, "ARTWORK")
         p.ring:SetAllPoints()
         p.ring:SetTexture(PIN_TEX)
@@ -329,42 +431,110 @@ function MP:SetupMinimap()
     end))
 end
 
+-- keep the part of segment a->b that lies inside the minimap (a circle of radius R, or a square of
+-- half-width R for square minimaps); returns the clipped end points or nil
+local function clip(ax, ay, bx, by, R, square)
+    local dx, dy = bx - ax, by - ay
+    local t0, t1 = 0, 1
+    if square then
+        for _, e in ipairs({ { -dx, ax + R }, { dx, R - ax }, { -dy, ay + R }, { dy, R - ay } }) do
+            local p, q = e[1], e[2]
+            if p == 0 then
+                if q < 0 then return nil end
+            else
+                local t = q / p
+                if p < 0 then t0 = math.max(t0, t) else t1 = math.min(t1, t) end
+            end
+        end
+    else
+        local A = dx * dx + dy * dy
+        if A == 0 then return nil end
+        local B = 2 * (ax * dx + ay * dy)
+        local C = ax * ax + ay * ay - R * R
+        local disc = B * B - 4 * A * C
+        if disc <= 0 then return nil end
+        local s = math.sqrt(disc)
+        t0 = math.max(0, (-B - s) / (2 * A))
+        t1 = math.min(1, (-B + s) / (2 * A))
+    end
+    if t1 <= t0 then return nil end
+    return ax + dx * t0, ay + dy * t0, ax + dx * t1, ay + dy * t1
+end
+
 function MP:UpdateMinimap()
     if not self.mini then return end
     local show = SL.ready and SL.db.minimapPins and not SL.db.hidden
-    local targets = show and self.cachedTargets or {}
+    local lineOn = SL.ready and SL.db.minimapRoute ~= false and not SL.db.hidden
+    local targets = (show or lineOn) and self.cachedTargets or {}
     local zoom = Minimap:GetZoom() or 0
     local yards = (IsIndoors and IsIndoors()) and MINIMAP_YARDS.indoor or MINIMAP_YARDS.outdoor
     local radiusYd = (yards[zoom] or 233) / 2
     local radiusPx = Minimap:GetWidth() / 2
     local rotate = cvar("rotateMinimap") == "1"
     local facing = rotate and GetPlayerFacing and SL.Clean(GetPlayerFacing()) or 0
+    local route = { { x = 0, y = 0, g = 0, trim = 7 } }   -- you (the player arrow sits here)
     for i, p in ipairs(self.mini) do
         local info = targets[i]
         local d, a = nil, nil
         if info then d, a = SL.Player:VectorTo(info.m, info.x, info.y) end
         if d and a then
             local rel = a - facing
-            local r = d / radiusYd
-            local edge = r > 0.9
-            if edge then r = 0.9 end
+            local rr = d / radiusYd
             -- angle is counter-clockwise from north: west = +sin, north = +cos
-            local px = -math.sin(rel) * r * radiusPx
-            local py = math.cos(rel) * r * radiusPx
-            p:ClearAllPoints()
-            p:SetPoint("CENTER", Minimap, "CENTER", px, py)
-            local c = colorOf(info.st)
-            p.ring:SetVertexColor(c[1], c[2], c[3])
-            p.glow:SetVertexColor(c[1], c[2], c[3])
-            p.num:SetText(info.n)
-            p:SetAlpha(edge and 0.6 or 1)
-            p:SetScale(edge and 0.8 or 1)
-            p.info = info
-            p:Show()
+            local fx, fy = -math.sin(rel) * rr * radiusPx, math.cos(rel) * rr * radiusPx
+            route[#route + 1] = { x = fx, y = fy, g = routeT(info), trim = rr <= 0.9 and (i == 1 and 9 or 7) or 0 }
+            local r = math.min(rr, 0.9)
+            local edge = rr > 0.9
+            if show then
+                p:ClearAllPoints()
+                p:SetPoint("CENTER", Minimap, "CENTER", -math.sin(rel) * r * radiusPx, math.cos(rel) * r * radiusPx)
+                local cr, cg, cb = gradient(routeT(info))
+                p.ring:SetVertexColor(cr, cg, cb)
+                p.glow:SetVertexColor(cr, cg, cb)
+                if p.halo then
+                    p.halo:SetVertexColor(cr, cg, cb)
+                    if p.ping and not p.ping:IsPlaying() then p.ping:Play() end
+                end
+                p.num:SetText(info.n)
+                p:SetAlpha(edge and 0.65 or 1)
+                p:SetScale(edge and 0.8 or 1)
+                p.info = info
+                p:Show()
+            else
+                p:Hide()
+                p.info = nil
+            end
         else
             p:Hide()
             p.info = nil
         end
+    end
+    -- the route line, clipped to the minimap's edge
+    local lo = self.miniLines
+    if not lo then return end
+    lo:Reset()
+    if not lineOn or #route < 2 then return end
+    local shape = GetMinimapShape and GetMinimapShape() or "ROUND"
+    local square = shape == "SQUARE"
+    local R = radiusPx * (square and 0.97 or 0.93)
+    local clipped = {}
+    for j = 2, #route do
+        local a, b = route[j - 1], route[j]
+        local ax, ay, bx, by = clip(a.x, a.y, b.x, b.y, R, square)
+        if ax then
+            -- gradient positions at the clipped ends
+            local len = math.sqrt((b.x - a.x) ^ 2 + (b.y - a.y) ^ 2)
+            local f0 = len > 0 and math.sqrt((ax - a.x) ^ 2 + (ay - a.y) ^ 2) / len or 0
+            local f1 = len > 0 and math.sqrt((bx - a.x) ^ 2 + (by - a.y) ^ 2) / len or 1
+            local seg = {
+                { x = ax, y = ay, g = a.g + (b.g - a.g) * f0, trim = (f0 == 0) and a.trim or 0 },
+                { x = bx, y = by, g = a.g + (b.g - a.g) * f1, trim = (f1 >= 0.999) and b.trim or 0 },
+            }
+            clipped[#clipped + 1] = seg
+        end
+    end
+    for _, seg in ipairs(clipped) do
+        drawDashed(lo, "CENTER", seg, 2.2, 5, 3.5, 0.9, 60)
     end
 end
 

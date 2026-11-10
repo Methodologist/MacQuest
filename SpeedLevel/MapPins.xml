@@ -1,11 +1,20 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/">
-    <!-- World-map pin used by SpeedLevel's MapCanvas data provider (mixin is defined in MapPins.lua) -->
+    <!-- World-map pin used by SpeedLevel's MapCanvas data provider (mixin is defined in MapPins.lua):
+         soft glow + "ping" ring behind the current step, the numbered badge, a small step-type icon -->
     <Frame name="SpeedLevelMapPinTemplate" mixin="SpeedLevelMapPinMixin" virtual="true" enableMouse="true">
         <Size x="22" y="22"/>
         <Layers>
             <Layer level="BACKGROUND">
                 <Texture parentKey="Glow" file="Interface\AddOns\SpeedLevel\Media\PinGlow" alphaMode="ADD" hidden="true">
                     <Size x="48" y="48"/>
+                    <Anchors>
+                        <Anchor point="CENTER"/>
+                    </Anchors>
+                </Texture>
+            </Layer>
+            <Layer level="BORDER">
+                <Texture parentKey="Halo" file="Interface\AddOns\SpeedLevel\Media\PinHalo" alphaMode="ADD" hidden="true">
+                    <Size x="40" y="40"/>
                     <Anchors>
                         <Anchor point="CENTER"/>
                     </Anchors>
@@ -20,6 +29,12 @@
                         <Anchor point="CENTER" x="0" y="0"/>
                     </Anchors>
                 </FontString>
+                <Texture parentKey="Badge" hidden="true">
+                    <Size x="11" y="11"/>
+                    <Anchors>
+                        <Anchor point="CENTER" relativePoint="TOPRIGHT" x="-3" y="-3"/>
+                    </Anchors>
+                </Texture>
             </Layer>
         </Layers>
         <!-- only OnLoad: the map canvas wires OnEnter/OnLeave/OnMouseUp itself (and asserts they are unset) -->

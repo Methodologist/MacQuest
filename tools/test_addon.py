@@ -47,6 +47,8 @@ local methods = {
   GetWidth = function() return 300 end,
   GetHeight = function() return 200 end,
   CreateLine = function() return newMock() end,
+  SetStartPoint = function(self, anchor, rel, x, y) self._start = { anchor, x, y } end,
+  SetEndPoint = function(self, anchor, rel, x, y) self._end = { anchor, x, y } end,
   CreateAnimationGroup = function() return newMock() end,
   CreateAnimation = function() return newMock() end,
   CreateTexture = function() return newMock() end,
@@ -570,6 +572,28 @@ def main():
     end)()""")
     a, b, pool = [int(x) for x in used.split(",")]
     check(a > 0 and a == b and pool == a, f"route line drawn as dashes, pool reused on redraw ({used})")
+    grad = L.eval("""(function()
+        local G = SpeedLevel.MapPins.Gradient
+        local r0, g0, b0 = G(0); local r5, g5, b5 = G(0.5); local r1, g1, b1 = G(1)
+        return string.format("%.2f %.2f %.2f|%.2f %.2f %.2f|%.2f %.2f %.2f", r0, g0, b0, r5, g5, b5, r1, g1, b1)
+    end)()""")
+    check(grad == "0.30 0.90 0.35|1.00 0.85 0.20|1.00 0.50 0.12", f"route gradient green -> yellow -> orange ({grad})")
+    mini = L.eval("""(function()
+        local SL = SpeedLevel
+        SL.MapPins:Refresh(); SL.MapPins:UpdateMinimap()
+        local lo = SL.MapPins.miniLines
+        -- every dash end must stay inside the minimap circle (radius 70 in the mock)
+        local worst = 0
+        for i = 1, lo.used do
+          for _, pt in ipairs({ lo.lines[i]._start or {}, lo.lines[i]._end or {} }) do
+            if pt[2] then worst = math.max(worst, math.sqrt(pt[2] ^ 2 + pt[3] ^ 2)) end
+          end
+        end
+        return lo.used .. "," .. string.format("%.1f", worst)
+    end)()""")
+    n_mini, worst = mini.split(",")
+    check(int(n_mini) > 0, f"route line drawn on the minimap ({n_mini} dashes)")
+    check(float(worst) <= 70.0, f"minimap route line stays inside the minimap (furthest dash end {worst} px of 70)")
     check(True, "compact mode toggles without errors")
 
     print("\n== combat restrictions (secret values)")

@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.1.0
+
+- **Route line on the minimap**: a line from you through your next stops, updated as you move and
+  trimmed to the minimap's edge. The world map line no longer needs the pins turned on.
+- **Green to orange**: the line and the numbered pins blend from green (your current step) through
+  yellow to orange (the furthest stop shown), so you can see the order at a glance.
+- **New map pins**: a sharper numbered badge with a bevelled ring, drop shadow and dark outline that
+  reads on any map, a small icon for the step type (pick up, turn in, flight master, inn, grind...),
+  and a glow with a ping ring on the current step. The line has a dark edge so it stands out too.
+
 ## 1.0.1
 
 - **Minimap button** shows the Mac Quest "M" emblem (it could appear as a blank circle). Left-click
