@@ -27,13 +27,29 @@ local secMemo = {}
 
 -- ------------------------------------------------------------------ init
 
-E.MODES = { "speed", "dungeons", "thorough" }
-E.MODE_NAMES = { speed = "Speed", dungeons = "Dungeons", thorough = "Thorough" }
+-- a route mode = style (speed | thorough) + optional dungeon runs
+E.STYLES = { "speed", "thorough" }
+E.MODES = { "speed", "speed_dungeons", "thorough", "thorough_dungeons" }
+E.MODE_NAMES = { speed = "Speed", thorough = "Thorough", speed_dungeons = "Speed + Dungeons",
+    thorough_dungeons = "Thorough + Dungeons" }
+E.STYLE_NAMES = { speed = "Speed", thorough = "Thorough" }
 
 function E:Mode()
     local m = SL.char.mode or "speed"
+    if m == "dungeons" then m = "speed_dungeons" end          -- older setting
     if not (SL.Routes and SL.Routes["Horde_" .. m]) then m = "speed" end
     return m
+end
+
+function E:Style() return (self:Mode():gsub("_dungeons$", "")) end
+function E:Dungeons() return self:Mode():find("_dungeons$") ~= nil end
+
+function E:SetStyle(style)
+    self:SetMode(style .. (self:Dungeons() and "_dungeons" or ""))
+end
+
+function E:SetDungeons(on)
+    self:SetMode(self:Style() .. (on and "_dungeons" or ""))
 end
 
 function E:Init()
@@ -44,8 +60,13 @@ end
 
 -- switch route mode for this character and re-detect your place in it
 function E:SetMode(mode)
+    if mode == "dungeons" then mode = "speed_dungeons" end
     if not (SL.Routes and SL.Routes["Horde_" .. mode]) then
-        SL:Print("unknown mode '" .. tostring(mode) .. "' - use speed, dungeons or thorough.")
+        SL:Print("unknown mode '" .. tostring(mode) .. "' - use speed or thorough, and /sl dungeons on|off.")
+        return
+    end
+    if mode == self:Mode() and SL.char.mode then
+        SL:Print("route: |cffffd100" .. self.MODE_NAMES[mode] .. "|r")
         return
     end
     SL.char.mode = mode
@@ -66,6 +87,10 @@ function E:LoadRoute()
             first = #steps + 1, index = si, questSteps = {},
             dungeon = sec.dungeon, em = sec.em, ex = sec.ex, ey = sec.ey,
         }
+        if sec.classes then
+            s.classSet = {}
+            for _, c in ipairs(sec.classes) do s.classSet[c] = true end
+        end
         if sec.races then
             s.raceSet = {}
             for _, r in ipairs(sec.races) do s.raceSet[r] = true end
@@ -108,6 +133,7 @@ end
 -- ------------------------------------------------------------------ helpers
 
 function E:SectionApplies(sec)
+    if sec.classSet and not sec.classSet[SL.Player.classFile] then return false end
     if not sec.raceSet then return true end
     return sec.raceSet[SL.Player.raceName] == true
 end
@@ -207,7 +233,9 @@ function E:ComputeStatus(i)
     if char.manualDone[i] then return DONE, "manual" end
     if char.manualSkip[i] then return SKIP, "skipped" end
     local sec = self.sections[st.sec]
-    if not self:SectionApplies(sec) then return SKIP, "other race" end
+    if not self:SectionApplies(sec) then
+        return SKIP, (sec.classSet and not sec.classSet[SL.Player.classFile]) and "other class" or "other race"
+    end
 
     local t, q = st.t, st.q
     if QUEST_TYPES[t] then

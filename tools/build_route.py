@@ -53,7 +53,11 @@ XP_TO_LEVEL = [0, 400, 900, 1400, 2100, 2800, 3600, 4500, 5400, 6500, 7600, 8800
                95800, 101000, 106300, 111800, 117500, 123200, 129100, 135100, 141200, 147500, 153900,
                160400, 167100, 173900, 180800, 187900, 195000, 202300, 209800]
 
-MODES = ("speed", "dungeons", "thorough")
+MODES = ("speed", "speed_dungeons", "thorough", "thorough_dungeons")
+
+
+def has_dungeons(mode):
+    return mode.endswith("dungeons")
 MODE = "speed"            # set per build pass by main()
 DUNGEON_AREAS = {}        # areaId -> dungeon segment map (dungeons mode)
 DUNGEON_MAPS = set()
@@ -287,6 +291,9 @@ class Segment:
         self.dungeon = None        # set of dungeon areaIds when this segment is a dungeon run
         self.entrance = None       # (map, x, y) of the instance portal for dungeon runs
         self.runtime = 0           # minutes for a dungeon run (incl. finding a group)
+        self.chain = None          # class chain: list of final quest ids
+        self.classes = None        # class chain: {"SHAMAN"}
+        self.after = None          # class chain: insert after this segment title
         # outputs
         self.nodes = []
         self.quests = []
@@ -295,7 +302,11 @@ class Segment:
         self.exit_level = None
 
 
+CHAINS = []
+
+
 def parse_plan(path):
+    CHAINS.clear()
     segs = []
     cur = None
     for raw in path.read_text(encoding="utf-8").splitlines():
@@ -307,6 +318,11 @@ def parse_plan(path):
             if kw == "SEGMENT":
                 cur = Segment(rest.strip())
                 segs.append(cur)
+                continue
+            if kw == "CLASSCHAIN":
+                cur = Segment(rest.strip())
+                cur.chain = []
+                CHAINS.append(cur)
                 continue
             raise SystemExit("bad plan line: " + raw)
         kw, _, rest = line.strip().partition(" ")
@@ -351,6 +367,12 @@ def parse_plan(path):
             cur.entrance = (int(m), float(x), float(y))
         elif kw == "runtime":
             cur.runtime = float(rest)
+        elif kw == "class":
+            cur.classes = {c.upper() for c in rest.split()}
+        elif kw == "finals":
+            cur.chain = [int(x) for x in rest.split()]
+        elif kw == "after":
+            cur.after = rest.strip()
         elif kw == "prune":
             cur.prune = float(rest)
         elif kw == "pre":
@@ -488,7 +510,7 @@ def quest_info(qid):
                         objpts[um].append((float(p[0]), float(p[1])))
     has_obj = any(x for x in (cre, obj, items, killcred)) or bool(trig)
     dungeon_map = DUNGEON_AREAS.get(q.get("zone") or 0)
-    if MODE == "dungeons" and dungeon_map is not None:
+    if has_dungeons(MODE) and dungeon_map is not None:
         # a dungeon quest: its objectives are done during that dungeon's run step.  Their exact spots
         # inside the instance do not matter (no arrow in instances) - the run step sits at the portal.
         if has_obj:
@@ -648,6 +670,96 @@ def build_order(start, quests, deferred, before):
 
 DUNGEON_QUEST = {}
 PLAN = []
+CHAIN_RESERVED = set()
+
+def chain_quests(finals, class_token):
+    """every quest of a class chain: the finals, their prerequisites (all alternatives), and class
+    quests whose `next` leads into the chain (breadcrumbs from the trainers)"""
+    cls_bit = {"WARRIOR": 1, "PALADIN": 2, "HUNTER": 4, "ROGUE": 8, "PRIEST": 16, "SHAMAN": 64,
+               "MAGE": 128, "WARLOCK": 256, "DRUID": 1024}[class_token]
+    out = set()
+    todo = list(finals)
+    while todo:
+        q = todo.pop()
+        if q in out or not qget(q):
+            continue
+        out.add(q)
+        d = qget(q)
+        for p in (d.get("preSingle") or []) + (d.get("preGroup") or []):
+            todo.append(p)
+    drop = {"repeatable", "placeholder", "season content", "profession"}
+    return {q for q in out if quest_info(q)["why"] not in drop}
+
+
+def collapse_alternatives(qs, anchor_map):
+    """the same step offered by several trainers / cities (same name, same turn-in, same races,
+    no prerequisite between them) is done once: keep the one nearest the route"""
+    groups = defaultdict(list)
+    for q in qs:
+        d = qget(q)
+        en, eo, _ = givers(d.get("finishedBy"))
+        groups[(d["name"], tuple(sorted(en + eo)), d.get("races") or 0)].append(q)
+    keep = set(qs)
+    for members in groups.values():
+        if len(members) < 2:
+            continue
+        linked = any(p in members for m in members
+                     for p in (qget(m).get("preSingle") or []) + (qget(m).get("preGroup") or []))
+        if linked:
+            continue
+        best = sorted(members, key=lambda m: (anchor_map not in quest_info(m)["start"], m))[0]
+        keep -= set(members) - {best}
+    # drop anything whose prerequisites were all collapsed away
+    for q in list(keep):
+        d = qget(q)
+        single = [p for p in (d.get("preSingle") or []) if p in qs]
+        if single and not any(p in keep for p in single):
+            keep.discard(q)
+    return keep
+
+
+def chain_order(qs):
+    """topological order: prerequisites and `next` links first, then level, then id"""
+    succ = defaultdict(set)
+    indeg = {q: 0 for q in qs}
+    for q in qs:
+        d = qget(q)
+        for p in (d.get("preSingle") or []) + (d.get("preGroup") or []):
+            if p in qs and q not in succ[p]:
+                succ[p].add(q)
+                indeg[q] += 1
+        n = d.get("next")
+        if n in qs and n not in succ[q]:
+            succ[q].add(n)
+            indeg[n] += 1
+    ready = sorted([q for q in qs if indeg[q] == 0], key=lambda q: ((qget(q).get("level") or 0), q))
+    out = []
+    while ready:
+        q = ready.pop(0)
+        out.append(q)
+        for n in sorted(succ[q]):
+            indeg[n] -= 1
+            if indeg[n] == 0:
+                ready.append(n)
+        ready.sort(key=lambda q: ((qget(q).get("level") or 0), q))
+    out += [q for q in qs if q not in out]     # cycles (should not happen)
+    return out
+
+
+def insert_class_chains(plan, chains):
+    out = list(plan)
+    for ch in chains:
+        k = next((i for i, sg in enumerate(out) if sg.title == ch.after), None)
+        if k is None:
+            raise SystemExit(f"plan: CLASSCHAIN '{ch.title}' after unknown segment '{ch.after}'")
+        c = Segment(ch.title)
+        c.chain, c.classes, c.after = list(ch.chain), set(ch.classes), ch.after
+        c.map, c.noauto, c.races, c.levels = out[k].map, True, set(out[k].races), (0, 99)
+        c.start = out[k].start
+        c.pre = list(ch.pre)
+        out.insert(k + 1, c)
+    return out
+
 
 CITIES = {1454: ("Orgrimmar", "Doras"), 1456: ("Thunder Bluff", "Tal"), 1458: ("Undercity", "Michael Garrett")}
 AREA_NAME_BY_MAP = {}
@@ -728,10 +840,11 @@ def dungeon_pickup_here(qid, si):
     if dsi is None or si >= dsi:
         return False
     info = quest_info(qid)
-    if not info["ok"] or PLAN[si].map not in info["start"]:
+    if not info["ok"] or PLAN[si].map not in info["start"] or PLAN[si].chain:
         return False
     for j in range(si + 1, dsi):
-        if PLAN[j].map in info["start"] and PLAN[si].races <= PLAN[j].races and not PLAN[j].dungeon:
+        # class-chain sections take no extra pickups, so they never count as a later visit
+        if PLAN[j].map in info["start"] and PLAN[si].races <= PLAN[j].races and not PLAN[j].dungeon                 and not PLAN[j].chain:
             return False
     return True
 
@@ -745,6 +858,7 @@ def segment_quests(seg, used, entry_level, si=None):
                     and dungeon_pickup_here(qid, si):
                 out.append(qid)
     forced_dungeon = set(out)
+    reserved = CHAIN_RESERVED
     lo_q, hi_q = seg.levels if seg.levels else (0, 99)
     seg.stack = set()
     stack_hi = hi_q + 4 if getattr(seg, "later_same_map", False) else hi_q
@@ -760,7 +874,7 @@ def segment_quests(seg, used, entry_level, si=None):
                 continue
             cands.add(qid)
     for qid in sorted(cands):
-        if qid in used or qid in seg.exclude or qid in forced_dungeon or qid in DUNGEON_QUEST:
+        if qid in used or qid in seg.exclude or qid in forced_dungeon or qid in DUNGEON_QUEST or qid in reserved:
             continue
         q = qget(qid)
         if not q:
@@ -802,7 +916,9 @@ def segment_quests(seg, used, entry_level, si=None):
 def main(mode="speed", keep=None, dry=False):
     global MODE
     MODE = mode
-    plan = [sg for sg in parse_plan(ROOT / "route" / "horde.plan") if not sg.modes or mode in sg.modes]
+    plan = [sg for sg in parse_plan(ROOT / "route" / "horde.plan")
+            if not sg.modes or mode in sg.modes or ("dungeons" in sg.modes and has_dungeons(mode))]
+    plan = insert_class_chains(plan, CHAINS)
     PLAN[:] = plan
     DUNGEON_AREAS.clear()
     DUNGEON_MAPS.clear()
@@ -813,18 +929,22 @@ def main(mode="speed", keep=None, dry=False):
             DUNGEON_MAPS.add(sg.map)
             if not sg.start:
                 sg.start = (50.0, 50.0)
-        if mode == "thorough":
+        if mode.startswith("thorough"):
             sg.prune = 0
-    tricks.ALLOW_DEATH = mode != "thorough"
+    tricks.ALLOW_DEATH = not mode.startswith("thorough")
     tricks.init(sys.modules[__name__])
-    if mode == "dungeons":
+    if has_dungeons(mode):
         # quest_info needs DUNGEON_AREAS (set above) before stops can be worked out
         plan = add_city_visits(plan, keep)
         PLAN[:] = plan
+    CHAIN_RESERVED.clear()
+    for sg in plan:
+        if sg.chain:
+            CHAIN_RESERVED.update(chain_quests(sg.chain, next(iter(sg.classes))))
     # dungeon quests (dungeons mode): qid -> index of the dungeon run segment that completes them
     global DUNGEON_QUEST
     DUNGEON_QUEST = {}
-    if mode == "dungeons":
+    if has_dungeons(mode):
         for di, sg in enumerate(plan):
             if not sg.dungeon:
                 continue
@@ -834,9 +954,13 @@ def main(mode="speed", keep=None, dry=False):
                     lvl = q.get("level") or 0
                     if lo - 3 <= lvl <= hi + 2 and int(qid) not in DUNGEON_QUEST:
                         DUNGEON_QUEST[int(qid)] = di
-    for i, sg in enumerate(plan):
-        sg.later_same_map = (i + 1 < len(plan) and plan[i + 1].map != sg.map) and any(
-            plan[j].map == sg.map and sg.races <= plan[j].races for j in range(i + 2, min(len(plan), i + 14)))
+    zone_plan = [sg for sg in plan if not sg.chain]          # class chains are side trips
+    for sg in plan:
+        sg.later_same_map = False
+    for i, sg in enumerate(zone_plan):
+        sg.later_same_map = (i + 1 < len(zone_plan) and zone_plan[i + 1].map != sg.map) and any(
+            zone_plan[j].map == sg.map and sg.races <= zone_plan[j].races
+            for j in range(i + 2, min(len(zone_plan), i + 14)))
     travel = tricks.TravelState()
     totals = {"hearths": 0, "deaths": 0, "saved": 0.0, "stacked": 0}
     for sg in plan:
@@ -865,6 +989,10 @@ def main(mode="speed", keep=None, dry=False):
         if isinstance(seg.start, tuple) and seg.start and seg.start[0] == "npc":
             seg.start = npc_location(seg.start[1], seg.map)
         start = seg.start
+        if seg.chain:
+            build_chain_segment(seg, used, level, report)
+            seg.clock0, seg.clock_end, seg.level_after = travel.clock, travel.clock, level
+            continue
         cands = segment_quests(seg, used, int(level), si)
         # dependency resolution
         chosen = {}
@@ -1287,6 +1415,45 @@ _TIMED = re.compile(r"\b(?:\d+|one|two|three|four|five|six|seven|eight|nine|ten|
                     r"\s+minutes?\b|\btime runs out\b|\bbefore time\b", re.I)
 
 
+def build_chain_segment(seg, used, level, report):
+    """a class chain as one section: its quests in chain order, each pickup / objective / turn-in at
+    the location nearest to the previous step (chains hop between capitals and zones)"""
+    token = next(iter(seg.classes))
+    qs = [q for q in chain_order(collapse_alternatives(chain_quests(seg.chain, token), seg.map)) if q not in used]
+    nodes, recs = [], []
+    pos, pmap = seg.start, seg.map
+
+    def place(ptsmap):
+        nonlocal pos, pmap
+        if not ptsmap:
+            return None, None
+        m = pmap if pmap in ptsmap else (seg.map if seg.map in ptsmap else next(iter(ptsmap)))
+        p = pick_point(ptsmap, m, pos if m == pmap else None)
+        pos, pmap = p, m
+        return p, m
+
+    for q in qs:
+        info = quest_info(q)
+        d = qget(q)
+        a_pos, a_map = place(info["start"])
+        a = Node("A", q, a_pos, a_map or seg.map)
+        mine = [a]
+        if info.get("has_obj") and info["obj"]:
+            c_pos, c_map = place(info["obj"])
+            mine.append(Node("C", q, c_pos, c_map))
+        elif any(objectives(d)[i] for i in (0, 1, 2, 4)):
+            mine.append(Node("C", q, None, a_map or seg.map))      # objective with no known spot
+        t_pos, t_map = place(info["end"])
+        mine.append(Node("T", q, t_pos, t_map or seg.map))
+        nodes += mine
+        recs.append({"qid": q, "nodes": mine, "later": []})
+        used[q] = -1
+    seg.nodes, seg.quests = nodes, recs
+    seg.entry_level = seg.exit_level = level
+    seg.minutes = 0
+    report.append(f"[--] {seg.title:<38} class chain ({token}): {len(qs)} quests")
+
+
 def is_timed(qid):
     q = qget(qid) or {}
     return bool(_TIMED.search(" ".join(q.get("objText") or [])))
@@ -1560,6 +1727,8 @@ def write_lua(plan, mode):
     for si, seg in enumerate(plan):
         races = "nil" if seg.races == ALL_HORDE else "{" + ",".join(lua_str(r) for r in sorted(seg.races)) + "}"
         extra = ""
+        if seg.classes:
+            extra += ",classes={" + ",".join(lua_str(c) for c in sorted(seg.classes)) + "}"
         if seg.dungeon and seg.entrance:
             extra = f",dungeon=true,em={seg.entrance[0]},ex={seg.entrance[1]},ey={seg.entrance[2]}"
         L.append(f"{{title={lua_str(seg.title)},map={seg.map},races={races},"
@@ -1601,7 +1770,9 @@ def write_lua(plan, mode):
                 prevpos = n.pos
             q = qget(n.qid)
             info = quest_info(n.qid)
-            st = {"t": n.kind, "q": n.qid, "m": n.map}
+            st = {"t": n.kind, "q": n.qid}
+            if n.pos:
+                st["m"] = n.map
             if n.pos:
                 st["x"], st["y"] = n.pos
             if n.kind == "A":
@@ -1642,7 +1813,7 @@ def build_all():
     maps = {1454, 1456, 1458}
     for mode in MODES:
         keep = None
-        if mode == "dungeons":
+        if has_dungeons(mode):
             # pass 1: every possible stop; keep stops serving >= 2 dungeon pickups/turn-ins (>= 1 in the
             # dungeon's own zone) and dungeon runs that ended up with quests
             plan, _ = main(mode, dry=True)

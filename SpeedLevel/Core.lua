@@ -173,6 +173,19 @@ SL:On("PLAYER_LOGIN", function()
         SL.char.initialized = true
         SL:Print("welcome! Finding your place in the route from your level and completed quests... (/sl for help)")
     end
+    -- ask once per character whether dungeon runs belong in the route (changeable any time)
+    if not SL.char.dungeonsAsked and StaticPopupDialogs then
+        StaticPopupDialogs["SPEEDLEVEL_DUNGEONS"] = {
+            text = "Include dungeon runs in your leveling route?\n\nDungeon quests are picked up beforehand, the arrow leads to each entrance, and turn-ins follow. Class quests that unlock abilities are always included.\n\nYou can change this any time in settings or with /sl dungeons on|off.",
+            button1 = "Include dungeons", button2 = "Solo route",
+            OnAccept = function() SL.char.dungeonsAsked = true; SL.Engine:SetDungeons(true) end,
+            OnCancel = function() SL.char.dungeonsAsked = true; SL.Engine:SetDungeons(false) end,
+            timeout = 0, whileDead = true, hideOnEscape = false,
+        }
+        C_Timer.After(3, function()
+            if not SL.char.dungeonsAsked then StaticPopup_Show("SPEEDLEVEL_DUNGEONS") end
+        end)
+    end
     -- quest-completion data can arrive a moment after login
     C_Timer.After(1, function() SL:Update() end)
     C_Timer.After(5, function() SL:Update() end)
@@ -198,7 +211,8 @@ local function help()
     print("  /sl sections     list route sections")
     print("  /sl arrow        toggle the guide arrow")
     print("  /sl lock         lock / unlock the window")
-    print("  /sl mode <m>     route mode: speed (solo), dungeons (adds dungeon runs), thorough (no cuts, no death-skips)")
+    print("  /sl mode <m>     route style: speed (fastest) or thorough (no cuts, no death-skips)")
+    print("  /sl dungeons on|off  include dungeon runs (with their quests) in the route")
     print("  /sl compact      toggle the compact one-line window")
     print("  /sl report <note> flag the current step as wrong (saved for route fixes)")
     print("  /sl telemetry    show / clear recorded step timings")
@@ -244,11 +258,18 @@ SlashCmdList.SPEEDLEVEL = function(msg)
     elseif cmd == "options" or cmd == "config" then
         SL.Options:Open()
     elseif cmd == "mode" then
-        if arg and arg ~= "" then
-            SL.Engine:SetMode(arg:lower())
+        local a = (arg or ""):lower()
+        if a == "speed" or a == "thorough" then
+            SL.Engine:SetStyle(a)
+        elseif a == "dungeons" then
+            SL.Engine:SetDungeons(true)
         else
-            SL:Print("mode is |cffffd100" .. SL.Engine.MODE_NAMES[SL.Engine:Mode()] .. "|r. /sl mode speed | dungeons | thorough")
+            SL:Print("route: |cffffd100" .. SL.Engine.MODE_NAMES[SL.Engine:Mode()] .. "|r.  /sl mode speed | thorough,  /sl dungeons on | off")
         end
+    elseif cmd == "dungeons" then
+        local a = (arg or ""):lower()
+        local on = (a == "on") or (a ~= "off" and not SL.Engine:Dungeons())
+        SL.Engine:SetDungeons(on)
     elseif cmd == "errors" then
         local any = false
         for where, e in pairs(SL.errors) do

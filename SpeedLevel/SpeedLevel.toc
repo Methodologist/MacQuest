@@ -2,7 +2,7 @@
 ## Title: SpeedLevel
 ## Notes: Step-by-step 1-60 speed-leveling guide for WoW Forever (Horde). Guide arrow, auto accept/turn-in, skips quests you have done or that are grey for your level.
 ## Author: Methodologist
-## Version: 0.5.1
+## Version: 0.6.0
 ## Category: Quests
 ## SavedVariables: SpeedLevelDB
 ## SavedVariablesPerCharacter: SpeedLevelCharDB
@@ -14,8 +14,9 @@
 Core.lua
 Data\Quests.lua
 Data\Route_Horde_speed.lua
-Data\Route_Horde_dungeons.lua
+Data\Route_Horde_speed_dungeons.lua
 Data\Route_Horde_thorough.lua
+Data\Route_Horde_thorough_dungeons.lua
 Data\Terrain.lua
 Data\TerrainHi.lua
 Player.lua

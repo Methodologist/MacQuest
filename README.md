@@ -29,8 +29,15 @@ The addon is developed under the working name **SpeedLevel** (`SpeedLevel/` in t
 * **Knows your progress**: completed quests, grey quests, other races' starting zones and outlevelled
   zones are skipped. Pickups you are too low for wait and come back the moment you reach the level.
   Failed (timed-out) quests are offered for abandon and pickup again. Timed quests jump to the top.
-* **Modes** (`/mq mode`): **Speed** (fastest solo), **Dungeons** (adds dungeon runs with their quests
-  at the right levels), **Thorough** (no cuts, no death-skips).
+* **Route style** (`/mq mode`): **Speed** (fastest) or **Thorough** (no cuts, no death-skips).
+* **Dungeon runs, opt in or out**: a new character is asked once whether to include dungeons. When on,
+  13 runs (Ragefire Chasm to Dire Maul) are slotted in at the right levels: their quests are picked up
+  in town beforehand, the arrow leads to the entrance, and turn-ins follow. Change it any time with
+  `/mq dungeons on|off` or in settings; right-click a run to skip just that one.
+* **Class quests that matter**: ability-unlocking chains are built into the route for your class only,
+  at the hub where they start: totems (Shaman), stances (Warrior), Voidwalker / Succubus / Felhunter
+  (Warlock), Bear / Aquatic / Cat form (Druid), poisons (Rogue), pet taming (Skyborne Hunter) and
+  more.
 * **Speedrun tricks**:
   * hearthstone planning: where to bind, when to use it, and cooldown awareness;
   * quest stacking within Forever's 40-quest log;
@@ -38,7 +45,7 @@ The addon is developed under the working name **SpeedLevel** (`SpeedLevel/` in t
   * death-skips at level 10 and below.
 
 Commands: `/mq` show/hide · `/mq skip` · `/mq back` · `/mq sync` (re-detect your place) ·
-`/mq mode speed|dungeons|thorough` · `/mq compact` · `/mq report <note>` · `/mq options`.
+`/mq mode speed|thorough` · `/mq dungeons on|off` · `/mq compact` · `/mq report <note>` · `/mq options`.
 Left-click a step to make it current, right-click to skip it.
 
 ## How the route is chosen
@@ -47,7 +54,8 @@ The route is generated from data rather than written by hand, so it covers Forev
 classic zones.
 
 * **`route/horde.plan`**: a hand-written zone plan. It sets the zone order, level windows, hubs,
-  flight paths, zeppelins, dungeon runs, and race-specific starts (Orc/Troll, Tauren, Undead, Skyborne).
+  flight paths, zeppelins, dungeon runs, class quest chains (`CLASSCHAIN`), and race-specific starts
+  (Orc/Troll, Tauren, Undead, Skyborne).
 * **QuestieDB (Forever)**: quest IDs, levels, prerequisites, NPC and objective locations, quest XP,
   and measured item drop rates.
 
@@ -64,7 +72,8 @@ For each zone visit, `tools/build_route.py`:
    grinding nearby;
 5. plans hearths, death-skips and grind spots, and caps the quest log.
 
-`route/report.txt` has per-zone time estimates. `route/skipped_quests.txt` lists every quest skipped
+Four routes are built: speed and thorough, each with and without dungeons. `route/report*.txt` has
+per-zone time estimates. `route/skipped_quests.txt` lists every quest skipped
 for drop rate or kill count, with the reason.
 
 ### Terrain-aware arrow
@@ -103,7 +112,7 @@ mocked WoW API: `pip install lupa`, then `python tools/test_addon.py`. Diagnosti
 
 * **Riverglades** (Forever's 35-45 zone) has no quest data in QuestieDB yet, so it is not routed.
 * Some XP figures are estimates. About 870 new Forever quests have no XP in the database until it is
-  measured in play. Dungeon XP on Forever is also unpublished, so the Dungeons mode time estimate is rough.
+  measured in play. Dungeon XP on Forever is also unpublished, so time estimates with dungeons on are rough.
 * Hearthstone cooldown (60 min) and resurrection sickness (from level 11) are assumed to follow
   classic rules.
 * If Questie's or RestedXP's auto-accept is also on, turn one of them off.

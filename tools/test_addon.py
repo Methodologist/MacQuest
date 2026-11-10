@@ -73,6 +73,9 @@ function RunTimers()
     for _, fn in ipairs(list) do fn() end
   end
 end
+POPUPS = {}
+StaticPopupDialogs = {}
+function StaticPopup_Show(name, ...) table.insert(POPUPS, name) end
 C_Timer = {
   After = function(_, fn) table.insert(TIMERS, fn) end,
   NewTicker = function(_, fn) return { Cancel = noop } end,
@@ -612,8 +615,8 @@ def main():
 
     print("\n== route modes + dungeon runs")
     login(level=20, race=2, raceFile="Orc", **{"class": 1})
-    L.execute("SlashCmdList.SPEEDLEVEL('mode dungeons')")
-    check(L.eval("SpeedLevel.Engine:Mode()") == "dungeons", "/sl mode dungeons switches route")
+    L.execute("SlashCmdList.SPEEDLEVEL('dungeons on')")
+    check(L.eval("SpeedLevel.Engine:Mode()") == "speed_dungeons", "/sl dungeons on switches to the dungeon route")
     res = L.eval("""(function()
         local SL = SpeedLevel
         for i, st in ipairs(SL.Engine.steps) do
@@ -640,10 +643,53 @@ def main():
     end)()""")
     check(why == "dungeon skipped", f"skipping the run skips its quests ({why})")
     L.execute("SlashCmdList.SPEEDLEVEL('mode thorough')")
+    check(L.eval("SpeedLevel.Engine:Mode()") == "thorough_dungeons", "style change keeps dungeons on (thorough + dungeons)")
+    L.execute("SlashCmdList.SPEEDLEVEL('dungeons off')")
     n_death = L.eval("(function() local n = 0 for _, st in ipairs(SpeedLevel.Engine.steps) do if st.t == 'DEATH' then n = n + 1 end end return n end)()")
     check(L.eval("SpeedLevel.Engine:Mode()") == "thorough" and n_death == 0, f"thorough mode has no death-skips ({n_death})")
+    n_dun = L.eval("(function() local n = 0 for _, st in ipairs(SpeedLevel.Engine.steps) do if st.t == 'DUNGEON' then n = n + 1 end end return n end)()")
+    check(n_dun == 0, f"dungeons off: no dungeon runs ({n_dun})")
     L.execute("SlashCmdList.SPEEDLEVEL('mode speed')")
     check(L.eval("SpeedLevel.Engine:Mode()") == "speed", "back to speed mode")
+    L.execute("SpeedLevel.char.mode = 'dungeons'")
+    check(L.eval("SpeedLevel.Engine:Mode()") == "speed_dungeons", "old 'dungeons' setting maps to speed + dungeons")
+    L.execute("SpeedLevel.char.mode = 'speed'")
+
+    print("\n== first-start dungeon prompt")
+    L.execute("POPUPS = {}")
+    login(level=1, race=2, raceFile="Orc", **{"class": 1})
+    check(L.eval("POPUPS[1]") == "SPEEDLEVEL_DUNGEONS", "new character is asked about dungeon runs")
+    L.execute("StaticPopupDialogs.SPEEDLEVEL_DUNGEONS.OnAccept()")
+    check(L.eval("SpeedLevel.Engine:Mode()") == "speed_dungeons" and L.eval("SpeedLevel.char.dungeonsAsked") is True,
+          "'Include dungeons' turns them on and is remembered")
+    L.execute("POPUPS = {}; SpeedLevel.ready = false; FireEvent('PLAYER_LOGIN'); RunTimers()")
+    check(L.eval("#POPUPS") == 0, "not asked again on the next login")
+    L.execute("SpeedLevel.Engine:SetDungeons(false)")
+
+    print("\n== class quest chains")
+    def chain_titles():
+        return L.eval("""(function()
+            local t = {}
+            for _, sec in ipairs(SpeedLevel.Engine.sections) do
+              if sec.classSet and SpeedLevel.Engine:SectionApplies(sec) then t[#t+1] = sec.title end
+            end
+            return table.concat(t, "|")
+        end)()""") or ""
+    login(level=12, race=2, raceFile="Orc", classFile="SHAMAN", **{"class": 7})
+    sham = chain_titles()
+    check("Call of Fire" in sham and "Call of Water" in sham and "Stance" not in sham,
+          f"shaman gets totem quests, not warrior ones ({sham})")
+    login(level=12, race=2, raceFile="Orc", classFile="WARRIOR", **{"class": 1})
+    war = chain_titles()
+    check("Defensive Stance" in war and "Call of" not in war, f"warrior gets stance quests ({war})")
+    res = L.eval("""(function()
+        local SL = SpeedLevel
+        for i, st in ipairs(SL.Engine.steps) do
+          local sec = SL.Engine.sections[st.sec]
+          if sec.classSet and sec.classSet.SHAMAN then return select(2, SL.Engine:ComputeStatus(i)) or "?" end
+        end
+    end)()""")
+    check(res == "other class", f"other classes' chain steps are skipped ({res})")
 
     print("\n== time to 60")
     login(level=4, race=2, raceFile="Orc", **{"class": 1}, xp=600, xpMax=2100)

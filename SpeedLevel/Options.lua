@@ -95,28 +95,27 @@ function O:Init()
         slider("Upcoming steps shown", "stepsShown", 0, 10, 1, y - 104, function() SL:RequestUpdate() end),
     }
 
-    -- route mode (per character)
+    -- route style + dungeons (per character)
     local modeLabel = panel:CreateFontString(nil, "ARTWORK", "GameFontNormal")
     modeLabel:SetPoint("TOPLEFT", 300, y - 16)
-    modeLabel:SetText("Route mode (this character)")
+    modeLabel:SetText("Route (this character)")
     panel.modeButtons = {}
     local MODE_TIPS = {
         speed = "Fastest solo route.",
-        dungeons = "Adds dungeon runs at the right levels: their quests are picked up in town beforehand and turned in afterwards. Right-click a dungeon step to skip that run.",
         thorough = "No quests cut for speed and no death-skips. Slower, relaxed.",
     }
-    for mi, m in ipairs(SL.Engine.MODES) do
+    for mi, m in ipairs(SL.Engine.STYLES) do
         local b = CreateFrame("Button", nil, panel, "UIPanelButtonTemplate")
         b:SetSize(90, 22)
         b:SetPoint("TOPLEFT", 300 + (mi - 1) * 94, y - 36)
-        b:SetText(SL.Engine.MODE_NAMES[m])
+        b:SetText(SL.Engine.STYLE_NAMES[m])
         b:SetScript("OnClick", function()
-            SL.Engine:SetMode(m)
+            SL.Engine:SetStyle(m)
             for _, ob in ipairs(panel.modeButtons) do ob:SetEnabled(ob.mode ~= m) end
         end)
         b:SetScript("OnEnter", function(self)
             GameTooltip:SetOwner(self, "ANCHOR_TOP")
-            GameTooltip:AddLine(SL.Engine.MODE_NAMES[m])
+            GameTooltip:AddLine(SL.Engine.STYLE_NAMES[m])
             GameTooltip:AddLine(MODE_TIPS[m], 1, 1, 1, true)
             GameTooltip:Show()
         end)
@@ -124,6 +123,20 @@ function O:Init()
         b.mode = m
         panel.modeButtons[mi] = b
     end
+    local dcb = CreateFrame("CheckButton", nil, panel, "UICheckButtonTemplate")
+    dcb:SetPoint("TOPLEFT", 296, y - 62)
+    local dfs = (type(dcb.Text) == "table" and dcb.Text) or dcb:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
+    if dfs ~= dcb.Text then dfs:SetPoint("LEFT", dcb, "RIGHT", 2, 0) end
+    dfs:SetText("Include dungeon runs")
+    dcb:SetScript("OnClick", function(self) SL.Engine:SetDungeons(self:GetChecked() and true or false) end)
+    dcb:SetScript("OnEnter", function(self)
+        GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+        GameTooltip:AddLine("Include dungeon runs")
+        GameTooltip:AddLine("Dungeon quests are picked up in town beforehand, the arrow leads to the entrance, turn-ins follow. Right-click a dungeon step to skip one run.", 1, 1, 1, true)
+        GameTooltip:Show()
+    end)
+    dcb:SetScript("OnLeave", function() GameTooltip:Hide() end)
+    panel.dungeonCheck = dcb
 
     local resync = CreateFrame("Button", nil, panel, "UIPanelButtonTemplate")
     resync:SetSize(200, 22)
@@ -133,7 +146,8 @@ function O:Init()
 
     panel:SetScript("OnShow", function(self)
         for _, cb in ipairs(self.checks) do cb:SetChecked(SL.db[cb.key]) end
-        for _, b in ipairs(self.modeButtons or {}) do b:SetEnabled(b.mode ~= SL.Engine:Mode()) end
+        for _, b in ipairs(self.modeButtons or {}) do b:SetEnabled(b.mode ~= SL.Engine:Style()) end
+        if self.dungeonCheck then self.dungeonCheck:SetChecked(SL.Engine:Dungeons()) end
         for _, s in ipairs(self.sliders) do
             s:SetValue(SL.db[s.key] or 1)
             s.setLabel(SL.db[s.key] or 1)

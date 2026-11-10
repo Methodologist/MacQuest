@@ -543,3 +543,78 @@ SEGMENT Silithus
   start npc Runk Windtamer
   pre FP "Runk Windtamer"
   endlevel 60
+
+# ===================================================================== CLASS CHAINS
+# Quests that unlock abilities / pets.  Each becomes its own section, shown only to that class.
+# `finals` = the last quest(s) of the chain: prerequisites and per-race/city alternatives are pulled in
+# automatically from QuestieDB.  `after` = the section it follows in the route.
+
+CLASSCHAIN Warrior: Defensive Stance
+  class WARRIOR
+  finals 1498
+  after The Barrens - Crossroads
+
+CLASSCHAIN Warrior: Berserker Stance
+  class WARRIOR
+  finals 1719
+  after Dustwallow Marsh
+
+CLASSCHAIN Shaman: Call of Fire (fire totems)
+  class SHAMAN
+  finals 1527
+  after The Barrens - Crossroads
+
+CLASSCHAIN Shaman: Call of Water (water totems)
+  class SHAMAN
+  finals 96
+  after The Barrens - Camp Taurajo
+
+CLASSCHAIN Shaman: Call of Air (air totems)
+  class SHAMAN
+  finals 1531 1532
+  after Thousand Needles - Shimmering Flats
+
+CLASSCHAIN Warlock: Voidwalker
+  class WARLOCK
+  finals 1471 1504
+  after The Barrens - Crossroads
+
+CLASSCHAIN Warlock: Succubus
+  class WARLOCK
+  finals 65597 65604
+  after The Barrens - Camp Taurajo
+
+CLASSCHAIN Warlock: Felhunter
+  class WARLOCK
+  finals 1795
+  after Dustwallow Marsh
+
+CLASSCHAIN Druid: Bear Form
+  class DRUID
+  finals 6002 94913 94911
+  after The Barrens - Crossroads
+
+CLASSCHAIN Druid: Aquatic Form
+  class DRUID
+  finals 31
+  after The Barrens - Camp Taurajo
+
+CLASSCHAIN Druid: Great Cat Spirit
+  class DRUID
+  finals 98405 98362
+  after The Barrens - Camp Taurajo
+
+CLASSCHAIN Hunter: Taming the Beast (Skyborne)
+  class HUNTER
+  finals 94050 94007
+  after Zephras Isle
+
+CLASSCHAIN Rogue: Poisons
+  class ROGUE
+  finals 2480
+  after Hillsbrad Foothills
+
+CLASSCHAIN Paladin: A Lesson in Divinity
+  class PALADIN
+  finals 94441
+  after Undercity

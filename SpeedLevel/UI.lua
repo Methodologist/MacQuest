@@ -538,7 +538,7 @@ function UI:Refresh()
         f.title:SetText(sec.title)
         local done, total = sectionProgress(cur.sec)
         local mode = SL.Engine:Mode()
-        local tag = mode ~= "speed" and ("|cff9a6bff" .. SL.Engine.MODE_NAMES[mode] .. "|r  ") or ""
+        local tag = mode ~= "speed" and ("|cff9a6bff" .. (SL.Engine.MODE_NAMES[mode] or mode) .. "|r  ") or ""
         f.secInfo:SetText(tag .. (total > 0 and string.format("%d/%d quests", done, total) or ""))
         f.secBar:SetValue(total > 0 and done / total or 0)
     end
