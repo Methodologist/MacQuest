@@ -594,6 +594,58 @@ def main():
     n_mini, worst = mini.split(",")
     check(int(n_mini) > 0, f"route line drawn on the minimap ({n_mini} dashes)")
     check(float(worst) <= 70.0, f"minimap route line stays inside the minimap (furthest dash end {worst} px of 70)")
+    # the real world-map path: data provider -> pins from the XML template -> route line
+    wm = L.eval("""(function()
+        local SL = SpeedLevel
+        MapCanvasPinMixin = { SetPosition = function(self, x, y) self.px, self.py = x, y end,
+                              UseFrameLevelType = function() end }
+        MapCanvasDataProviderMixin = {}
+        CreateFromMixins = function(...) local t = {} for _, m in ipairs({...}) do for k, v in pairs(m) do t[k] = v end end return t end
+        local canvas = CreateFrame("Frame")
+        canvas.GetWidth = function() return 1000 end
+        canvas.GetHeight = function() return 667 end
+        PINS = {}
+        local map = {
+            GetMapID = function() return STATE.map end,
+            GetCanvas = function() return canvas end,
+            GetCanvasScale = function() return 1 end,
+            RemoveAllPinsByTemplate = function() PINS = {} end,
+            AcquirePin = function(self, template, info, x, y)
+                local pin = CreateFrame("Frame")
+                for _, key in ipairs({ "Glow", "Halo", "Ring", "Badge" }) do pin[key] = pin:CreateTexture() end
+                pin.Num = pin:CreateFontString()
+                for k, v in pairs(SpeedLevelMapPinMixin) do pin[k] = v end
+                pin:OnLoad()
+                pin:OnAcquired(info, x, y)
+                PINS[#PINS + 1] = pin
+                return pin
+            end,
+        }
+        WorldMapFrame = { AddDataProvider = function(self, p) p.GetMap = function() return map end end,
+                          IsShown = function() return true end }
+        SL.MapPins.provider = nil
+        SL.MapPins:SetupWorldMap()
+        local prov = SL.MapPins.provider
+        prov.overlay = nil
+        local o = prov:Overlay()             -- a zone map's canvas is a few thousand units wide
+        o.GetWidth = function() return 3000 end
+        o.GetHeight = function() return 2000 end
+        prov:RefreshAllData()
+        local lines, pins = prov.overlay and prov.overlay.used or 0, #PINS
+        -- a pin that fails to set up must not take the line down
+        local orig = SpeedLevelMapPinMixin.OnAcquired
+        SpeedLevelMapPinMixin.OnAcquired = function() error("boom") end
+        prov:RefreshAllData()
+        local linesAfter = prov.overlay and prov.overlay.used or 0
+        SpeedLevelMapPinMixin.OnAcquired = orig
+        local e = SL.errors["world map pin"]
+        SL.errors["world map pin"] = nil
+        return lines .. "," .. pins .. "," .. linesAfter .. "," .. (e and "logged" or "none")
+    end)()""")
+    w_lines, w_pins, w_after, w_err = wm.split(",")
+    check(int(w_pins) > 0 and int(w_lines) > 0, f"world map: pins and route line drawn ({w_pins} pins, {w_lines} dashes)")
+    check(int(w_after) > 0, f"world map: route line still drawn when a pin fails ({w_after} dashes)")
+    check(w_err == "logged", "a failing pin is reported in /sl errors")
     check(True, "compact mode toggles without errors")
 
     print("\n== combat restrictions (secret values)")

@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.1.1
+
+- **Fixed the route line missing from the world map.** The map now draws the line before the pins,
+  and each pin is set up on its own, so a pin that fails can no longer take the line (or the other
+  pins) with it. Any such problem shows up in `/mq errors`.
+
 ## 1.1.0
 
 - **Route line on the minimap**: a line from you through your next stops, updated as you move and

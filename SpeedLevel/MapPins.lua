@@ -240,7 +240,11 @@ function MP:SetupWorldMap()
         a:SetSmoothing("IN_OUT")
         ag:SetLooping("BOUNCE")
         self.pulse = ag
-        if self.Halo then self.ping = makePing(self.Halo, 0.6, 1.35) end
+        -- the ping is decoration: if this client's animation API differs, the pin simply has none
+        if self.Halo then
+            local ok, ag2 = pcall(makePing, self.Halo, 0.6, 1.35)
+            self.ping = ok and ag2 or false
+        end
     end
     function SpeedLevelMapPinMixin:OnAcquired(info, x, y)
         self.info = info
@@ -306,17 +310,27 @@ function MP:SetupWorldMap()
         if not SL.ready or not (SL.db.mapPins or SL.db.mapRoute) then return end
         local mapID = self:GetMap():GetMapID()
         if not mapID then return end
-        local points = {}
+        local points, place = {}, {}
         for _, info in ipairs(MP:Targets(PIN_COUNT)) do
             local x, y = translate(info, mapID)
             if x then
-                if SL.db.mapPins then self:GetMap():AcquirePin(TEMPLATE, info, x, y) end
                 points[#points + 1] = { x = x, y = y, st = info.st, n = info.n, g = routeT(info) }
+                place[#place + 1] = { info, x, y }
             end
         end
         self.points = points
         self.mapID = mapID
-        self:DrawRoute()
+        -- the line first, then each pin on its own: a pin that fails to set up must never take the
+        -- route line (or the other pins) down with it
+        local okLine, errLine = pcall(self.DrawRoute, self)
+        if not okLine then SL:ReportError("world map route", errLine) end
+        if SL.db.mapPins then
+            local map = self:GetMap()
+            for _, pl in ipairs(place) do
+                local ok, err = pcall(map.AcquirePin, map, TEMPLATE, pl[1], pl[2], pl[3])
+                if not ok then SL:ReportError("world map pin", err) end
+            end
+        end
     end
     WorldMapFrame:AddDataProvider(provider)
     self.provider = provider
@@ -407,7 +421,8 @@ function MP:SetupMinimap()
             p.halo:SetBlendMode("ADD")
             p.halo:SetSize(size * 1.8, size * 1.8)
             p.halo:SetPoint("CENTER")
-            p.ping = makePing(p.halo, 0.6, 1.3)
+            local ok, ag = pcall(makePing, p.halo, 0.6, 1.3)
+            p.ping = ok and ag or false
         end
         p.ring = p:CreateTexture(nil, "ARTWORK")
         p.ring:SetAllPoints()
