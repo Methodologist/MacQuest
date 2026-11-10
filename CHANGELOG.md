@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.1
+
+- **Minimap button** shows the Mac Quest "M" emblem (it could appear as a blank circle). Left-click
+  for settings, right-click to show or hide the guide, drag to move it, `/mq minimap` to hide it.
+
 ## 1.0.0
 
 - **Alliance guide.** Every Alliance race now has its own start, 1-60 route and arrow:
