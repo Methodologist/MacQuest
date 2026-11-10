@@ -2,7 +2,7 @@
 ## Title: SpeedLevel
 ## Notes: Step-by-step 1-60 speed-leveling guide for WoW Forever (Horde and Alliance). Guide arrow, auto accept/turn-in, skips quests you have done or that are grey for your level.
 ## Author: Methodologist
-## Version: 1.2.2
+## Version: 1.2.3
 ## Category: Quests
 ## X-License: GPL-3.0
 ## X-Website: https://github.com/Methodologist/MacQuest

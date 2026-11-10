@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.2.3
+
+- **Minimap line goes only to your current objective** (in green). The numbered pins for the next steps
+  stay on the minimap, and the world map still shows the whole route from green to orange.
+
 ## 1.2.2
 
 - **No more pickups the quest giver won't offer.** The guide now knows the rules that hide quests:

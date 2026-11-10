@@ -620,20 +620,35 @@ def main():
     check(grad == "0.30 0.90 0.35|1.00 0.85 0.20|1.00 0.50 0.12", f"route gradient green -> yellow -> orange ({grad})")
     mini = L.eval("""(function()
         local SL = SpeedLevel
+        -- stand a little away from the current objective so the line has some length
+        local sx, sy = STATE.x, STATE.y
+        local t1 = SL.MapPins:Targets(1)[1]
+        STATE.map, STATE.x, STATE.y = t1.m, t1.x / 100 - 0.02, t1.y / 100 + 0.02
         SL.MapPins:Refresh(); SL.MapPins:UpdateMinimap()
         local lo = SL.MapPins.miniLines
-        -- every dash end must stay inside the minimap circle (radius 70 in the mock)
-        local worst = 0
+        -- every dash end inside the minimap circle (radius 70 in the mock), and all of them on one
+        -- straight line from you (only the leg to the current objective)
+        local worst, bend = 0, 0
+        local dirx, diry
         for i = 1, lo.used do
           for _, pt in ipairs({ lo.lines[i]._start or {}, lo.lines[i]._end or {} }) do
-            if pt[2] then worst = math.max(worst, math.sqrt(pt[2] ^ 2 + pt[3] ^ 2)) end
+            if pt[2] then
+              local r = math.sqrt(pt[2] ^ 2 + pt[3] ^ 2)
+              worst = math.max(worst, r)
+              if r > 1 then
+                if not dirx then dirx, diry = pt[2] / r, pt[3] / r
+                else bend = math.max(bend, math.abs(pt[2] / r * diry - pt[3] / r * dirx)) end
+              end
+            end
           end
         end
-        return lo.used .. "," .. string.format("%.1f", worst)
+        STATE.x, STATE.y = sx, sy
+        return lo.used .. "," .. string.format("%.1f", worst) .. "," .. string.format("%.3f", bend)
     end)()""")
-    n_mini, worst = mini.split(",")
-    check(int(n_mini) > 0, f"route line drawn on the minimap ({n_mini} dashes)")
-    check(float(worst) <= 70.0, f"minimap route line stays inside the minimap (furthest dash end {worst} px of 70)")
+    n_mini, worst, bend = mini.split(",")
+    check(int(n_mini) > 0, f"line drawn on the minimap ({n_mini} dashes)")
+    check(float(worst) <= 70.0, f"minimap line stays inside the minimap (furthest dash end {worst} px of 70)")
+    check(float(bend) < 0.01, f"minimap line goes only to the current objective (one straight leg, bend {bend})")
     # the real world-map path: data provider -> pins from the XML template -> route line
     wm = L.eval("""(function()
         local SL = SpeedLevel

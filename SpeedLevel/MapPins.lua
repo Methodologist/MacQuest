@@ -524,10 +524,12 @@ function MP:UpdateMinimap()
             p.info = nil
         end
     end
-    -- the route line, clipped to the minimap's edge
+    -- the line, clipped to the minimap's edge: only you -> your current objective (the world map
+    -- shows the whole route)
     local lo = self.miniLines
     if not lo then return end
     lo:Reset()
+    while #route > 2 do table.remove(route) end
     if not lineOn or #route < 2 then return end
     local shape = GetMinimapShape and GetMinimapShape() or "ROUND"
     local square = shape == "SQUARE"

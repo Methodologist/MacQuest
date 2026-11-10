@@ -23,7 +23,7 @@ local CHECKS = {
     { "mapRoute", "Route line on world map", "Line from you through the next steps, green (current step) to orange (furthest)." },
     { "terrainArrow", "Terrain-aware arrow", "Steer the arrow around mountains, water and zone edges using terrain data and the paths you have walked." },
     { "minimapPins", "Minimap pins", "Numbered pins for the next steps on the minimap." },
-    { "minimapRoute", "Route line on minimap", "Line from you through the next steps on the minimap, green (current step) to orange (furthest)." },
+    { "minimapRoute", "Line on minimap", "A line on the minimap from you to your current objective." },
     { "minimapButton", "Minimap button", "The logo on the edge of the minimap: left-click for settings, right-click to show / hide the guide, drag to move it.",
       function() SL.MinimapButton:Apply() end },
     { "sound", "Step sound", "Play a soft sound when a step completes." },
