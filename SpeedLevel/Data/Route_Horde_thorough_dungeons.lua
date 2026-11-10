@@ -144,7 +144,7 @@ SL.Routes["Horde_thorough_dungeons"] = {
   {t="T",q=818,x=55.9,y=74.4,m=1411,npc="Master Vornal"},
   {t="T",q=826,x=56.0,y=74.7,m=1411,npc="Master Gadrin"},
   {t="T",q=808,x=56.0,y=74.7,m=1411,npc="Master Gadrin"},
-  {t="GRIND",x=68.9,y=71.1,m=1411,text="Bloodtalon Taillasher and Raluk (level 6-30), about 10k XP/hour",level=10.0},
+  {t="GRIND",x=65.9,y=86.7,m=1411,text="Voodoo Troll and Hexed Troll (level 8-9), about 9k XP/hour",level=10.0},
   {t="A",q=1884,x=56.3,y=75.1,m=1411,npc="Un'Thuwa"},
   {t="A",q=6069,x=56.1,y=74.2,m=1411,npc="Kali Remik"},
   {t="A",q=1859,x=52.0,y=43.7,m=1411,npc="Kaplak"},
@@ -1022,12 +1022,10 @@ SL.Routes["Horde_thorough_dungeons"] = {
   {t="C",q=5725,x=50.0,y=50.0,m=213,text="Bring the books Spells of Shadow and Incantations from the Nether to Varimathras in Undercity."},
   {t="C",q=5761,x=50.0,y=50.0,m=213,text="Enter Ragefire Chasm and slay Taragaman the Hungerer, then bring his heart back to Neeru Fireblade in Orgrimmar."},
 }},
-{title="The Barrens - Camp Taurajo",map=1413,races=nil,entry=17.59,exit=21.73,mins=231,steps={
+{title="The Barrens - Camp Taurajo",map=1413,races=nil,entry=17.59,exit=21.73,mins=226,steps={
   {t="FP",x=44.5,y=59.1,m=1413,npc=10378,name="Omusa Thunderhorn"},
-  {t="USEHS",x=52.0,y=29.9,m=1413,bind="The Crossroads",text="Hearth to The Crossroads (saves ~3 min of running)"},
-  {t="A",q=852,x=45.3,y=28.4,m=1413,npc="Regthar Deathgate"},
-  {t="GRIND",x=46.0,y=42.0,m=1413,text="Hecklefang Hyena and Kolkar Wrangler (level 7-30), about 15k XP/hour - finishes Hezrul Bloodmark on the way",level=18.0},
-  {t="C",q=852,x=46.0,y=41.1,m=1413,text="Bring Hezrul's Head to Regthar Deathgate, west of the Crossroads."},
+  {t="GRIND",x=43.5,y=52.6,m=1413,text="Bristleback Hunter and Bristleback Water Seeker (level 16-18), about 14k XP/hour - most quests here are level 20",level=18.0},
+  {t="HEARTH",x=45.6,y=59.0,m=1413,npc=7714,name="Innkeeper Byula",bind="Camp Taurajo"},
   {t="A",q=878,x=44.5,y=59.3,m=1413,npc="Mangletooth"},
   {t="C",q=878,x=51.4,y=54.8,m=1413,text="Kill 6 Bristleback Water Seekers, 12 Bristleback Thornweavers and 12 Bristleback Geomancers."},
   {t="A",q=898,x=62.0,y=55.0,m=1413,npc="Gilthares Firebough"},
@@ -1057,6 +1055,7 @@ SL.Routes["Horde_thorough_dungeons"] = {
   {t="A",q=899,x=52.0,y=31.6,m=1413,npc="Mankrik"},
   {t="A",q=1487,x=46.0,y=35.7,m=1413,npc="Ebru"},
   {t="A",q=1486,x=46.0,y=35.7,m=1413,npc="Nalpak"},
+  {t="A",q=852,x=45.3,y=28.4,m=1413,npc="Regthar Deathgate"},
   {t="T",q=851,x=45.3,y=28.4,m=1413,npc="Regthar Deathgate"},
   {t="A",q=1063,x=35.3,y=27.9,m=1413,npc="Seereth Stonebreak"},
   {t="A",q=1062,x=35.3,y=27.9,m=1413,npc="Seereth Stonebreak"},
@@ -1064,7 +1063,6 @@ SL.Routes["Horde_thorough_dungeons"] = {
   {t="A",q=6548,x=35.2,y=27.8,m=1413,npc="Makaba Flathoof"},
   {t="C",q=876,x=39.2,y=12.2,m=1413,text="Slay Serena Bloodfeather."},
   {t="T",q=6541,x=48.1,y=5.4,m=1413,npc="Kadrak"},
-  {t="USEHS",x=52.0,y=29.9,m=1413,bind="The Crossroads",text="Hearth to The Crossroads (saves ~3 min of running)"},
   {t="A",q=1483,x=63.0,y=37.2,m=1413,npc="Sputtervalve"},
   {t="T",q=863,x=63.0,y=37.2,m=1413,npc="Sputtervalve"},
   {t="A",q=959,x=63.1,y=37.6,m=1413,npc="Crane Operator Bigglefuzz"},
@@ -1082,6 +1080,7 @@ SL.Routes["Horde_thorough_dungeons"] = {
   {t="T",q=878,x=44.5,y=59.3,m=1413,npc="Mangletooth"},
   {t="A",q=5052,x=44.5,y=59.3,m=1413,npc="Mangletooth"},
   {t="C",q=5052,x=44.0,y=51.3,m=1413,text="Bring a Blood Shard to Mangletooth in Camp Taurajo in the Barrens. Collect more Blood Shards if you want him to bless you with Agamaggan's power."},
+  {t="C",q=852,x=46.0,y=41.1,m=1413,text="Bring Hezrul's Head to Regthar Deathgate, west of the Crossroads."},
   {t="T",q=852,x=45.3,y=28.4,m=1413,npc="Regthar Deathgate"},
   {t="T",q=3281,x=51.9,y=30.3,m=1413,npc="Gazrog"},
   {t="T",q=876,x=51.6,y=30.9,m=1413,npc="Darsok Swiftdagger"},
@@ -1092,7 +1091,7 @@ SL.Routes["Horde_thorough_dungeons"] = {
   {t="A",q=1489,x=52.3,y=31.9,m=1413,npc="Tonga Runetotem"},
   {t="C",q=882,x=59.8,y=30.6,m=1413,text="Bring Ishamuhale's Fang to Jorn at Camp Taurajo."},
   {t="T",q=891,x=62.3,y=39.0,m=1413,npc="Captain Thalo'thas Brightsun"},
-  {t="FLY",x=63.1,y=37.2,m=1413,npc=16227,name="Bragok",text="saves ~4 min over running",dest="Fly to Camp Taurajo",fto=10378,tm=1413,tx=44.5,ty=59.1},
+  {t="USEHS",x=45.6,y=59.0,m=1413,bind="Camp Taurajo",text="Hearth to Camp Taurajo (saves ~6 min of running)"},
   {t="T",q=882,x=44.9,y=59.1,m=1413,npc="Jorn Skyseer"},
   {t="A",q=907,x=44.9,y=59.1,m=1413,npc="Jorn Skyseer"},
   {t="T",q=5052,x=44.5,y=59.3,m=1413,npc="Mangletooth"},
@@ -1520,7 +1519,7 @@ SL.Routes["Horde_thorough_dungeons"] = {
   {t="GOTO",x=73.0,y=32.5,m=1417,text="Travel east to Hammerfall in the Arathi Highlands"},
   {t="FP",x=73.0,y=32.7,m=1417,npc=2851,name="Urda"},
   {t="A",q=671,x=74.7,y=36.3,m=1417,npc="Tor'gan"},
-  {t="GRIND",x=32.5,y=26.8,m=1417,text="Syndicate Highwayman and Syndicate Mercenary (level 30-33), about 26k XP/hour - finishes Foul Magics on the way",level=35.5},
+  {t="GRIND",x=32.9,y=32.4,m=1417,text="Syndicate Highwayman and Highland Strider (level 30-31), about 26k XP/hour - finishes Foul Magics on the way",level=35.5},
   {t="C",q=671,x=32.3,y=28.3,m=1417,text="Get 10 Bloodstone Amulets for Tor'gan in Hammerfall."},
   {t="C",q=676,x=33.6,y=44.6,m=1417,text="Kill 8 Boulderfist Ogres and 10 Boulderfist Enforcers, then find Drum Fel in the Hammerfall outpost in Arathi Highlands."},
   {t="A",q=655,x=72.6,y=33.9,m=1417,npc="Gor'mul"},
@@ -2515,7 +2514,7 @@ SL.Routes["Horde_thorough_dungeons"] = {
   {t="T",q=5163,x=60.9,y=37.6,m=1452,npc="Umi Rumplesnicker"},
   {t="T",q=5082,x=31.3,y=45.2,m=1452,npc="Donova Snowden"},
   {t="T",q=8464,x=27.7,y=34.5,m=1452,npc="Salfa"},
-  {t="GRIND",x=30.6,y=35.6,m=1452,text="Winterfall Pathfinder and Winterfall Den Watcher (level 53-56), about 41k XP/hour",level=56.0},
+  {t="GRIND",x=30.6,y=35.6,m=1452,text="Winterfall Pathfinder and Winterfall Den Watcher (level 53-56), about 39k XP/hour",level=56.0},
   {t="USEHS",x=61.4,y=38.8,m=1452,bind="Everlook",text="Hearth to Everlook (saves ~4 min of running)"},
   {t="A",q=969,x=61.9,y=38.3,m=1452,npc="Witch Doctor Mau'ari"},
   {t="C",q=969,x=61.9,y=68.5,m=1452,text="Collect 4 Frostmaul Shards for Witch Doctor Mau'ari in Everlook."},
@@ -2558,13 +2557,10 @@ SL.Routes["Horde_thorough_dungeons"] = {
   {t="C",q=6025,x=45.8,y=18.2,m=1422,text="Enter Hearthglen and find a high vantage point from which you can see the town and gauge the Scarlet Crusade's forces."},
   {t="T",q=6025,x=51.9,y=28.1,m=1422,npc="Kirsta Deepshadow"},
 }},
-{title="Eastern Plaguelands",map=1423,races=nil,entry=56.64,exit=58.98,mins=517,steps={
+{title="Eastern Plaguelands",map=1423,races=nil,entry=56.64,exit=58.98,mins=554,steps={
   {t="FP",x=70.5,y=47.5,m=1423,npc=12636,name="Georgia"},
-  {t="HEARTH",x=71.8,y=48.5,m=1423,npc=16256,name="Jessica Chambers",bind="Light's Hope Chapel"},
+  {t="GRIND",x=68.8,y=55.8,m=1423,text="Putrid Gargoyle and Carrion Grub (level 54-56), about 40k XP/hour - most quests here are level 60",level=58.0},
   {t="A",q=6021,x=69.9,y=53.7,m=1423,npc="Caretaker Alen"},
-  {t="GRIND",x=22.9,y=73.6,m=1423,text="Unliving Mossflayer and Mossflayer Zombie (level 52-57), about 45k XP/hour - finishes Zaeldarr the Outcast on the way",level=58.0},
-  {t="C",q=6021,x=23.1,y=72.6,m=1423,text="Bring Zaeldarr's Head to Caretaker Alen at Light's Hope Chapel."},
-  {t="USEHS",x=71.8,y=48.5,m=1423,bind="Light's Hope Chapel",text="Hearth to Light's Hope Chapel (saves ~3 min of running)"},
   {t="A",q=5281,x=69.9,y=53.7,m=1423,npc="Caretaker Alen"},
   {t="T",q=6030,x=71.6,y=50.1,m=1423,npc="Duke Nicholas Zverenhoff"},
   {t="A",q=5211,x=71.7,y=50.0,m=1423,npc="Carlin Redpath"},
@@ -2587,6 +2583,7 @@ SL.Routes["Horde_thorough_dungeons"] = {
   {t="T",q=5281,x=11.4,y=26.6,m=1423,npc="Egan"},
   {t="A",q=6133,x=22.2,y=63.5,m=1423,npc="Nathanos Blightcaller"},
   {t="A",q=6042,x=22.2,y=63.5,m=1423,npc="Nathanos Blightcaller"},
+  {t="C",q=6021,x=23.1,y=72.6,m=1423,text="Bring Zaeldarr's Head to Caretaker Alen at Light's Hope Chapel."},
   {t="A",q=6024,x=22.9,y=73.0,m=1423,npc="Torn Scroll"},
   {t="T",q=5601,x=31.1,y=78.0,m=1423,npc="Pamela Redpath"},
   {t="C",q=9665,x=34.1,y=64.1,m=1423,text="Kill <TXT>Crown Guard Capture Quest Doodad",oname="<TXT>Crown Guard Capture Quest Doodad"},
@@ -2688,11 +2685,11 @@ SL.Routes["Horde_thorough_dungeons"] = {
   {t="T",q=8352,x=48.6,y=37.8,m=1451,npc="Bor Wildmane"},
   {t="C",q=8320,x=26.4,y=34.0,m=1451,text="Kill 10 Twilight Geolords."},
   {t="T",q=8320,x=48.6,y=37.9,m=1451,npc="Huum Wildmane"},
-  {t="GRIND",x=40.7,y=38.4,m=1451,text="Not 60 yet? Finish here: Stonelash Scorpid and Dredge Striker (level 54-56)",level=60.0},
+  {t="GRIND",x=56.5,y=32.6,m=1451,text="Not 60 yet? Finish here: Stonelash Scorpid (level 54-55)",level=60.0},
 }},
 }
 SL.RouteVersions = SL.RouteVersions or {}
-SL.RouteVersions["Horde_thorough_dungeons"] = "cb685905fba7"
+SL.RouteVersions["Horde_thorough_dungeons"] = "8852e6baf36b"
 -- modelled minutes per level along this route (for the time-to-60 estimate)
 SL.LevelMinutes = SL.LevelMinutes or {}
-SL.LevelMinutes["Horde_thorough_dungeons"] = {2.5,5.7,8.9,13.3,17.8,17.8,17.5,21.1,25.3,29.6,46.9,68.3,42.4,36.9,41.2,45.8,112.4,52.8,58.0,63.2,58.3,158.0,24.4,80.0,65.2,64.5,114.2,83.8,78.8,101.6,156.6,118.2,101.7,116.0,123.9,160.2,147.3,135.5,162.4,192.8,106.2,118.6,193.6,122.0,127.2,116.5,208.3,101.4,219.6,96.4,131.7,136.1,104.3,146.8,137.4,151.2,221.1,231.1,222.0}
+SL.LevelMinutes["Horde_thorough_dungeons"] = {2.5,5.7,8.9,13.3,17.8,17.8,17.5,21.1,25.3,29.6,46.9,68.3,42.4,36.9,41.2,45.8,111.6,50.8,55.8,60.8,56.4,158.0,24.4,80.0,65.2,64.5,114.2,83.8,78.8,101.6,156.6,118.2,101.7,116.0,123.9,160.2,147.3,135.5,162.4,192.8,106.2,118.6,193.6,122.0,127.2,116.5,208.3,101.4,219.6,96.4,131.7,136.1,104.3,146.8,137.8,156.7,237.0,247.3,222.0}

@@ -46,10 +46,10 @@
 [--] Shaman: Call of Fire (fire totems)     class chain (SHAMAN): 4 quests
 [--] Warrior: Defensive Stance              class chain (WARRIOR): 1 quests
 [20] Ragefire Chasm (dungeon)               map=213 races=all entry=17.28 exit=17.59 quests=0 deferredIn=4 ~  71min HS=0 death=0 stacked=0
-    catch-up grind 17.59 -> 18.0 before questing (29 min; quests here ~level 20) on the mobs of Hezrul Bloodmark
+    catch-up grind 17.59 -> 18.0 before questing (30 min; quests here ~level 20)
     left for later (level too low): [879, 893, 906, 6382]
-    -> keep hearth (The Crossroads) instead of binding at Camp Taurajo
-[21] The Barrens - Camp Taurajo             map=1413 races=all entry=17.59 exit=21.73 quests=28 deferredIn=21 ~ 237min HS=2 death=0 stacked=3
+    -> set hearth at Camp Taurajo (worth ~2 min more than keeping the old bind)
+[21] The Barrens - Camp Taurajo             map=1413 races=all entry=17.59 exit=21.73 quests=28 deferredIn=21 ~ 228min HS=1 death=0 stacked=3
 [--] Druid: Great Cat Spirit                class chain (DRUID): 2 quests
 [--] Druid: Aquatic Form                    class chain (DRUID): 4 quests
 [--] Warlock: Succubus                      class chain (WARLOCK): 7 quests
@@ -152,21 +152,21 @@
     -> set hearth at Everlook (worth ~3 min more than keeping the old bind)
 [83] Winterspring                           map=1452 races=all entry=55.32 exit=56.11 quests=13 deferredIn=3 ~ 118min HS=2 death=0 stacked=0
 [84] Western Plaguelands                    map=1422 races=all entry=56.11 exit=56.64 quests=14 deferredIn=0 ~  49min HS=0 death=0 stacked=0
-    catch-up grind 56.64 -> 58.0 before questing (350 min; quests here ~level 60) on the mobs of Zaeldarr the Outcast
+    catch-up grind 56.64 -> 58.0 before questing (391 min; quests here ~level 60)
     left for later (level too low): [7621, 7622, 9121]
-    -> set hearth at Light's Hope Chapel (worth ~3 min more than keeping the old bind)
-[85] Eastern Plaguelands                    map=1423 races=all entry=56.64 exit=58.98 quests=9 deferredIn=8 ~ 517min HS=1 death=0 stacked=0
+    -> keep hearth (Everlook) instead of binding at Light's Hope Chapel
+[85] Eastern Plaguelands                    map=1423 races=all entry=56.64 exit=58.98 quests=9 deferredIn=8 ~ 554min HS=0 death=0 stacked=0
 [86] Dire Maul (dungeon)                    map=234 races=all entry=58.98 exit=59.29 quests=0 deferredIn=3 ~  98min HS=0 death=0 stacked=0
-    -> keep hearth (Light's Hope Chapel) instead of binding at Camp Mojache
+    -> keep hearth (Everlook) instead of binding at Camp Mojache
 [87] Feralas (turn in Dire Maul)            map=1444 races=all entry=59.29 exit=59.54 quests=0 deferredIn=5 ~   1min HS=0 death=0 stacked=0
-    -> keep hearth (Light's Hope Chapel) instead of binding at Cenarion Hold
+    -> keep hearth (Everlook) instead of binding at Cenarion Hold
 [88] Silithus                               map=1451 races=all entry=59.54 exit=60.00 quests=25 deferredIn=0 ~ 114min HS=0 death=0 stacked=0
 
-telemetry: 2 SavedVariables file(s), 64 timed steps, 59 measured step keys, 0 player reports
+telemetry: 2 SavedVariables file(s), 65 timed steps, 60 measured step keys, 0 player reports
     flights The Barrens - Crossroads: 2 planned, ~4 min saved
     flight paths grabbed on the way (Warlock: Voidwalker): Doras
     flight paths grabbed on the way (Ragefire Chasm): Doras
-    flights The Barrens - Camp Taurajo: 2 planned, ~6 min saved
+    flights The Barrens - Camp Taurajo: 1 planned, ~2 min saved
     flight paths grabbed on the way (Shaman: Call of Water (water totems)): Zarise
     flights Shaman: Call of Water (water totems): 3 planned, ~7 min saved
     flight paths grabbed on the way (Thunder Bluff (quests for Wailing Caverns)): Tal
@@ -194,16 +194,16 @@ telemetry: 2 SavedVariables file(s), 64 timed steps, 59 measured step keys, 0 pl
     flights Un'Goro Crater: 1 planned, ~8 min saved
     flights Felwood: 1 planned, ~10 min saved
     flights Blasted Lands: 1 planned, ~2 min saved
-flights: ~177 min saved over running
+flights: ~173 min saved over running
 
-hearths=22 death-skips=0 stacked quests=17 time saved by hearths/deaths ~94 min
+hearths=20 death-skips=0 stacked quests=17 time saved by hearths/deaths ~90 min
 quest log peak Orc       25 (in Tanaris)
 quest log peak Skyborne  25 (in Tanaris)
 quest log peak Tauren    25 (in Tanaris)
 quest log peak Troll     25 (in Tanaris)
 quest log peak Undead    27 (in The Barrens - Camp Taurajo)
-estimated /played to 60 for Orc       ~88.5 h (questing + planned grinding, excl. class/vendor stops)
-estimated /played to 60 for Skyborne  ~88.1 h (questing + planned grinding, excl. class/vendor stops)
-estimated /played to 60 for Tauren    ~88.7 h (questing + planned grinding, excl. class/vendor stops)
-estimated /played to 60 for Troll     ~88.5 h (questing + planned grinding, excl. class/vendor stops)
-estimated /played to 60 for Undead    ~91.1 h (questing + planned grinding, excl. class/vendor stops)
+estimated /played to 60 for Orc       ~89.0 h (questing + planned grinding, excl. class/vendor stops)
+estimated /played to 60 for Skyborne  ~88.7 h (questing + planned grinding, excl. class/vendor stops)
+estimated /played to 60 for Tauren    ~89.2 h (questing + planned grinding, excl. class/vendor stops)
+estimated /played to 60 for Troll     ~89.0 h (questing + planned grinding, excl. class/vendor stops)
+estimated /played to 60 for Undead    ~91.6 h (questing + planned grinding, excl. class/vendor stops)

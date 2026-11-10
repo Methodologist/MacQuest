@@ -1867,7 +1867,15 @@ def grind_quest(seg, cands, level, tgt, used, start, generic):
                 or seg.map not in info["start"]:
             continue
         p = pick_point(info["obj"], seg.map, start)
-        sp = tricks.grind_spot(seg.map, max(1, int(level)), p)
+        # the grind has to be on the quest's own mobs (kill targets, or what drops its items),
+        # or it does not finish the quest
+        mobs = set(int(x) for x in (cre or []) + (killcred or []) if isinstance(x, int))
+        for it in items or []:
+            iid = it[0] if isinstance(it, (list, tuple)) else it
+            mobs |= set(int(n) for n in (I.get(str(iid), {}).get("npcDrops") or []))
+        if not mobs:
+            continue
+        sp = tricks.grind_spot(seg.map, max(1, int(level)), p, must=mobs)
         if not sp or tricks.yards(seg.map, (sp[0], sp[1]), p) > 250:
             continue
         if sp[4] < max(GRIND_FLOOR * tgt, generic[4] * 0.85):

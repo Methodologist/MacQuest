@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.2.1
+
+- **Better grind spots.** The pin now sits in the thick of a pack (the spawn with the most mobs
+  around it) instead of the middle of an area, and spots next to the other faction's camps and
+  guards are never chosen (Stranglethorn's Rebel Camp, for example).
+- **Grinds that finish a quest are really on that quest's mobs**: "grind here, finishes Supply and
+  Demand on the way" now puts you on the River Crocolisks, not on tigers nearby.
+- Grind spots are rated by their real mix of mobs, so the XP/hour shown is realistic (about 25k at
+  level 32 instead of an optimistic 37k), and the level range shown is that of the mobs named.
+
 ## 1.2.0
 
 - **Always tells you how to get there.** For any long trip the guide now weighs walking, your flight

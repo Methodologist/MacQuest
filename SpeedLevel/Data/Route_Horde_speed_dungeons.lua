@@ -144,7 +144,7 @@ SL.Routes["Horde_speed_dungeons"] = {
   {t="T",q=818,x=55.9,y=74.4,m=1411,npc="Master Vornal"},
   {t="T",q=826,x=56.0,y=74.7,m=1411,npc="Master Gadrin"},
   {t="T",q=808,x=56.0,y=74.7,m=1411,npc="Master Gadrin"},
-  {t="GRIND",x=68.9,y=71.1,m=1411,text="Bloodtalon Taillasher and Raluk (level 6-30), about 10k XP/hour",level=10.0},
+  {t="GRIND",x=65.9,y=86.7,m=1411,text="Voodoo Troll and Hexed Troll (level 8-9), about 9k XP/hour",level=10.0},
   {t="A",q=1884,x=56.3,y=75.1,m=1411,npc="Un'Thuwa"},
   {t="A",q=6069,x=56.1,y=74.2,m=1411,npc="Kali Remik"},
   {t="A",q=1859,x=52.0,y=43.7,m=1411,npc="Kaplak"},
@@ -1018,13 +1018,14 @@ SL.Routes["Horde_speed_dungeons"] = {
   {t="C",q=5725,x=50.0,y=50.0,m=213,text="Bring the books Spells of Shadow and Incantations from the Nether to Varimathras in Undercity."},
   {t="C",q=5761,x=50.0,y=50.0,m=213,text="Enter Ragefire Chasm and slay Taragaman the Hungerer, then bring his heart back to Neeru Fireblade in Orgrimmar."},
 }},
-{title="The Barrens - Camp Taurajo",map=1413,races=nil,entry=17.32,exit=21.90,mins=267,steps={
+{title="The Barrens - Camp Taurajo",map=1413,races=nil,entry=17.32,exit=21.90,mins=256,steps={
   {t="FP",x=44.5,y=59.1,m=1413,npc=10378,name="Omusa Thunderhorn"},
   {t="HEARTH",x=45.6,y=59.0,m=1413,npc=7714,name="Innkeeper Byula",bind="Camp Taurajo"},
-  {t="FLY",x=44.5,y=59.1,m=1413,npc=10378,name="Omusa Thunderhorn",text="saves ~2 min over running",dest="Fly to The Crossroads",fto=3615,tm=1413,tx=51.5,ty=30.3},
-  {t="A",q=852,x=45.3,y=28.4,m=1413,npc="Regthar Deathgate"},
-  {t="GRIND",x=46.0,y=42.0,m=1413,text="Hecklefang Hyena and Kolkar Wrangler (level 7-30), about 15k XP/hour - finishes Hezrul Bloodmark on the way",level=18.0},
-  {t="C",q=852,x=46.0,y=41.1,m=1413,text="Bring Hezrul's Head to Regthar Deathgate, west of the Crossroads."},
+  {t="FLY",x=44.5,y=59.1,m=1413,npc=10378,name="Omusa Thunderhorn",text="saves ~3 min over running",dest="Fly to The Crossroads",fto=3615,tm=1413,tx=51.5,ty=30.3},
+  {t="A",q=875,x=51.6,y=30.9,m=1413,npc="Darsok Swiftdagger"},
+  {t="GRIND",x=39.5,y=14.7,m=1413,text="Witchwing Slayer and Witchwing Windcaller (level 16-18), about 14k XP/hour - finishes Harpy Lieutenants on the way",level=18.0},
+  {t="C",q=875,x=38.9,y=14.3,m=1413,text="Collect 6 Harpy Lieutenant Rings from Witchwing Slayers."},
+  {t="USEHS",x=45.6,y=59.0,m=1413,bind="Camp Taurajo",text="Hearth to Camp Taurajo (saves ~8 min of running)"},
   {t="A",q=878,x=44.5,y=59.3,m=1413,npc="Mangletooth"},
   {t="C",q=878,x=51.4,y=54.8,m=1413,text="Kill 6 Bristleback Water Seekers, 12 Bristleback Thornweavers and 12 Bristleback Geomancers."},
   {t="A",q=898,x=62.0,y=55.0,m=1413,npc="Gilthares Firebough"},
@@ -1047,18 +1048,17 @@ SL.Routes["Horde_speed_dungeons"] = {
   {t="T",q=95494,x=43.8,y=12.2,m=1413,npc="Vrang Wildgore"},
   {t="T",q=95507,x=43.8,y=12.2,m=1413,npc="Vrang Wildgore"},
   {t="A",q=868,x=51.1,y=29.6,m=1413,npc="Korran"},
-  {t="A",q=875,x=51.6,y=30.9,m=1413,npc="Darsok Swiftdagger"},
   {t="A",q=95774,x=52.0,y=31.6,m=1413,npc="Mankrik"},
   {t="A",q=4921,x=52.0,y=31.6,m=1413,npc="Mankrik"},
   {t="A",q=899,x=52.0,y=31.6,m=1413,npc="Mankrik"},
   {t="A",q=1487,x=46.0,y=35.7,m=1413,npc="Ebru"},
   {t="A",q=1486,x=46.0,y=35.7,m=1413,npc="Nalpak"},
+  {t="A",q=852,x=45.3,y=28.4,m=1413,npc="Regthar Deathgate"},
   {t="T",q=851,x=45.3,y=28.4,m=1413,npc="Regthar Deathgate"},
   {t="A",q=1063,x=35.3,y=27.9,m=1413,npc="Seereth Stonebreak"},
   {t="A",q=1062,x=35.3,y=27.9,m=1413,npc="Seereth Stonebreak"},
   {t="A",q=6629,x=35.2,y=27.8,m=1413,npc="Makaba Flathoof"},
   {t="A",q=6548,x=35.2,y=27.8,m=1413,npc="Makaba Flathoof"},
-  {t="C",q=875,x=38.9,y=14.3,m=1413,text="Collect 6 Harpy Lieutenant Rings from Witchwing Slayers."},
   {t="A",q=1483,x=63.0,y=37.2,m=1413,npc="Sputtervalve"},
   {t="T",q=863,x=63.0,y=37.2,m=1413,npc="Sputtervalve"},
   {t="A",q=959,x=63.1,y=37.6,m=1413,npc="Crane Operator Bigglefuzz"},
@@ -1076,6 +1076,7 @@ SL.Routes["Horde_speed_dungeons"] = {
   {t="T",q=878,x=44.5,y=59.3,m=1413,npc="Mangletooth"},
   {t="A",q=5052,x=44.5,y=59.3,m=1413,npc="Mangletooth"},
   {t="C",q=5052,x=44.0,y=51.3,m=1413,text="Bring a Blood Shard to Mangletooth in Camp Taurajo in the Barrens. Collect more Blood Shards if you want him to bless you with Agamaggan's power."},
+  {t="C",q=852,x=46.0,y=41.1,m=1413,text="Bring Hezrul's Head to Regthar Deathgate, west of the Crossroads."},
   {t="T",q=875,x=51.6,y=30.9,m=1413,npc="Darsok Swiftdagger"},
   {t="A",q=876,x=51.6,y=30.9,m=1413,npc="Darsok Swiftdagger"},
   {t="T",q=4921,x=52.0,y=31.6,m=1413,npc="Mankrik"},
@@ -1500,7 +1501,7 @@ SL.Routes["Horde_speed_dungeons"] = {
   {t="GOTO",x=73.0,y=32.5,m=1417,text="Travel east to Hammerfall in the Arathi Highlands"},
   {t="FP",x=73.0,y=32.7,m=1417,npc=2851,name="Urda"},
   {t="A",q=671,x=74.7,y=36.3,m=1417,npc="Tor'gan"},
-  {t="GRIND",x=32.5,y=26.8,m=1417,text="Syndicate Highwayman and Syndicate Mercenary (level 30-33), about 26k XP/hour - finishes Foul Magics on the way",level=35.1},
+  {t="GRIND",x=32.9,y=32.4,m=1417,text="Syndicate Highwayman and Highland Strider (level 30-31), about 26k XP/hour - finishes Foul Magics on the way",level=35.1},
   {t="C",q=671,x=32.3,y=28.3,m=1417,text="Get 10 Bloodstone Amulets for Tor'gan in Hammerfall."},
   {t="C",q=676,x=33.6,y=44.6,m=1417,text="Kill 8 Boulderfist Ogres and 10 Boulderfist Enforcers, then find Drum Fel in the Hammerfall outpost in Arathi Highlands."},
   {t="A",q=655,x=72.6,y=33.9,m=1417,npc="Gor'mul"},
@@ -1613,7 +1614,7 @@ SL.Routes["Horde_speed_dungeons"] = {
   {t="C",q=188,x=32.2,y=17.4,m=1434,text="Ajeck Rouack of Nesingwary's Expedition wants you to kill Sin'Dall."},
   {t="T",q=188,x=35.6,y=10.6,m=1434,npc="Ajeck Rouack"},
 }},
-{title="Desolace",map=1443,races=nil,entry=38.56,exit=39.38,mins=130,steps={
+{title="Desolace",map=1443,races=nil,entry=38.56,exit=39.54,mins=156,steps={
   {t="NOTE",text="Fly to Sun Rock Retreat and run south-west into Desolace (Shadowprey Village)"},
   {t="FP",x=21.6,y=74.1,m=1443,npc=6726,name="Thalon"},
   {t="HEARTH",x=24.1,y=68.2,m=1443,npc=11106,name="Innkeeper Sikewa",bind="Shadowprey Village"},
@@ -1655,14 +1656,17 @@ SL.Routes["Horde_speed_dungeons"] = {
   {t="T",q=1367,x=75.0,y=68.2,m=1443,npc="Warug"},
   {t="T",q=93225,x=56.3,y=59.7,m=1443,npc="Gurda Wildmane"},
   {t="T",q=1365,x=56.2,y=59.6,m=1443,npc="Felgur Twocuts"},
+  {t="A",q=1366,x=56.2,y=59.6,m=1443,npc="Felgur Twocuts"},
   {t="C",q=5501,x=52.2,y=58.6,m=1443,text="Bring 10 Kodo Bones from the Kodo Graveyard to Bibbly F'utzbuckle at Kormek's Hut."},
   {t="A",q=7028,x=62.2,y=39.6,m=1443,npc="Willow"},
   {t="T",q=5501,x=62.3,y=39.0,m=1443,npc="Bibbly F'utzbuckle"},
+  {t="C",q=1366,x=71.5,y=45.5,m=1443,text="Bring 15 Centaur Ears to Felgur Twocuts in Desolace."},
+  {t="T",q=1366,x=56.2,y=59.6,m=1443,npc="Felgur Twocuts"},
   {t="C",q=6134,x=64.2,y=91.6,m=1443,text="Bring 8 Ghost-o-plasms and the Crate of Ghost Magnets to Hornizz Brimbuzzle in Desolace."},
   {t="A",q=7067,x=50.4,y=86.7,m=1443,npc="Centaur Pariah"},
   {t="T",q=6134,x=47.8,y=61.8,m=1443,npc="Hornizz Brimbuzzle"},
 }},
-{title="Thousand Needles - Shimmering Flats",map=1441,races=nil,entry=39.38,exit=39.54,mins=24,steps={
+{title="Thousand Needles - Shimmering Flats",map=1441,races=nil,entry=39.54,exit=39.70,mins=24,steps={
   {t="FLY",x=21.6,y=74.1,m=1443,npc=6726,name="Thalon",text="Fly to Freewind Post",dest="Fly to Freewind Post"},
   {t="A",q=5762,x=77.8,y=77.3,m=1441,npc="Kravel Koalbeard"},
   {t="A",q=1111,x=77.8,y=77.3,m=1441,npc="Kravel Koalbeard"},
@@ -1673,28 +1677,27 @@ SL.Routes["Horde_speed_dungeons"] = {
   {t="C",q=1175,x=76.9,y=57.6,m=1441,text="Kill Saltstone Basilisk",oname="Saltstone Basilisk"},
   {t="T",q=1175,x=81.6,y=78.0,m=1441,npc="Trackmaster Zherin"},
 }},
-{title="Shaman: Call of Air (air totems)",map=1441,races=nil,entry=39.54,exit=39.54,mins=0,classes={"SHAMAN"},steps={
+{title="Shaman: Call of Air (air totems)",map=1441,races=nil,entry=39.70,exit=39.70,mins=0,classes={"SHAMAN"},steps={
   {t="FLY",x=45.1,y=49.1,m=1441,npc=4317,name="Nyse",text="saves ~13 min over running",dest="Fly to Orgrimmar",fto=3310,tm=1454,tx=45.1,ty=63.9},
   {t="A",q=1531,x=38.0,y=37.7,m=1454,npc="Searn Firewarder"},
   {t="FLY",x=45.1,y=63.9,m=1454,npc=3310,name="Doras",text="saves ~14 min over running",dest="Fly to Freewind Post",fto=4317,tm=1441,tx=45.1,ty=49.1},
   {t="T",q=1531,x=53.5,y=42.6,m=1441,npc="Prate Cloudseer"},
 }},
-{title="Razorfen Downs",map=300,races=nil,entry=39.54,exit=39.85,mins=75,dungeon=true,em=1413,ex=49.0,ey=93.9,steps={
+{title="Razorfen Downs",map=300,races=nil,entry=39.70,exit=40.01,mins=75,dungeon=true,em=1413,ex=49.0,ey=93.9,steps={
   {t="GOTO",x=49.0,y=93.9,m=1413,text="Travel to the Razorfen Downs entrance"},
   {t="DUNGEON",x=49.0,y=93.9,m=1413,name="Razorfen Downs",text="Group up and run Razorfen Downs (levels 33-42) - quests: A Host of Evil, Bring the End"},
   {t="C",q=6626,x=50.0,y=50.0,m=300,text="Kill 8 Razorfen Battleguard, 8 Razorfen Thornweavers, and 8 Death's Head Cultists."},
   {t="C",q=3341,x=50.0,y=50.0,m=300,text="Andrew Brownell wants you to kill Amnennar the Coldbringer."},
 }},
-{title="The Barrens (turn in Razorfen Downs)",map=1413,races=nil,entry=39.85,exit=40.08,mins=8,steps={
+{title="The Barrens (turn in Razorfen Downs)",map=1413,races=nil,entry=40.01,exit=40.23,mins=9,steps={
   {t="NOTE",text="Stop by The Barrens: turn in Razorfen Downs"},
   {t="T",q=6626,x=49.0,y=94.9,m=1413,npc="Myriam Moonsinger"},
-  {t="FLY",x=45.1,y=49.1,m=1441,npc=4317,name="Nyse",text="saves ~6 min over running",dest="Fly to Ratchet",fto=16227,tm=1413,tx=63.1,ty=37.2},
+  {t="FLY",x=45.1,y=49.1,m=1441,npc=4317,name="Nyse",text="saves ~2 min over running",dest="Fly to Ratchet",fto=16227,tm=1413,tx=63.1,ty=37.2},
   {t="T",q=1111,x=63.4,y=38.5,m=1413,npc="Wharfmaster Dizzywig"},
   {t="T",q=1178,x=62.7,y=36.2,m=1413,npc="Gazlowe"},
-  {t="FLY",x=63.1,y=37.2,m=1413,npc=16227,name="Bragok",text="saves ~2 min over running",dest="Fly to The Crossroads",fto=3615,tm=1413,tx=51.5,ty=30.3},
   {t="T",q=1361,x=45.3,y=28.4,m=1413,npc="Regthar Deathgate"},
 }},
-{title="Dustwallow Marsh",map=1445,races=nil,entry=40.08,exit=40.99,mins=82,steps={
+{title="Dustwallow Marsh",map=1445,races=nil,entry=40.23,exit=41.13,mins=82,steps={
   {t="NOTE",text="Travel to Brackenwall Village in Dustwallow Marsh (south from the Barrens)"},
   {t="FP",x=35.6,y=31.9,m=1445,npc=11899,name="Shardi"},
   {t="A",q=1201,x=35.2,y=30.7,m=1445,npc="Nazeer Bloodpike"},
@@ -1736,7 +1739,7 @@ SL.Routes["Horde_speed_dungeons"] = {
   {t="T",q=1239,x=35.2,y=30.7,m=1445,npc="Nazeer Bloodpike"},
   {t="A",q=1240,x=35.2,y=30.7,m=1445,npc="Nazeer Bloodpike"},
 }},
-{title="Warlock: Felhunter",map=1445,races=nil,entry=40.99,exit=40.99,mins=0,classes={"WARLOCK"},steps={
+{title="Warlock: Felhunter",map=1445,races=nil,entry=41.13,exit=41.13,mins=0,classes={"WARLOCK"},steps={
   {t="FLY",x=35.6,y=31.9,m=1445,npc=11899,name="Shardi",text="saves ~2 min over running",dest="Fly to Ratchet",fto=16227,tm=1413,tx=63.1,ty=37.2},
   {t="A",q=1758,x=62.6,y=35.5,m=1413,npc="Strahad Farsan"},
   {t="T",q=1758},
@@ -1759,7 +1762,7 @@ SL.Routes["Horde_speed_dungeons"] = {
   {t="C",q=1795,x=62.6,y=35.3,m=1413,text="Using the Tome of the Cabal, summon and subdue a felhunter."},
   {t="T",q=1795,x=62.6,y=35.5,m=1413,npc="Strahad Farsan"},
 }},
-{title="Warrior: Berserker Stance",map=1445,races=nil,entry=40.99,exit=40.99,mins=0,classes={"WARRIOR"},steps={
+{title="Warrior: Berserker Stance",map=1445,races=nil,entry=41.13,exit=41.13,mins=0,classes={"WARRIOR"},steps={
   {t="FLY",x=35.6,y=31.9,m=1445,npc=11899,name="Shardi",text="saves ~2 min over running",dest="Fly to Thunder Bluff",fto=2995,tm=1456,tx=47.0,ty=49.8},
   {t="A",q=1718,x=57.2,y=87.4,m=1456,npc="Torm Ragetotem"},
   {t="FLY",x=47.0,y=49.8,m=1456,npc=2995,name="Tal",text="saves ~2 min over running",dest="Fly to Ratchet",fto=16227,tm=1413,tx=63.1,ty=37.2},
@@ -1768,9 +1771,10 @@ SL.Routes["Horde_speed_dungeons"] = {
   {t="C",q=1719,x=68.6,y=48.7,m=1413,text="Kill Big Will, then speak to Klannoc Macleod on Fray Island."},
   {t="T",q=1719,x=68.6,y=49.2,m=1413,npc="Klannoc Macleod"},
 }},
-{title="Swamp of Sorrows",map=1435,races=nil,entry=40.99,exit=41.50,mins=45,steps={
+{title="Swamp of Sorrows",map=1435,races=nil,entry=41.13,exit=41.77,mins=59,steps={
   {t="NOTE",text="Travel to Stonard (zeppelin to Grom'gol, then run north through Duskwood)"},
   {t="FP",x=46.1,y=54.8,m=1435,npc=6026,name="Breyk"},
+  {t="A",q=1430,x=44.7,y=57.2,m=1435,npc="Dar"},
   {t="A",q=698,x=44.7,y=57.2,m=1435,npc="Dar"},
   {t="A",q=1418,x=47.7,y=55.2,m=1435,npc="Helgrum the Swift"},
   {t="A",q=1424,x=47.9,y=54.8,m=1435,npc="Fel'zerul"},
@@ -1778,9 +1782,11 @@ SL.Routes["Horde_speed_dungeons"] = {
   {t="C",q=1424,x=73.3,y=56.4,m=1435,text="Fel'zerul in Stonard wants you to gather 10 Atal'ai Artifacts."},
   {t="T",q=698,x=81.3,y=81.0,m=1435,npc="Tok'Kar"},
   {t="A",q=699,x=81.3,y=81.0,m=1435,npc="Tok'Kar"},
+  {t="C",q=1430,x=95.2,y=74.2,m=1435,text="Bring 10 Monstrous Crawler Legs to Dar in the Swamp of Sorrows."},
   {t="C",q=699,x=82.7,y=30.9,m=1435,text="Bring 6 Sawtooth Snapper Claws to Tok'Kar in the Swamp of Sorrows."},
   {t="T",q=699,x=81.3,y=81.0,m=1435,npc="Tok'Kar"},
   {t="T",q=1424,x=47.9,y=54.8,m=1435,npc="Fel'zerul"},
+  {t="T",q=1430,x=44.7,y=57.2,m=1435,npc="Dar"},
   {t="A",q=93176,x=25.1,y=54.2,m=1435,npc="Amaryllis Webb"},
   {t="T",q=93176,x=25.1,y=54.2,m=1435,npc="Amaryllis Webb"},
   {t="A",q=1389,x=26.0,y=31.4,m=1435,npc="Magtoor"},
@@ -1790,7 +1796,7 @@ SL.Routes["Horde_speed_dungeons"] = {
   {t="T",q=1393,x=47.8,y=39.8,m=1435,npc="Galen's Strongbox"},
   {t="T",q=1389,x=26.0,y=31.4,m=1435,npc="Magtoor"},
 }},
-{title="Badlands",map=1418,races=nil,entry=41.50,exit=42.36,mins=97,steps={
+{title="Badlands",map=1418,races=nil,entry=41.77,exit=42.62,mins=97,steps={
   {t="NOTE",text="Travel to Kargath in the Badlands"},
   {t="FP",x=4.0,y=44.8,m=1418,npc=2861,name="Gorrik"},
   {t="HEARTH",x=2.8,y=45.9,m=1418,npc=9356,name="Innkeeper Shul'kar",bind="Kargath"},
@@ -1821,7 +1827,7 @@ SL.Routes["Horde_speed_dungeons"] = {
   {t="C",q=712,x=4.1,y=79.9,m=1418,text="Bring 5 Bracers of Rock Binding to Lotwil Veriatus in the Badlands."},
   {t="T",q=712,x=25.9,y=44.9,m=1418,npc="Lotwil Veriatus"},
 }},
-{title="Uldaman",map=230,races=nil,entry=42.36,exit=42.67,mins=135,dungeon=true,em=1418,ex=44.6,ey=12.1,steps={
+{title="Uldaman",map=230,races=nil,entry=42.62,exit=42.93,mins=135,dungeon=true,em=1418,ex=44.6,ey=12.1,steps={
   {t="GOTO",x=44.6,y=12.1,m=1418,text="Travel to the Uldaman entrance"},
   {t="DUNGEON",x=44.6,y=12.1,m=1418,name="Uldaman",text="Group up and run Uldaman (levels 36-48) - quests: Necklace Recovery, Power Stones, Reclaimed Treasures, Solution to Doom"},
   {t="C",q=2283,x=50.0,y=50.0,m=230,text="Look for a valuable necklace within the Uldaman dig site and bring it back to Dran Droffers in Orgrimmar. The necklace may be damaged."},
@@ -1830,12 +1836,12 @@ SL.Routes["Horde_speed_dungeons"] = {
   {t="C",q=709,x=50.0,y=50.0,m=230,text="Bring the Tablet of Ryun'eh to Theldurin the Lost."},
   {t="USEHS",x=2.8,y=45.9,m=1418,bind="Kargath",text="Hearth to Kargath for the next zone"},
 }},
-{title="Badlands (turn in Uldaman)",map=1418,races=nil,entry=42.67,exit=43.02,mins=1,steps={
+{title="Badlands (turn in Uldaman)",map=1418,races=nil,entry=42.93,exit=43.27,mins=1,steps={
   {t="NOTE",text="Stop by Badlands: turn in Uldaman"},
   {t="T",q=709,x=51.4,y=76.9,m=1418,npc="Theldurin the Lost"},
   {t="T",q=2418,x=42.4,y=52.9,m=1418,npc="Rigglefuzz"},
 }},
-{title="Arathi Highlands 2",map=1417,races=nil,entry=43.02,exit=43.52,mins=46,steps={
+{title="Arathi Highlands 2",map=1417,races=nil,entry=43.27,exit=43.77,mins=46,steps={
   {t="FLY",x=4.0,y=44.8,m=1418,npc=2861,name="Gorrik",text="saves ~4 min over running",dest="Fly to Hammerfall",fto=2851,tm=1417,tx=73.0,ty=32.7},
   {t="A",q=640,x=73.8,y=34.0,m=1417,npc="Zengu"},
   {t="T",q=638,x=73.8,y=34.0,m=1417,npc="Zengu"},
@@ -1864,7 +1870,7 @@ SL.Routes["Horde_speed_dungeons"] = {
   {t="C",q=662,x=23.1,y=84.5,m=1417,text="First Mate Nilzlix wants you to retrieve the Charts and Logs from the Maiden's Folly and the Spirit of Silverpine."},
   {t="T",q=662,x=32.8,y=81.5,m=1417,npc="First Mate Nilzlix"},
 }},
-{title="Stranglethorn Vale 2",map=1434,races=nil,entry=43.52,exit=45.32,mins=207,steps={
+{title="Stranglethorn Vale 2",map=1434,races=nil,entry=43.77,exit=45.54,mins=208,steps={
   {t="FLY",x=73.0,y=32.7,m=1417,npc=2851,name="Urda",text="Fly to Grom'gol (or take the zeppelin from Undercity)",dest="Fly to Grom'gol (or take the zeppelin from Undercity)"},
   {t="HEARTH",x=27.0,y=77.3,m=1434,npc=6807,name="Innkeeper Skindle",bind="Booty Bay"},
   {t="FLY",x=26.9,y=77.1,m=1434,npc=2858,name="Gringer",text="saves ~2 min over running",dest="Fly to Grom'gol Base Camp",fto=1387,tm=1434,tx=32.5,ty=29.4},
@@ -1945,7 +1951,7 @@ SL.Routes["Horde_speed_dungeons"] = {
   {t="T",q=613,x=27.8,y=77.1,m=1434,npc="\"Sea Wolf\" MacKinley"},
   {t="T",q=577,x=28.3,y=77.6,m=1434,npc="Drizzlik"},
 }},
-{title="Orgrimmar - 40s",map=1454,races=nil,entry=45.32,exit=45.44,mins=3,steps={
+{title="Orgrimmar - 40s",map=1454,races=nil,entry=45.54,exit=45.66,mins=3,steps={
   {t="NOTE",text="Head back to Orgrimmar (zeppelin from Grom'gol)"},
   {t="A",q=7068,x=39.2,y=86.3,m=1454,npc="Uthel'nay"},
   {t="A",q=649,x=59.5,y=36.6,m=1454,npc="Dran Droffers"},
@@ -1955,14 +1961,14 @@ SL.Routes["Horde_speed_dungeons"] = {
   {t="A",q=2981,x=75.2,y=34.2,m=1454,npc="Belgrom Rockmaul"},
   {t="TRAIN",text="Train new spells in Orgrimmar"},
 }},
-{title="Tanaris",map=1446,races=nil,entry=45.44,exit=47.12,mins=206,steps={
+{title="Tanaris",map=1446,races=nil,entry=45.66,exit=47.12,mins=171,steps={
   {t="NOTE",text="Travel to Gadgetzan in Tanaris"},
   {t="FLY",x=45.1,y=63.9,m=1454,npc=3310,name="Doras",text="saves ~6 min over running",dest="Fly to Freewind Post",fto=4317,tm=1441,tx=45.1,ty=49.1},
   {t="FP",x=51.6,y=25.4,m=1446,npc=7824,name="Bulkrek Ragefist"},
   {t="HEARTH",x=52.5,y=27.9,m=1446,npc=7733,name="Innkeeper Fizzgrimble",bind="Gadgetzan"},
-  {t="A",q=1690,x=52.5,y=28.5,m=1446,npc="Chief Engineer Bilgewhizzle"},
-  {t="GRIND",x=62.7,y=30.1,m=1446,text="Wastewander Thief and Wastewander Bandit (level 40-43), about 40k XP/hour - finishes Wastewander Justice on the way",level=46.0},
-  {t="C",q=1690,x=63.6,y=31.1,m=1446,text="Take down 10 Wastewander Bandits and Thieves east of Gadgetzan."},
+  {t="A",q=1707,x=52.5,y=28.4,m=1446,npc="Spigot Operator Luglunket"},
+  {t="GRIND",x=62.7,y=30.1,m=1446,text="Wastewander Thief and Wastewander Bandit (level 40-42), about 39k XP/hour - finishes Water Pouch Bounty on the way",level=46.0},
+  {t="C",q=1707,x=62.2,y=35.0,m=1446,text="Bring 5 Wastewander Water Pouches to Spigot Operator Luglunket in Gadgetzan."},
   {t="A",q=4787,x=67.0,y=22.4,m=1446,npc="Yeh'kinya"},
   {t="A",q=3527,x=67.0,y=22.4,m=1446,npc="Yeh'kinya"},
   {t="A",q=3520,x=67.0,y=22.4,m=1446,npc="Yeh'kinya"},
@@ -1980,15 +1986,15 @@ SL.Routes["Horde_speed_dungeons"] = {
   {t="A",q=3042,x=51.4,y=28.8,m=1446,npc="Trenton Lighthammer"},
   {t="T",q=992,x=50.2,y=27.5,m=1446,npc="Senior Surveyor Fizzledowser"},
   {t="A",q=82,x=50.2,y=27.5,m=1446,npc="Senior Surveyor Fizzledowser"},
-  {t="A",q=1707,x=52.5,y=28.4,m=1446,npc="Spigot Operator Luglunket"},
+  {t="A",q=1690,x=52.5,y=28.5,m=1446,npc="Chief Engineer Bilgewhizzle"},
   {t="A",q=2768,x=52.5,y=28.5,m=1446,npc="Chief Engineer Bilgewhizzle"},
   {t="T",q=2781,x=52.5,y=28.5,m=1446,npc="Chief Engineer Bilgewhizzle"},
-  {t="C",q=1707,x=62.2,y=35.0,m=1446,text="Bring 5 Wastewander Water Pouches to Spigot Operator Luglunket in Gadgetzan."},
   {t="C",q=2873,x=72.2,y=46.8,m=1446,text="Bring Stoley's Shipment to Stoley in Steamwheedle Port."},
   {t="C",q=2875,x=73.4,y=47.1,m=1446,text="Bring Andre's Head to Security Chief Bilgewhizzle in Steamwheedle Port."},
   {t="T",q=2873,x=67.1,y=24.0,m=1446,npc="Stoley"},
   {t="A",q=8366,x=67.1,y=23.9,m=1446,npc="Security Chief Bilgewhizzle"},
   {t="T",q=2875,x=67.1,y=23.9,m=1446,npc="Security Chief Bilgewhizzle"},
+  {t="C",q=1690,x=63.6,y=31.1,m=1446,text="Take down 10 Wastewander Bandits and Thieves east of Gadgetzan."},
   {t="T",q=1690,x=52.5,y=28.5,m=1446,npc="Chief Engineer Bilgewhizzle"},
   {t="A",q=1691,x=52.5,y=28.5,m=1446,npc="Chief Engineer Bilgewhizzle"},
   {t="C",q=5863,x=40.0,y=54.5,m=1446,text="Andi Lynn in Gadgetzan wants you to destroy the Dunemaul Compound by killing 10 Dunemaul Brutes, 10 Dunemaul Enforcers, and Gor'marok the Ravager."},
@@ -2410,7 +2416,7 @@ SL.Routes["Horde_speed_dungeons"] = {
   {t="T",q=3501,x=52.0,y=35.6,m=1419,npc="Kum'isha the Collector"},
   {t="T",q=2521,x=52.0,y=35.6,m=1419,npc="Kum'isha the Collector"},
 }},
-{title="Winterspring",map=1452,races=nil,entry=55.03,exit=56.11,mins=194,steps={
+{title="Winterspring",map=1452,races=nil,entry=55.03,exit=56.11,mins=198,steps={
   {t="FP",x=60.5,y=36.3,m=1452,npc=11139,name="Yugrek"},
   {t="HEARTH",x=61.4,y=38.8,m=1452,npc=11118,name="Innkeeper Vizzie",bind="Everlook"},
   {t="A",q=4842,x=31.3,y=45.2,m=1452,npc="Donova Snowden"},
@@ -2449,7 +2455,7 @@ SL.Routes["Horde_speed_dungeons"] = {
   {t="T",q=5163,x=60.9,y=37.6,m=1452,npc="Umi Rumplesnicker"},
   {t="T",q=5082,x=31.3,y=45.2,m=1452,npc="Donova Snowden"},
   {t="T",q=8464,x=27.7,y=34.5,m=1452,npc="Salfa"},
-  {t="GRIND",x=30.6,y=35.6,m=1452,text="Winterfall Pathfinder and Winterfall Den Watcher (level 53-56), about 41k XP/hour",level=56.0},
+  {t="GRIND",x=30.6,y=35.6,m=1452,text="Winterfall Pathfinder and Winterfall Den Watcher (level 53-56), about 39k XP/hour",level=56.0},
   {t="USEHS",x=61.4,y=38.8,m=1452,bind="Everlook",text="Hearth to Everlook (saves ~4 min of running)"},
   {t="A",q=969,x=61.9,y=38.3,m=1452,npc="Witch Doctor Mau'ari"},
   {t="C",q=969,x=61.9,y=68.5,m=1452,text="Collect 4 Frostmaul Shards for Witch Doctor Mau'ari in Everlook."},
@@ -2492,13 +2498,10 @@ SL.Routes["Horde_speed_dungeons"] = {
   {t="C",q=6025,x=45.8,y=18.2,m=1422,text="Enter Hearthglen and find a high vantage point from which you can see the town and gauge the Scarlet Crusade's forces."},
   {t="T",q=6025,x=51.9,y=28.1,m=1422,npc="Kirsta Deepshadow"},
 }},
-{title="Eastern Plaguelands",map=1423,races=nil,entry=56.64,exit=58.98,mins=517,steps={
+{title="Eastern Plaguelands",map=1423,races=nil,entry=56.64,exit=58.98,mins=554,steps={
   {t="FP",x=70.5,y=47.5,m=1423,npc=12636,name="Georgia"},
-  {t="HEARTH",x=71.8,y=48.5,m=1423,npc=16256,name="Jessica Chambers",bind="Light's Hope Chapel"},
+  {t="GRIND",x=68.8,y=55.8,m=1423,text="Putrid Gargoyle and Carrion Grub (level 54-56), about 40k XP/hour - most quests here are level 60",level=58.0},
   {t="A",q=6021,x=69.9,y=53.7,m=1423,npc="Caretaker Alen"},
-  {t="GRIND",x=22.9,y=73.6,m=1423,text="Unliving Mossflayer and Mossflayer Zombie (level 52-57), about 45k XP/hour - finishes Zaeldarr the Outcast on the way",level=58.0},
-  {t="C",q=6021,x=23.1,y=72.6,m=1423,text="Bring Zaeldarr's Head to Caretaker Alen at Light's Hope Chapel."},
-  {t="USEHS",x=71.8,y=48.5,m=1423,bind="Light's Hope Chapel",text="Hearth to Light's Hope Chapel (saves ~3 min of running)"},
   {t="A",q=5281,x=69.9,y=53.7,m=1423,npc="Caretaker Alen"},
   {t="T",q=6030,x=71.6,y=50.1,m=1423,npc="Duke Nicholas Zverenhoff"},
   {t="A",q=5211,x=71.7,y=50.0,m=1423,npc="Carlin Redpath"},
@@ -2521,6 +2524,7 @@ SL.Routes["Horde_speed_dungeons"] = {
   {t="T",q=5281,x=11.4,y=26.6,m=1423,npc="Egan"},
   {t="A",q=6133,x=22.2,y=63.5,m=1423,npc="Nathanos Blightcaller"},
   {t="A",q=6042,x=22.2,y=63.5,m=1423,npc="Nathanos Blightcaller"},
+  {t="C",q=6021,x=23.1,y=72.6,m=1423,text="Bring Zaeldarr's Head to Caretaker Alen at Light's Hope Chapel."},
   {t="A",q=6024,x=22.9,y=73.0,m=1423,npc="Torn Scroll"},
   {t="T",q=5601,x=31.1,y=78.0,m=1423,npc="Pamela Redpath"},
   {t="C",q=9665,x=34.1,y=64.1,m=1423,text="Kill <TXT>Crown Guard Capture Quest Doodad",oname="<TXT>Crown Guard Capture Quest Doodad"},
@@ -2622,11 +2626,11 @@ SL.Routes["Horde_speed_dungeons"] = {
   {t="T",q=8352,x=48.6,y=37.8,m=1451,npc="Bor Wildmane"},
   {t="C",q=8320,x=26.4,y=34.0,m=1451,text="Kill 10 Twilight Geolords."},
   {t="T",q=8320,x=48.6,y=37.9,m=1451,npc="Huum Wildmane"},
-  {t="GRIND",x=40.7,y=38.4,m=1451,text="Not 60 yet? Finish here: Stonelash Scorpid and Dredge Striker (level 54-56)",level=60.0},
+  {t="GRIND",x=56.5,y=32.6,m=1451,text="Not 60 yet? Finish here: Stonelash Scorpid (level 54-55)",level=60.0},
 }},
 }
 SL.RouteVersions = SL.RouteVersions or {}
-SL.RouteVersions["Horde_speed_dungeons"] = "a4287efb62cd"
+SL.RouteVersions["Horde_speed_dungeons"] = "9d0d8b8394b2"
 -- modelled minutes per level along this route (for the time-to-60 estimate)
 SL.LevelMinutes = SL.LevelMinutes or {}
-SL.LevelMinutes["Horde_speed_dungeons"] = {2.5,5.7,8.9,13.3,17.8,17.8,17.5,21.1,25.3,29.6,47.3,69.1,43.4,38.0,42.4,47.1,112.8,54.7,60.1,65.4,66.9,159.8,24.4,65.6,70.6,64.6,112.9,85.4,77.2,103.6,151.5,110.9,97.2,115.1,123.0,174.0,123.2,144.9,193.8,98.6,110.8,190.0,114.2,121.8,121.6,132.4,172.0,145.2,182.4,119.4,143.9,102.9,121.8,124.7,182.1,154.4,221.1,231.1,222.0}
+SL.LevelMinutes["Horde_speed_dungeons"] = {2.5,5.7,8.9,13.3,17.8,17.8,17.5,21.1,25.3,29.6,47.3,69.1,43.4,38.0,42.4,47.1,111.6,52.8,58.0,63.2,64.7,159.8,24.4,65.6,70.6,64.6,112.9,85.4,77.2,103.6,151.5,110.9,97.2,115.1,123.0,174.0,123.2,144.2,202.7,96.7,106.5,216.9,91.3,122.4,120.7,127.6,171.4,145.2,182.4,119.4,143.9,102.9,121.8,124.7,185.8,160.4,237.0,247.3,222.0}

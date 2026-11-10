@@ -223,14 +223,20 @@ def nearest_grave(m, p):
 _grind_cache = {}
 
 
-def grind_spot(m, level, near=None):
+def grind_spot(m, level, near=None, must=None):
     """best XP/hour area on map m for a player of `level`:
-    returns (x, y, "Mob A, Mob B", "lvl range", xp_per_hour) or None"""
-    key = (m, level, None if near is None else (round(near[0]), round(near[1])))
+    returns (x, y, "Mob A, Mob B", "lvl range", xp_per_hour) or None.
+    near: prefer spots close to this point (a 20 minute session amortises the walk there).
+    must: NPC ids that have to be at the spot (a quest's mobs, so the grind finishes the quest);
+          the pin then sits on one of them."""
+    key = (m, level, None if near is None else (round(near[0]), round(near[1])),
+           tuple(sorted(must)) if must else None)
     if key in _grind_cache:
         return _grind_cache[key]
     CELL = 4.0
-    cells = defaultdict(lambda: {"n": 0, "best": 0.0, "mobs": defaultdict(int), "pts": [], "lv": [99, 0]})
+    must = set(must or ())
+    cells = defaultdict(lambda: {"n": 0, "sum": 0.0, "mobs": defaultdict(int), "pts": [], "must": [],
+                                 "lv": {}})
     for nid, e in br.N.items():
         if (e.get("rank") or 0) != 0 or e.get("friendly") == br.FCFG["letter"]:
             continue
@@ -247,26 +253,39 @@ def grind_spot(m, level, near=None):
         rate = kill_xp(level, mob) / kill_time(level, mob)  # xp per second while killing
         if rate <= 0:
             continue
+        is_must = int(nid) in must
         for p in pts:
             c = cells[(int(p[0] // CELL), int(p[1] // CELL))]
             c["n"] += 1
-            c["best"] = max(c["best"], rate)
+            c["sum"] += rate                 # the spot's XP rate is its real mix of mobs
             c["mobs"][e["name"]] += 1
             c["pts"].append(p)
-            c["lv"][0] = min(c["lv"][0], lo)
-            c["lv"][1] = max(c["lv"][1], hi)
+            c["lv"][e["name"]] = (lo, hi)
+            if is_must:
+                c["must"].append(p)
+    # the other faction's camps (guards, quest givers): never a grind spot for us
+    enemy = defaultdict(int)
+    for nid, e in br.N.items():
+        if e.get("friendly") == br.ENEMY:
+            for p in br.spawns_of("npc", nid).get(m, ()):
+                enemy[(int(p[0] // CELL), int(p[1] // CELL))] += 1
     best, bestScore = None, 0.0
     for key2, c in cells.items():
+        if sum(enemy.get((key2[0] + dx, key2[1] + dy), 0) for dx in (-1, 0, 1) for dy in (-1, 0, 1)) >= 2:
+            continue
         # neighbouring cells count half: packs spill over cell borders
-        n = c["n"]
+        n, mustN = c["n"], len(c["must"])
         for dx in (-1, 0, 1):
             for dy in (-1, 0, 1):
                 if dx or dy:
                     o = cells.get((key2[0] + dx, key2[1] + dy))
                     if o:
                         n += o["n"] * 0.5
+                        mustN += len(o["must"]) * 0.5
+        if must and (len(c["must"]) == 0 or mustN < 3):
+            continue                         # the quest's mobs are not really here
         density = min(1.0, n / 14.0)        # ~14 mobs in reach keeps you killing non-stop
-        xph = c["best"] * density * 3600 * GRIND_EFFICIENCY
+        xph = (c["sum"] / c["n"]) * density * 3600 * GRIND_EFFICIENCY
         score = xph
         if near is not None:
             cx = sum(p[0] for p in c["pts"]) / len(c["pts"])
@@ -278,11 +297,18 @@ def grind_spot(m, level, near=None):
     res = None
     if best:
         c, xph = best
-        cx = sum(p[0] for p in c["pts"]) / len(c["pts"])
-        cy = sum(p[1] for p in c["pts"]) / len(c["pts"])
-        snap = min(c["pts"], key=lambda p: (p[0] - cx) ** 2 + (p[1] - cy) ** 2)
+        # the pin: the spawn with the most mobs around it (the thick of the pack) - one of the
+        # quest's mobs when the grind is meant to finish a quest
+        cand = c["must"] or c["pts"]
+        R2 = 2.5 ** 2
+
+        def crowd(p):
+            return sum(1 for q in c["pts"] if (q[0] - p[0]) ** 2 + ((q[1] - p[1]) * 0.67) ** 2 <= R2)
+        snap = max(cand, key=crowd)
         names = [k for k, _ in sorted(c["mobs"].items(), key=lambda kv: -kv[1])[:2]]
-        lv = f"{c['lv'][0]}-{c['lv'][1]}" if c["lv"][0] != c["lv"][1] else str(c["lv"][0])
+        lo = min(c["lv"][nm][0] for nm in names)
+        hi = max(c["lv"][nm][1] for nm in names)
+        lv = f"{lo}-{hi}" if lo != hi else str(lo)
         res = (round(snap[0], 1), round(snap[1], 1), " and ".join(names), lv, int(xph))
     _grind_cache[key] = res
     return res

@@ -63,14 +63,13 @@
     left for later (level too low): [34, 128, 150, 180, 219, 1699, 1702]
     -> keep hearth (unbound) instead of binding at Lakeshire
 [29] Redridge Mountains                     map=1433 races=Dwarf,Gnome,Human,Skyborne entry=18.85 exit=21.32 quests=18 deferredIn=1 ~ 108min HS=0 death=0 stacked=0
-    catch-up grind 18.85 -> 20.8 before questing (167 min; quests here ~level 23) on the mobs of The Ancient Statuette
-    -> set hearth at Astranaar (worth ~3 min more than keeping the old bind)
-[30] Ashenvale (Night Elf)                  map=1440 races=NightElf entry=18.85 exit=22.83 quests=14 deferredIn=3 ~ 259min HS=1 death=0 stacked=0
-    -> hearth to Astranaar for Druid: Aquatic Form
+    catch-up grind 18.85 -> 20.8 before questing (167 min; quests here ~level 23) on the mobs of The Zoram Strand
+    -> keep hearth (unbound) instead of binding at Astranaar
+[30] Ashenvale (Night Elf)                  map=1440 races=NightElf entry=18.85 exit=22.83 quests=14 deferredIn=3 ~ 250min HS=0 death=0 stacked=0
 [--] Druid: Aquatic Form                    class chain (DRUID): 4 quests
-    catch-up grind 21.62 -> 23.6 before questing (157 min; quests here ~level 26) on the mobs of Young Crocolisk Skins
+    catch-up grind 21.62 -> 23.6 before questing (187 min; quests here ~level 26) on the mobs of Young Crocolisk Skins
     -> set hearth at Menethil Harbor (worth ~10 min more than keeping the old bind)
-[32] Wetlands                               map=1437 races=all entry=21.62 exit=26.84 quests=30 deferredIn=0 ~ 318min HS=2 death=0 stacked=0
+[32] Wetlands                               map=1437 races=all entry=21.62 exit=26.84 quests=30 deferredIn=0 ~ 347min HS=2 death=0 stacked=0
     -> keep hearth (Menethil Harbor) instead of binding at Ironforge
 [33] Ironforge - 20s                        map=1455 races=all entry=26.84 exit=26.90 quests=6 deferredIn=0 ~   3min HS=0 death=0 stacked=0
     left for later (level too low): [1241, 1242, 1243, 1274]
@@ -139,9 +138,9 @@
     left for later (level too low): [8151, 8250, 8254]
     -> keep hearth (Booty Bay) instead of binding at Stormwind City
 [72] Stormwind - 40s                        map=1453 races=all entry=44.67 exit=44.82 quests=4 deferredIn=1 ~   3min HS=0 death=0 stacked=0
-    catch-up grind 44.82 -> 46.0 before questing (230 min; quests here ~level 48) on the mobs of Wastewander Justice
+    catch-up grind 44.82 -> 46.0 before questing (236 min; quests here ~level 48) on the mobs of Water Pouch Bounty
     -> set hearth at Gadgetzan (worth ~5 min more than keeping the old bind)
-[73] Tanaris                                map=1446 races=all entry=44.82 exit=47.20 quests=27 deferredIn=2 ~ 366min HS=0 death=0 stacked=0
+[73] Tanaris                                map=1446 races=all entry=44.82 exit=47.20 quests=27 deferredIn=2 ~ 373min HS=0 death=0 stacked=0
 [74] Zul'Farrak (dungeon)                   map=219 races=all entry=47.20 exit=47.51 quests=0 deferredIn=4 ~ 146min HS=0 death=0 stacked=0
     -> hearth to Gadgetzan for Tanaris (turn in Zul'Farrak)
 [75] Tanaris (turn in Zul'Farrak)           map=1446 races=all entry=47.51 exit=48.11 quests=0 deferredIn=4 ~   3min HS=0 death=0 stacked=0
@@ -170,10 +169,10 @@
 [90] Blasted Lands                          map=1419 races=all entry=56.24 exit=56.62 quests=7 deferredIn=1 ~  34min HS=0 death=0 stacked=0
     -> keep hearth (Feathermoon Stronghold) instead of binding at Everlook
 [91] Winterspring                           map=1452 races=all entry=56.62 exit=57.48 quests=18 deferredIn=4 ~ 123min HS=0 death=0 stacked=0
-    catch-up grind 57.48 -> 58.0 before questing (123 min; quests here ~level 60) on the mobs of Zaeldarr the Outcast
+    catch-up grind 57.48 -> 58.0 before questing (141 min; quests here ~level 60)
     left for later (level too low): [7621, 7622, 9121]
     -> keep hearth (Feathermoon Stronghold) instead of binding at Light's Hope Chapel
-[92] Eastern Plaguelands                    map=1423 races=all entry=57.48 exit=58.86 quests=7 deferredIn=9 ~ 268min HS=0 death=0 stacked=0
+[92] Eastern Plaguelands                    map=1423 races=all entry=57.48 exit=58.86 quests=7 deferredIn=9 ~ 279min HS=0 death=0 stacked=0
     -> keep hearth (Feathermoon Stronghold) instead of binding at Darnassus
 [93] Darnassus (quests for Dire Maul)       map=1457 races=all entry=58.86 exit=59.03 quests=1 deferredIn=5 ~   3min HS=0 death=0 stacked=0
 [94] Dire Maul (dungeon)                    map=234 races=all entry=59.03 exit=59.34 quests=0 deferredIn=3 ~  98min HS=0 death=0 stacked=0
@@ -181,11 +180,12 @@
     -> keep hearth (Feathermoon Stronghold) instead of binding at Cenarion Hold
 [96] Silithus                               map=1451 races=all entry=59.58 exit=60.00 quests=25 deferredIn=0 ~ 122min HS=0 death=0 stacked=0
 
-telemetry: 2 SavedVariables file(s), 64 timed steps, 59 measured step keys, 0 player reports
+telemetry: 2 SavedVariables file(s), 65 timed steps, 60 measured step keys, 0 player reports
 dropped 1 quests whose objectives would be grey on the later visit: [5621]
     flight paths grabbed on the way (Teldrassil): Vesprystus
     flights Druid: Bear Form: 1 planned, ~4 min saved
     flight paths grabbed on the way (Stormwind (quests for The Deadmines)): Dungar Longdrink
+    flights Druid: Aquatic Form: 1 planned, ~13 min saved
     flights Stormwind (quests for Gnomeregan): 1 planned, ~18 min saved
     flights Ironforge (quests for Gnomeregan): 1 planned, ~6 min saved
     flights Alterac Mountains: 1 planned, ~3 min saved
@@ -203,16 +203,16 @@ dropped 1 quests whose objectives would be grey on the later visit: [5621]
     flights Western Plaguelands: 1 planned, ~8 min saved
     flights Blasted Lands: 1 planned, ~12 min saved
     flights Dire Maul: 1 planned, ~8 min saved
-flights: ~136 min saved over running
+flights: ~149 min saved over running
 
-hearths=20 death-skips=0 stacked quests=0 time saved by hearths/deaths ~104 min
+hearths=18 death-skips=0 stacked quests=0 time saved by hearths/deaths ~94 min
 quest log peak Dwarf     23 (in Blasted Lands)
 quest log peak Gnome     23 (in Blasted Lands)
 quest log peak Human     23 (in Blasted Lands)
 quest log peak NightElf  23 (in Blasted Lands)
 quest log peak Skyborne  23 (in Blasted Lands)
-estimated /played to 60 for Dwarf     ~81.2 h (questing + planned grinding, excl. class/vendor stops)
-estimated /played to 60 for Gnome     ~81.2 h (questing + planned grinding, excl. class/vendor stops)
-estimated /played to 60 for Human     ~82.1 h (questing + planned grinding, excl. class/vendor stops)
-estimated /played to 60 for NightElf  ~85.1 h (questing + planned grinding, excl. class/vendor stops)
-estimated /played to 60 for Skyborne  ~81.2 h (questing + planned grinding, excl. class/vendor stops)
+estimated /played to 60 for Dwarf     ~82.0 h (questing + planned grinding, excl. class/vendor stops)
+estimated /played to 60 for Gnome     ~82.0 h (questing + planned grinding, excl. class/vendor stops)
+estimated /played to 60 for Human     ~82.9 h (questing + planned grinding, excl. class/vendor stops)
+estimated /played to 60 for NightElf  ~85.8 h (questing + planned grinding, excl. class/vendor stops)
+estimated /played to 60 for Skyborne  ~82.0 h (questing + planned grinding, excl. class/vendor stops)
