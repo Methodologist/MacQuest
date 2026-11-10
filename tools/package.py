@@ -50,6 +50,11 @@ NOTES
   * Step timings and /mq report notes are stored only in your own SavedVariables
     (WTF\\Account\\<account>\\SavedVariables\\MacQuest.lua). Share that file if you want the
     route tuned from your play; turn recording off in settings if you prefer.
+
+LICENSE
+  Copyright (C) 2026 Methodologist. Free software under the GNU General Public License v3.0
+  (see LICENSE.txt). Quest data from Questie / QuestieDB (GPL-3.0).
+  Source: https://github.com/Methodologist/MacQuest
 """
 
 
@@ -99,6 +104,7 @@ def main():
         else:
             shutil.copy2(src, dst)
     (stage / "README.txt").write_text(FRIEND_README, encoding="utf-8")
+    shutil.copy2(ROOT / "LICENSE", stage / "LICENSE.txt")
 
     # sanity: nothing of the old name left
     left = []

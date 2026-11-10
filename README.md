@@ -117,6 +117,13 @@ mocked WoW API: `pip install lupa`, then `python tools/test_addon.py`. Diagnosti
   classic rules.
 * If Questie's or RestedXP's auto-accept is also on, turn one of them off.
 
+## License
+
+Copyright (C) 2026 Methodologist. Mac Quest is free software under the
+[GNU General Public License v3.0](LICENSE): you may use, change and share it, and anything you
+distribute that is based on it must also be GPL-3.0 with its source available. The bundled quest
+data is derived from QuestieDB, which is also GPL-3.0.
+
 ## Credits
 
 * Quest, NPC, item and drop-rate data come from **[Questie / QuestieDB](https://github.com/Questie/Questie)**

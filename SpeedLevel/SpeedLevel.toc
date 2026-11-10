@@ -4,6 +4,8 @@
 ## Author: Methodologist
 ## Version: 0.6.0
 ## Category: Quests
+## X-License: GPL-3.0
+## X-Website: https://github.com/Methodologist/MacQuest
 ## SavedVariables: SpeedLevelDB
 ## SavedVariablesPerCharacter: SpeedLevelCharDB
 ## IconTexture: Interface\Icons\Ability_Rogue_Sprint
