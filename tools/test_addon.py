@@ -881,6 +881,64 @@ def main():
     check(L.eval("SpeedLevel.Engine:Mode()") == "thorough_dungeons", "closing without 'Start leveling' changes nothing")
     L.execute("SpeedLevel.char.startPath = nil; SpeedLevel.Engine:SetMode('speed')")
 
+    print("\n== quests that are no longer offered")
+    login(level=30, race=2, raceFile="Orc", **{"class": 1})
+    res = L.eval("""(function()
+        local SL, E = SpeedLevel, SpeedLevel.Engine
+        local out = {}
+        -- a breadcrumb in the route whose target quest you already have
+        for i, st in ipairs(E.steps) do
+          local d = st.t == "A" and SL.Quests[st.q]
+          if d and d[10] and d[10][1] then
+            STATE.completed[d[10][1]] = true
+            local grey = SL.db.skipGrey
+            SL.db.skipGrey = false
+            out[#out + 1] = st.q .. ":" .. tostring(select(2, E:ComputeStatus(i)))
+            SL.db.skipGrey = grey
+            STATE.completed[d[10][1]] = nil
+            break
+          end
+        end
+        -- a quest disabled while another is in your log
+        SL.Quests[999001] = { "Test Disabled", 30, 1, 0, 0, nil, nil, 100, nil, nil, nil, { 999002 } }
+        SL.Quests[999002] = { "Test Blocker", 30, 1, 0, 0, nil, nil, 100 }
+        local st = { i = #E.steps + 1, t = "A", q = 999001, sec = 1 }
+        E.steps[st.i] = st
+        E.questSteps[999001] = { A = st.i }
+        table.insert(STATE.log, { id = 999002, complete = false })
+        SL.Player:Refresh()
+        out[#out + 1] = "disabled:" .. tostring(select(2, E:ComputeStatus(st.i)))
+        table.remove(STATE.log)
+        SL.Player:Refresh()
+        E.steps[st.i] = nil
+        E.questSteps[999001] = nil
+        return table.concat(out, "|")
+    end)()""")
+    print("  ", res)
+    bc, dis = res.split("|")
+    check("no longer offered" in bc, f"a breadcrumb is skipped once you have the quest it leads to ({bc})")
+    check("comes back once" in dis, f"a 'disabled by' quest waits while the other is in your log ({dis})")
+
+    # a giver that opens no window: standing there with them targeted parks the pickup
+    login(level=1, race=2, raceFile="Orc", **{"class": 1})
+    gv = L.eval("""(function()
+        local SL, E = SpeedLevel, SpeedLevel.Engine
+        local i = E:Focus(); local st = E.steps[i]
+        STATE.map, STATE.x, STATE.y = st.m, st.x / 100, st.y / 100
+        TARGET_NAME = st.npc
+        local oldUnitName = UnitName
+        UnitName = function(u) if u == "target" then return TARGET_NAME end return oldUnitName(u) end
+        E.atGiver = nil
+        E:CheckGiver()
+        STATE.time = STATE.time + 9
+        E:CheckGiver()
+        UnitName = oldUnitName
+        return tostring(st.q) .. ":" .. tostring(SL.char.notOffered[st.q] ~= nil) .. ":" .. tostring(select(2, E:ComputeStatus(i)))
+    end)()""")
+    print("  ", gv)
+    check(":true:" in gv, f"targeting a giver who offers nothing for a few seconds parks the pickup ({gv})")
+    L.execute("SpeedLevel.char.notOffered = {}")
+
     print("\n== class quest chains")
     def chain_titles():
         return L.eval("""(function()
@@ -913,7 +971,8 @@ def main():
     check(ft == "A", f"first step is a pickup ({first})")
     L.execute(f"NPC_NAME = '{fnpc}'; SELECTED = {{}}; GOSSIP_AVAIL = {{}}; FireEvent('GOSSIP_SHOW')")
     st = L.eval(f"select(2, SpeedLevel.Engine:ComputeStatus({fi}))")
-    check(st == "not offered yet", f"giver offers nothing -> pickup parked ({st})")
+    # (4641 is a breadcrumb: an unoffered breadcrumb is skipped instead of waiting for a level)
+    check(st in ("not offered yet", "not offered"), f"giver offers nothing -> pickup parked ({st})")
     check(L.eval(f"SpeedLevel.Engine:Current() ~= SpeedLevel.Engine.steps[{fi}]"), "guide moves on")
     L.execute(f"GOSSIP_AVAIL = {{ {{ questID = {fq}, isTrivial = false }} }}; FireEvent('GOSSIP_SHOW')")
     sel = list(L.eval("SELECTED").values())

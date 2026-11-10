@@ -20,22 +20,21 @@
 [08] Undercity                              map=1458 races=Undead entry=14.86 exit=15.05 quests=1 deferredIn=5 ~   4min HS=0 death=0 stacked=0
 [--] Paladin: A Lesson in Divinity          class chain (PALADIN): 5 quests
     -> keep hearth (unbound) instead of binding at The Sepulcher
-[10] Silverpine Forest                      map=1421 races=Undead entry=15.05 exit=17.96 quests=25 deferredIn=1 ~ 101min HS=0 death=0 stacked=0
+[10] Silverpine Forest                      map=1421 races=Undead entry=15.05 exit=17.95 quests=25 deferredIn=1 ~ 106min HS=0 death=0 stacked=0
     left for later (level too low): [1528, 1823]
     -> keep hearth (unbound) instead of binding at Orgrimmar
-[11] Orgrimmar (Undead)                     map=1454 races=Undead entry=17.96 exit=18.45 quests=8 deferredIn=0 ~   8min HS=0 death=0 stacked=1
+[11] Orgrimmar (Undead)                     map=1454 races=Undead entry=17.95 exit=18.44 quests=8 deferredIn=0 ~   8min HS=0 death=0 stacked=1
     left for later (level too low): [97243, 97244, 97245, 97257]
     left for later (level too low): [93159, 93160, 93172]
     left for later (level too low): [98512]
     left for later (level too low): [94003]
     left for later (level too low): [92579, 92642, 92643, 92644, 92645, 92700, 92871, 92880, 92881, 93320, 93735, 93736, 93737, 93738, 93740, 93746, 93948, 93949, 94568]
     left for later (level too low): [93165, 94006, 94484, 94485, 94486, 94487, 94488, 94489, 94638, 94896, 94897]
-    -> set hearth at Coriella Calmbreeze (worth ~1 min more than keeping the old bind)
-[12] Zephras Isle                           map=2521 races=Skyborne entry= 1.00 exit=12.78 quests=52 deferredIn=0 ~ 181min HS=1 death=0 stacked=0
-    -> hearth to Coriella Calmbreeze for Hunter: Taming the Beast (Skyborne)
+    -> keep hearth (unbound) instead of binding at Coriella Calmbreeze
+[12] Zephras Isle                           map=2521 races=Skyborne entry= 1.00 exit=12.79 quests=52 deferredIn=0 ~ 179min HS=0 death=0 stacked=0
 [--] Hunter: Taming the Beast (Skyborne)    class chain (HUNTER): 5 quests
-    -> keep hearth (Coriella Calmbreeze) instead of binding at Bloodhoof Village
-[14] Mulgore (Skyborne)                     map=1412 races=Skyborne entry=12.78 exit=13.02 quests=3 deferredIn=0 ~  14min HS=0 death=0 stacked=0
+    -> keep hearth (unbound) instead of binding at Bloodhoof Village
+[14] Mulgore (Skyborne)                     map=1412 races=Skyborne entry=12.79 exit=13.03 quests=3 deferredIn=0 ~  14min HS=0 death=0 stacked=0
     -> keep hearth (unbound) instead of binding at The Crossroads
 [15] The Barrens - Crossroads               map=1413 races=all entry=11.50 exit=17.32 quests=33 deferredIn=12 ~ 214min HS=0 death=0 stacked=0
 [--] Druid: Bear Form                       class chain (DRUID): 6 quests
@@ -78,7 +77,7 @@
     catch-up grind 32.47 -> 34.5 before questing (288 min; quests here ~level 37) on the mobs of Supply and Demand
     left for later (level too low): [196, 572, 576, 584, 585, 587, 595, 597, 599, 600, 604, 606, 607, 617]
     -> set hearth at Grom'gol Base Camp (worth ~16 min more than keeping the old bind)
-[35] Stranglethorn Vale                     map=1434 races=all entry=32.47 exit=36.56 quests=22 deferredIn=0 ~ 557min HS=3 death=0 stacked=0
+[35] Stranglethorn Vale                     map=1434 races=all entry=32.47 exit=36.56 quests=22 deferredIn=0 ~ 562min HS=3 death=0 stacked=0
     -> keep hearth (Grom'gol Base Camp) instead of binding at Shadowprey Village
 [36] Desolace                               map=1443 races=all entry=36.56 exit=38.04 quests=22 deferredIn=0 ~ 207min HS=0 death=0 stacked=0
     -> keep hearth (Grom'gol Base Camp) instead of binding at Freewind Post
@@ -133,7 +132,8 @@
     -> keep hearth (Everlook) instead of binding at Cenarion Hold
 [62] Silithus                               map=1451 races=all entry=58.98 exit=60.00 quests=25 deferredIn=0 ~ 188min HS=0 death=0 stacked=0
 
-telemetry: 2 SavedVariables file(s), 65 timed steps, 60 measured step keys, 0 player reports
+telemetry: 2 SavedVariables file(s), 70 timed steps, 65 measured step keys, 0 player reports
+dropped 2 quests made unavailable by an earlier pickup (breadcrumbs / disabled-by / available-until): [763, 4542]
     flights The Barrens - Crossroads: 2 planned, ~4 min saved
     flight paths grabbed on the way (Warlock: Voidwalker): Doras
     flights The Barrens - Camp Taurajo: 4 planned, ~10 min saved
@@ -161,14 +161,14 @@ telemetry: 2 SavedVariables file(s), 65 timed steps, 60 measured step keys, 0 pl
     flights Blasted Lands: 1 planned, ~2 min saved
 flights: ~175 min saved over running
 
-hearths=15 death-skips=0 stacked quests=5 time saved by hearths/deaths ~70 min
+hearths=13 death-skips=0 stacked quests=5 time saved by hearths/deaths ~63 min
 quest log peak Orc       21 (in Ashenvale)
 quest log peak Skyborne  20 (in Ashenvale)
 quest log peak Tauren    20 (in Ashenvale)
 quest log peak Troll     21 (in Ashenvale)
 quest log peak Undead    20 (in Ashenvale)
-estimated /played to 60 for Orc       ~90.1 h (questing + planned grinding, excl. class/vendor stops)
-estimated /played to 60 for Skyborne  ~89.5 h (questing + planned grinding, excl. class/vendor stops)
-estimated /played to 60 for Tauren    ~90.3 h (questing + planned grinding, excl. class/vendor stops)
-estimated /played to 60 for Troll     ~90.1 h (questing + planned grinding, excl. class/vendor stops)
-estimated /played to 60 for Undead    ~92.6 h (questing + planned grinding, excl. class/vendor stops)
+estimated /played to 60 for Orc       ~90.2 h (questing + planned grinding, excl. class/vendor stops)
+estimated /played to 60 for Skyborne  ~89.6 h (questing + planned grinding, excl. class/vendor stops)
+estimated /played to 60 for Tauren    ~90.4 h (questing + planned grinding, excl. class/vendor stops)
+estimated /played to 60 for Troll     ~90.2 h (questing + planned grinding, excl. class/vendor stops)
+estimated /played to 60 for Undead    ~92.8 h (questing + planned grinding, excl. class/vendor stops)

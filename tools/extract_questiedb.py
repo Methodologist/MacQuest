@@ -184,7 +184,8 @@ QUEST_FIELDS = {
     6: "races", 7: "classes", 8: "objText", 9: "trigger", 10: "objectives", 11: "srcItem",
     12: "preGroup", 13: "preSingle", 14: "children", 16: "exclusive",
     17: "zone", 18: "reqSkill", 21: "reqItems", 22: "next", 23: "flags", 24: "special",
-    25: "parent", 27: "breadcrumbFor", 28: "breadcrumbs", 32: "maxLevel",
+    19: "minRep", 20: "maxRep", 25: "parent", 27: "breadcrumbFor", 28: "breadcrumbs", 30: "reqSpell", 32: "maxLevel",
+    33: "untilCompleted", 34: "startingWith", 36: "disabledBy",
 }
 NPC_FIELDS = {1: "name", 4: "minLevel", 5: "maxLevel", 6: "rank", 7: "spawns", 8: "paths", 9: "zone",
               10: "starts", 11: "ends", 13: "friendly", 14: "sub", 15: "flags"}

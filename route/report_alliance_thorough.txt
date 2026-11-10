@@ -1,23 +1,23 @@
     left for later (level too low): [5623]
     -> keep hearth (unbound) instead of binding at Goldshire
 [00] Northshire Valley                      map=1429 races=Human entry= 1.00 exit= 6.76 quests=22 deferredIn=0 ~  38min HS=0 death=0 stacked=0
-    left for later (level too low): [1638, 1685, 1860, 2205, 2998, 5635, 94774]
+    left for later (level too low): [1638, 1685, 1860, 2205, 2998, 94774]
     -> keep hearth (unbound) instead of binding at Goldshire
 [01] Elwynn Forest                          map=1429 races=Human entry= 6.76 exit=13.71 quests=43 deferredIn=0 ~ 166min HS=0 death=0 stacked=0
 [--] Hunter: Taming the Beast (Human)       class chain (HUNTER): 4 quests
     -> keep hearth (unbound) instead of binding at Stormwind City
-[03] Stormwind City                         map=1453 races=Human entry=13.71 exit=13.86 quests=3 deferredIn=1 ~   5min HS=0 death=0 stacked=0
+[03] Stormwind City                         map=1453 races=Human entry=13.71 exit=13.86 quests=2 deferredIn=1 ~   4min HS=0 death=0 stacked=0
 [--] Warlock: Voidwalker                    class chain (WARLOCK): 2 quests
 [--] Warrior: Defensive Stance (Human)      class chain (WARRIOR): 7 quests
     -> keep hearth (unbound) instead of binding at Kharanos
 [06] Coldridge Valley                       map=1426 races=Dwarf,Gnome entry= 1.00 exit= 6.99 quests=28 deferredIn=0 ~  46min HS=0 death=0 stacked=0
 [--] Shaman: Call of Earth (earth totems)   class chain (SHAMAN): 2 quests
     left for later (level too low): [1879]
-    left for later (level too low): [2997, 94449, 96243]
+    left for later (level too low): [2997, 94449]
     left for later (level too low): [2218, 6075]
     left for later (level too low): [94817]
     -> set hearth at Kharanos (worth ~5 min more than keeping the old bind)
-[08] Dun Morogh                             map=1426 races=Dwarf,Gnome entry= 6.99 exit=13.05 quests=35 deferredIn=0 ~ 146min HS=1 death=0 stacked=0
+[08] Dun Morogh                             map=1426 races=Dwarf,Gnome entry= 6.99 exit=13.05 quests=36 deferredIn=0 ~ 147min HS=1 death=0 stacked=0
 [--] Hunter: Taming the Beast (Dwarf)       class chain (HUNTER): 4 quests
     -> keep hearth (Kharanos) instead of binding at Ironforge
 [10] Ironforge                              map=1455 races=Dwarf,Gnome entry=13.05 exit=13.18 quests=3 deferredIn=1 ~   3min HS=0 death=0 stacked=1
@@ -45,21 +45,20 @@
     left for later (level too low): [92642, 92643, 92644, 92645, 92699, 92701, 92727, 92741, 92834, 92840, 92849, 92850, 92860, 92880, 92881, 93320, 93948, 93949, 94568, 99260]
     left for later (level too low): [93165, 94006, 94484, 94485, 94486, 94487, 94488, 94489, 94638, 94896, 94897]
     left for later (level too low): [93791, 93797]
-    dropped (grey by the time you get there): [92470, 92471, 92472, 92473, 96638]
     -> set hearth at Coriella Calmbreeze (worth ~1 min more than keeping the old bind)
-[21] Zephras Isle                           map=2521 races=Skyborne entry= 1.00 exit=12.36 quests=44 deferredIn=0 ~ 152min HS=1 death=0 stacked=0
+[21] Zephras Isle                           map=2521 races=Skyborne entry= 1.00 exit=12.79 quests=49 deferredIn=0 ~ 179min HS=1 death=0 stacked=0
 [--] Hunter: Taming the Beast (Skyborne)    class chain (HUNTER): 5 quests
     -> keep hearth (Coriella Calmbreeze) instead of binding at Isirami Fairwind
-[23] Dalaran (Skyborne)                     map=1416 races=Skyborne entry=12.36 exit=12.42 quests=1 deferredIn=0 ~   1min HS=0 death=0 stacked=0
+[23] Dalaran (Skyborne)                     map=1416 races=Skyborne entry=12.79 exit=12.85 quests=1 deferredIn=0 ~   1min HS=0 death=0 stacked=0
     left for later (level too low): [168, 1920, 2281, 97234, 97237]
     -> keep hearth (Coriella Calmbreeze) instead of binding at Stormwind City
-[24] Stormwind (Skyborne)                   map=1453 races=Skyborne entry=12.42 exit=12.92 quests=5 deferredIn=1 ~   8min HS=0 death=0 stacked=0
+[24] Stormwind (Skyborne)                   map=1453 races=Skyborne entry=12.85 exit=13.31 quests=5 deferredIn=1 ~   8min HS=0 death=0 stacked=0
     -> keep hearth (unbound) instead of binding at Sentinel Hill
-[25] Westfall                               map=1436 races=Human,Skyborne entry=13.39 exit=17.70 quests=22 deferredIn=2 ~ 149min HS=0 death=0 stacked=0
-    catch-up grind 17.29 -> 19.0 before questing (131 min; quests here ~level 21) on the mobs of Show of Force
+[25] Westfall                               map=1436 races=Human,Skyborne entry=13.58 exit=17.83 quests=22 deferredIn=2 ~ 149min HS=0 death=0 stacked=0
+    catch-up grind 17.35 -> 19.0 before questing (126 min; quests here ~level 21) on the mobs of Show of Force
     left for later (level too low): [34, 128, 150, 180, 219, 1699, 1702]
     -> keep hearth (unbound) instead of binding at Lakeshire
-[26] Redridge Mountains                     map=1433 races=Dwarf,Gnome,Human,Skyborne entry=17.29 exit=21.44 quests=17 deferredIn=1 ~ 238min HS=0 death=0 stacked=0
+[26] Redridge Mountains                     map=1433 races=Dwarf,Gnome,Human,Skyborne entry=17.35 exit=21.44 quests=17 deferredIn=1 ~ 233min HS=0 death=0 stacked=0
     catch-up grind 19.24 -> 21.2 before questing (163 min; quests here ~level 24) on the mobs of The Zoram Strand
     left for later (level too low): [1011, 1026, 1027, 1028, 1029, 1030, 1055, 1140, 4581, 98027]
     -> keep hearth (unbound) instead of binding at Astranaar
@@ -143,7 +142,8 @@
     -> keep hearth (Everlook) instead of binding at Cenarion Hold
 [68] Silithus                               map=1451 races=all entry=58.86 exit=60.00 quests=25 deferredIn=0 ~ 219min HS=0 death=0 stacked=0
 
-telemetry: 2 SavedVariables file(s), 65 timed steps, 60 measured step keys, 0 player reports
+telemetry: 2 SavedVariables file(s), 70 timed steps, 65 measured step keys, 0 player reports
+dropped 5 quests made unavailable by an earlier pickup (breadcrumbs / disabled-by / available-until): [5261, 5623, 8331, 8343, 96243]
 dropped 4 quests whose objectives would be grey on the later visit: [226, 245, 1176, 5621]
     flight paths grabbed on the way (Teldrassil): Vesprystus
     flights Druid: Bear Form: 1 planned, ~4 min saved
@@ -162,14 +162,14 @@ dropped 4 quests whose objectives would be grey on the later visit: [226, 245, 1
     flights Blasted Lands: 1 planned, ~12 min saved
 flights: ~94 min saved over running
 
-hearths=15 death-skips=0 stacked quests=8 time saved by hearths/deaths ~74 min
+hearths=15 death-skips=0 stacked quests=8 time saved by hearths/deaths ~75 min
 quest log peak Dwarf     16 (in Dustwallow Marsh)
 quest log peak Gnome     16 (in Dustwallow Marsh)
 quest log peak Human     16 (in Dustwallow Marsh)
 quest log peak NightElf  21 (in Darkshore)
 quest log peak Skyborne  16 (in Dustwallow Marsh)
-estimated /played to 60 for Dwarf     ~85.6 h (questing + planned grinding, excl. class/vendor stops)
-estimated /played to 60 for Gnome     ~85.6 h (questing + planned grinding, excl. class/vendor stops)
-estimated /played to 60 for Human     ~86.3 h (questing + planned grinding, excl. class/vendor stops)
+estimated /played to 60 for Dwarf     ~85.5 h (questing + planned grinding, excl. class/vendor stops)
+estimated /played to 60 for Gnome     ~85.5 h (questing + planned grinding, excl. class/vendor stops)
+estimated /played to 60 for Human     ~86.2 h (questing + planned grinding, excl. class/vendor stops)
 estimated /played to 60 for NightElf  ~87.0 h (questing + planned grinding, excl. class/vendor stops)
-estimated /played to 60 for Skyborne  ~85.5 h (questing + planned grinding, excl. class/vendor stops)
+estimated /played to 60 for Skyborne  ~85.9 h (questing + planned grinding, excl. class/vendor stops)

@@ -105,6 +105,27 @@ DROPS = {int(k): {int(n): r for n, r in v.items()} for k, v in DB.get("drops", {
 BAD_DROP_RATE = 15.0      # % : item quests below this (needing 3+ items) are skipped, like other guides do
 MAX_EXPECTED_KILLS = 60   # a quest that needs more kills than this (incl. drop-rate grinding) is skipped
 XP = DB["questXP"]
+# "available starting with quest X" (QuestieDB availableStartingWith) is a prerequisite like any other
+for _q in Q.values():
+    if _q.get("startingWith"):
+        _sw = _q["startingWith"] if isinstance(_q["startingWith"], list) else [_q["startingWith"]]
+        _q["preSingle"] = list(dict.fromkeys((_q.get("preSingle") or []) + [int(x) for x in _sw if x]))
+
+
+def _ids(v):
+    return [x for x in (v if isinstance(v, list) else [v]) if isinstance(x, int) and x > 0]
+
+
+def blockers(qid):
+    """what makes a quest unavailable (QuestieDB):
+      taken  - breadcrumbFor: the quest it leads to, once taken or done (the breadcrumb is gone for good)
+      done   - availableUntilCompleted: once that quest is completed (gone for good)
+      active - disabledByQuest: only while that quest is in your log (comes back afterwards)"""
+    q = Q.get(str(qid)) or {}
+    return {"taken": _ids(q.get("breadcrumbFor")), "done": _ids(q.get("untilCompleted")),
+            "active": _ids(q.get("disabledBy"))}
+
+
 # pickups whose giver did not offer them in play (telemetry): they need at least one level more
 for _q, _lv in TEL.get("notOffered", {}).items():
     if str(_q) in Q:
@@ -540,6 +561,9 @@ def quest_info(qid):
         return info
     if q.get("reqSkill"):
         info["why"] = "profession"
+        return info
+    if q.get("reqSpell") and not q.get("classes"):
+        info["why"] = "needs a spell or profession"
         return info
     if (q.get("zone") or 0) in PVP_AREAS:
         info["why"] = "pvp"
@@ -1337,6 +1361,20 @@ def main(mode="speed", keep=None, dry=False):
             for b in q.get("breadcrumbs") or []:
                 if b in nodes_by_q and b in keep_ids and nodes_by_q[b][-1].kind == "T":
                     before[a].add(nodes_by_q[b][-1])
+            bl = blockers(r["qid"])
+            # "disabled by" a quest while it is in the log: pick up only after that one is turned in
+            for b in bl["active"]:
+                if b in nodes_by_q and b in keep_ids and nodes_by_q[b][-1].kind == "T":
+                    before[a].add(nodes_by_q[b][-1])
+            # a breadcrumb: turned in before the quest it leads to is taken (the giver stops offering
+            # the breadcrumb once you have that quest)
+            for x in bl["taken"]:
+                if x in nodes_by_q and x in keep_ids and r["nodes"][-1].kind == "T":
+                    before[nodes_by_q[x][0]].add(r["nodes"][-1])
+            # "available until" a quest is completed: pick up before that one is turned in
+            for b in bl["done"]:
+                if b in nodes_by_q and b in keep_ids and nodes_by_q[b][-1].kind == "T":
+                    before[nodes_by_q[b][-1]].add(a)
         # sort by dependency depth for insertion
         def depth(qid, seen=()):
             q = qget(qid)
@@ -1635,6 +1673,10 @@ def main(mode="speed", keep=None, dry=False):
     for r in TEL["reports"][-40:]:
         report.append(f"  REPORT step {r.get('i')} [{r.get('k')}] lvl {r.get('l')} {r.get('r')}/{r.get('c')} at "
                       f"{r.get('m')}:{r.get('x')},{r.get('y')} - {r.get('note')!r} ({r.get('text')})")
+    blocked = drop_blocked(plan)
+    if blocked:
+        report.append(f"dropped {len(blocked)} quests made unavailable by an earlier pickup "
+                      f"(breadcrumbs / disabled-by / available-until): {blocked}")
     gone = drop_grey_objectives(plan, report)
     if gone:
         report.append(f"dropped {len(gone)} quests whose objectives would be grey on the later visit: {gone}")
@@ -1685,6 +1727,38 @@ def drop_quests(plan, drop):
         seg.nodes = [n for n in seg.nodes if not (n.kind in ("A", "C", "T") and n.qid in drop)]
         seg.quests = [r for r in seg.quests if r["qid"] not in drop]
     return drop
+
+
+def drop_blocked(plan):
+    """a pickup the giver will not offer at that point of the route, on every race path through it:
+    the quest a breadcrumb leads to already taken, an 'available until' quest already turned in, or a
+    'disabled by' quest in the log right then - drop it"""
+    taken = {r: set() for r in ALL_RACES}
+    done = {r: set() for r in ALL_RACES}
+    drop = set()
+    for seg in plan:
+        if not seg.nodes:
+            continue
+        races = seg.races or ALL_RACES
+        for n in seg.nodes:
+            if not n.qid or n.kind not in ("A", "T"):
+                continue
+            if n.kind == "T":
+                for r in races:
+                    done[r].add(n.qid)
+                continue
+            bl = blockers(n.qid)
+
+            def blocked(r):
+                return (any(b in taken[r] or b in done[r] for b in bl["taken"])
+                        or any(b in done[r] for b in bl["done"])
+                        or any(b in taken[r] and b not in done[r] for b in bl["active"]))
+            if (bl["taken"] or bl["done"] or bl["active"]) and all(blocked(r) for r in races):
+                drop.add(n.qid)
+                continue
+            for r in races:
+                taken[r].add(n.qid)
+    return sorted(drop_quests(plan, drop)) if drop else []
 
 
 def drop_grey_objectives(plan, report):
@@ -2191,7 +2265,8 @@ def write_quests(allq):
     out_dir = ROOT / "SpeedLevel" / "Data"
     lines = ["-- GENERATED by tools/build_route.py from QuestieDB (Forever). Do not edit by hand.",
              "local _, SL = ...",
-             "-- [id] = {name, level, reqLevel, raceMask, classMask, preAll, preAny, xp, exclusive}",
+             "-- [id] = {name, level, reqLevel, raceMask, classMask, preAll, preAny, xp, exclusive,",
+             "--         breadcrumbFor (gone once taken/done), untilCompleted (gone once done), disabledBy (not while active)}",
              "SL.Quests = SL.Quests or {}",
              "SL.QuestItems = SL.QuestItems or {}",
              "local add = {"]
@@ -2201,7 +2276,8 @@ def write_quests(allq):
             return "{" + ",".join(str(x) for x in v) + "}" if v else "nil"
         lines.append(f"[{qid}]={{{lua_str(q['name'])},{q.get('level') or 0},{q.get('reqLevel') or 0},"
                      f"{q.get('races') or 0},{q.get('classes') or 0},{arr(q.get('preGroup'))},{arr(q.get('preSingle'))},"
-                     f"{quest_xp(qid)},{arr(q.get('exclusive'))}}},")
+                     f"{quest_xp(qid)},{arr(q.get('exclusive'))},{arr(blockers(qid)['taken'])},"
+                     f"{arr(blockers(qid)['done'])},{arr(blockers(qid)['active'])}}},")
     lines.append("}")
     lines.append("for k, v in pairs(add) do SL.Quests[k] = v end")
     # items a quest hands you or needs you to carry (the Kodo Kombobulator, torches, empty flasks...):

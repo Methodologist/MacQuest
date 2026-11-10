@@ -13,7 +13,6 @@ SL.Routes["Alliance_thorough_dungeons"] = {
   {t="A",q=1598,x=49.9,y=42.6,m=1429,npc="Drusilla La Salle"},
   {t="C",q=1598,x=56.7,y=44.0,m=1429,text="Retrieve the Powers of the Void for Drusilla La Salle."},
   {t="T",q=1598,x=49.9,y=42.6,m=1429,npc="Drusilla La Salle"},
-  {t="A",q=5261,x=48.2,y=42.9,m=1429,npc="Deputy Willem"},
   {t="T",q=7,x=48.9,y=41.6,m=1429,npc="Marshal McBride"},
   {t="A",q=92479,x=48.9,y=41.6,m=1429,npc="Marshal McBride"},
   {t="A",q=3105,x=48.9,y=41.6,m=1429,npc="Marshal McBride"},
@@ -23,7 +22,6 @@ SL.Routes["Alliance_thorough_dungeons"] = {
   {t="A",q=3101,x=48.9,y=41.6,m=1429,npc="Marshal McBride"},
   {t="A",q=3100,x=48.9,y=41.6,m=1429,npc="Marshal McBride"},
   {t="A",q=15,x=48.9,y=41.6,m=1429,npc="Marshal McBride"},
-  {t="T",q=5261,x=48.9,y=40.2,m=1429,npc="Eagan Peltskinner"},
   {t="T",q=3100,x=50.2,y=42.3,m=1429,npc="Llane Beshere"},
   {t="A",q=18,x=48.2,y=42.9,m=1429,npc="Deputy Willem"},
   {t="A",q=6,x=48.2,y=42.9,m=1429,npc="Deputy Willem"},
@@ -88,8 +86,6 @@ SL.Routes["Alliance_thorough_dungeons"] = {
   {t="C",q=47,x=39.9,y=81.1,m=1429,text="Bring 10 Gold Dust to Remy \"Two Times\" in Goldshire. Gold Dust is gathered from Kobolds in Elwynn Forest."},
   {t="A",q=40,x=42.1,y=67.3,m=1429,npc="Remy \"Two Times\""},
   {t="T",q=47,x=42.1,y=67.3,m=1429,npc="Remy \"Two Times\""},
-  {t="A",q=5623,x=49.8,y=39.5,m=1429,npc="Priestess Anetta"},
-  {t="T",q=5623,x=43.3,y=65.7,m=1429,npc="Priestess Josetta"},
   {t="A",q=91725,x=63.2,y=72.6,m=1429,npc="Blixie Fitzwink"},
   {t="C",q=88,x=69.7,y=79.2,m=1429,text="Kill Princess, grab her collar, then bring it back to Ma Stonefield at the Stonefield Farm."},
   {t="A",q=37,x=74.0,y=72.2,m=1429,npc="Guard Thomas"},
@@ -184,16 +180,14 @@ SL.Routes["Alliance_thorough_dungeons"] = {
   {t="A",q=94793,x=41.1,y=66.2,m=1429,npc="Josephine Carson"},
   {t="T",q=94793,x=41.8,y=66.4,m=1429,npc="Isaac Chan"},
 }},
-{title="Stormwind City",map=1453,races={"Human"},entry=13.71,exit=13.86,mins=5,steps={
+{title="Stormwind City",map=1453,races={"Human"},entry=13.71,exit=13.86,mins=4,steps={
   {t="GOTO",x=32.0,y=50.0,m=1429,text="Run north-west up the road into Stormwind"},
   {t="FP",x=71.3,y=72.2,m=1453,npc=352,name="Dungar Longdrink"},
+  {t="T",q=61,x=63.2,y=74.4,m=1453,npc="Morgan Pestle"},
   {t="A",q=1638,x=80.4,y=59.8,m=1453,npc="Lyria Du Lac"},
   {t="T",q=1638,x=77.1,y=53.3,m=1453,npc="Harry Burlguard"},
-  {t="T",q=61,x=63.2,y=74.4,m=1453,npc="Morgan Pestle"},
-  {t="A",q=5638,x=35.7,y=63.2,m=1453,npc="Nara Meideros"},
   {t="A",q=94773,x=49.5,y=44.6,m=1453,npc="High Priestess Laurena"},
   {t="T",q=94773,x=49.5,y=44.6,m=1453,npc="High Priestess Laurena"},
-  {t="T",q=5638,x=49.5,y=44.6,m=1453,npc="High Priestess Laurena"},
   {t="TRAIN",text="Train new spells in Stormwind"},
 }},
 {title="Warlock: Voidwalker",map=1453,races={"Human"},entry=13.86,exit=13.86,mins=0,classes={"WARLOCK"},steps={
@@ -297,7 +291,7 @@ SL.Routes["Alliance_thorough_dungeons"] = {
   {t="A",q=94374,x=28.8,y=66.2,m=1426,npc="Teo Hammerstorm"},
   {t="T",q=94374,x=24.8,y=61.9,m=1426,npc="Minor Manifestation of Earth"},
 }},
-{title="Dun Morogh",map=1426,races={"Dwarf","Gnome"},entry=6.99,exit=13.05,mins=142,steps={
+{title="Dun Morogh",map=1426,races={"Dwarf","Gnome"},entry=6.99,exit=13.05,mins=143,steps={
   {t="GOTO",x=46.7,y=53.6,m=1426,text="Run north through the tunnel to Kharanos"},
   {t="HEARTH",x=47.4,y=52.5,m=1426,npc=1247,name="Innkeeper Belm",bind="Kharanos"},
   {t="A",q=99158,x=47.3,y=52.2,m=1426,npc="Maxan Anvol"},
@@ -552,9 +546,9 @@ SL.Routes["Alliance_thorough_dungeons"] = {
   {t="C",q=929,x=63.4,y=58.1,m=1438,text="Fill the Jade Phial and bring it back to Corithras Moonrage in Dolanaar."},
   {t="T",q=929,x=56.1,y=61.7,m=1438,npc="Corithras Moonrage"},
   {t="A",q=933,x=56.1,y=61.7,m=1438,npc="Corithras Moonrage"},
+  {t="T",q=997,x=60.9,y=68.5,m=1438,npc="Denalan"},
   {t="A",q=919,x=60.9,y=68.5,m=1438,npc="Denalan"},
   {t="A",q=918,x=60.9,y=68.5,m=1438,npc="Denalan"},
-  {t="T",q=997,x=60.9,y=68.5,m=1438,npc="Denalan"},
   {t="C",q=919,x=59.6,y=69.3,m=1438,text="Bring 12 Timberling Sprouts to Denalan at Lake Al'Ameth."},
   {t="C",q=918,x=57.6,y=66.0,m=1438,text="Bring 8 Timberling Seeds to Denelan at Lake Al'Ameth."},
   {t="T",q=919,x=60.9,y=68.5,m=1438,npc="Denalan"},
@@ -661,7 +655,7 @@ SL.Routes["Alliance_thorough_dungeons"] = {
   {t="A",q=6103,x=56.7,y=59.5,m=1438,npc="Dazalar"},
   {t="T",q=6103,x=40.4,y=8.6,m=1457,npc="Jocaste"},
 }},
-{title="Darnassus",map=1457,races={"NightElf"},entry=13.33,exit=14.03,mins=14,steps={
+{title="Darnassus",map=1457,races={"NightElf"},entry=13.33,exit=14.03,mins=15,steps={
   {t="GOTO",x=39.0,y=51.0,m=1438,text="Run west into Darnassus"},
   {t="A",q=2519,x=28.9,y=45.8,m=1457,npc="Sister Aquinne"},
   {t="T",q=98391,x=28.9,y=45.8,m=1457,npc="Sister Aquinne"},
@@ -669,7 +663,7 @@ SL.Routes["Alliance_thorough_dungeons"] = {
   {t="T",q=935,x=34.8,y=9.3,m=1457,npc="Arch Druid Fandral Staghelm"},
   {t="T",q=940,x=34.8,y=9.3,m=1457,npc="Arch Druid Fandral Staghelm"},
   {t="T",q=5925,x=35.4,y=8.4,m=1457,npc="Mathrengyl Bearwalker"},
-  {t="T",q=2241,x=37.0,y=21.9,m=1457,npc="Syurna"},
+  {t="T",q=922,x=38.2,y=21.6,m=1457,npc="Rellian Greenspyre"},
   {t="T",q=2519,x=36.6,y=85.9,m=1457,npc="Priestess A'moora"},
   {t="A",q=98067,x=39.6,y=89.5,m=1457,npc="Sentinel Dalia Sunblade"},
   {t="T",q=98046,x=40.4,y=88.7,m=1457,npc="Lariia"},
@@ -677,10 +671,11 @@ SL.Routes["Alliance_thorough_dungeons"] = {
   {t="T",q=98065,x=39.1,y=81.6,m=1457,npc="Tyrande Whisperwind"},
   {t="T",q=5629,x=39.5,y=81.2,m=1457,npc="Priestess Alathea"},
   {t="C",q=98067,x=41.0,y=43.5,m=1457,text="Kill Credit",oname="Credit"},
+  {t="T",q=2241,x=37.0,y=21.9,m=1457,npc="Syurna"},
   {t="C",q=98067,x=33.4,y=16.8,m=1457,text="Kill Credit",oname="Credit"},
-  {t="T",q=922,x=38.2,y=21.6,m=1457,npc="Rellian Greenspyre"},
   {t="C",q=98067,x=66.5,y=15.3,m=1457,text="Kill Credit",oname="Credit"},
   {t="C",q=98067,x=89.1,y=34.8,m=1457,text="Kill Credit",oname="Credit"},
+  {t="A",q=2925,x=59.5,y=45.4,m=1457,npc="Mathiel"},
   {t="T",q=98067,x=39.6,y=89.5,m=1457,npc="Sentinel Dalia Sunblade"},
   {t="TRAIN",text="Train new spells in Darnassus"},
 }},
@@ -835,7 +830,7 @@ SL.Routes["Alliance_thorough_dungeons"] = {
   {t="C",q=6001,text="Use the Cenarion Moondust on the Moonkin Stone of Auberdine to bring forth Lunaclaw. From there, you must face Lunaclaw and earn the strength of body and heart it possesses. Speak with Mathrengyl Bearwalker in Darnassus when you are done."},
   {t="T",q=6001,x=35.4,y=8.4,m=1457,npc="Mathrengyl Bearwalker"},
 }},
-{title="Zephras Isle",map=2521,races={"Skyborne"},entry=1.00,exit=12.36,mins=152,steps={
+{title="Zephras Isle",map=2521,races={"Skyborne"},entry=1.00,exit=12.79,mins=179,steps={
   {t="HEARTH",x=43.0,y=43.2,m=2521,npc=254089,name="Coriella Calmbreeze"},
   {t="A",q=92460,x=42.8,y=23.4,m=2521,npc="Ailee Farheart"},
   {t="T",q=92460,x=42.0,y=23.5,m=2521,npc="Rorian the Dayseeker"},
@@ -874,38 +869,76 @@ SL.Routes["Alliance_thorough_dungeons"] = {
   {t="T",q=92544,x=38.3,y=30.2,m=2521,npc="Hanaa Nightwind"},
   {t="T",q=92464,x=47.2,y=22.0,m=2521,npc="Yala Windwatcher"},
   {t="T",q=92474,x=42.0,y=23.5,m=2521,npc="Rorian the Dayseeker"},
+  {t="A",q=92470,x=42.8,y=23.7,m=2521,npc="Aetheen of the Gales"},
+  {t="A",q=92473,x=42.4,y=25.2,m=2521,npc="Valreaa Valewind"},
+  {t="C",q=92473,x=39.6,y=28.2,m=2521,text="Collect 6 Scrawny Ursera Claws from Scrawny Ursera in Thendal Grove."},
+  {t="C",q=92470,x=38.1,y=26.3,m=2521,text="Slay 8 Ursera Scavengers and collect the head of the den mother, Urs'anah in Thendal Grove."},
+  {t="T",q=92473,x=42.4,y=25.2,m=2521,npc="Valreaa Valewind"},
+  {t="T",q=92470,x=42.8,y=23.7,m=2521,npc="Aetheen of the Gales"},
+  {t="A",q=92472,x=42.8,y=23.7,m=2521,npc="Aetheen of the Gales"},
+  {t="T",q=92472,x=45.7,y=45.5,m=2521,npc="Constable Aonda"},
   {t="A",q=92465,x=47.2,y=22.0,m=2521,npc="Yala Windwatcher"},
   {t="C",q=92465,x=46.8,y=20.3,m=2521,text="Slay 6 Roiling Winds and 7 Al'Aketh Converts in Thendal Grove."},
   {t="T",q=92465,x=47.2,y=22.0,m=2521,npc="Yala Windwatcher"},
   {t="A",q=92469,x=47.2,y=22.0,m=2521,npc="Yala Windwatcher"},
   {t="T",q=92469,x=42.0,y=23.5,m=2521,npc="Rorian the Dayseeker"},
-  {t="A",q=92553,x=43.9,y=43.8,m=2521,npc="Zerril Softbreeze"},
-  {t="C",q=92553,x=43.4,y=41.2,m=2521,text="Collect 3 Small Eggs and 8 Strider Meat from creatures found throughout the Shen'dar Highlands."},
-  {t="T",q=92553,x=43.9,y=43.8,m=2521,npc="Zerril Softbreeze"},
-  {t="A",q=92516,x=44.5,y=45.0,m=2521,npc="Teeri Wellwind"},
-  {t="C",q=92516,x=37.5,y=54.3,m=2521,text="Slay 8 Hippogryph Youths, 6 Hippogryph Protectors and a Hippogryph Matriarch in the Shen'dar Highlands."},
-  {t="T",q=92516,x=44.5,y=45.0,m=2521,npc="Teeri Wellwind"},
+  {t="A",q=93927,x=42.3,y=62.0,m=2521,npc="Peacekeeper Vaaniel"},
+  {t="C",q=93927,x=41.6,y=63.0,m=2521,text="Collect the note you found near the dead peacekeeper and read it to determine your next steps."},
   {t="A",q=92596,x=45.0,y=46.4,m=2521,npc="Rathiril Sunlance"},
   {t="C",q=92596,x=45.0,y=46.4,m=2521,text="Have a seat and speak with Rathiril Sunlance."},
   {t="T",q=92596,x=45.0,y=46.4,m=2521,npc="Rathiril Sunlance"},
   {t="A",q=94413,x=45.0,y=46.4,m=2521,npc="Rathiril Sunlance"},
+  {t="T",q=93927,x=45.7,y=45.5,m=2521,npc="Constable Aonda"},
+  {t="A",q=92551,x=45.2,y=45.2,m=2521,npc="Danarii Bellowveil"},
+  {t="A",q=93319,x=44.5,y=45.0,m=2521,npc="Teeri Wellwind"},
+  {t="C",q=94413,x=39.2,y=47.4,m=2521,text="Slay 6 Windshaper Novice Seers in Shen'dar Highlands."},
+  {t="T",q=94413,x=45.0,y=46.4,m=2521,npc="Rathiril Sunlance"},
+  {t="C",q=92551,x=49.3,y=56.0,m=2521,text="Collect 10 packs of Stolen Shen'dar Supplies from Falaath Village in the Shen'dar Highlands."},
+  {t="T",q=92551,x=45.2,y=45.2,m=2521,npc="Danarii Bellowveil"},
+  {t="C",q=93319,x=48.9,y=37.6,m=2521,text="Collect 10 Pilfered Windstones from the Highlands Bandits in the Shen'dar Highlands."},
+  {t="A",q=93951,x=44.9,y=44.2,m=2521,npc="Taleen Shimmerthread"},
+  {t="T",q=93319,x=44.5,y=45.0,m=2521,npc="Teeri Wellwind"},
+  {t="C",q=93951,x=36.0,y=54.3,m=2521,text="Collect 8 Hippogryph Down feathers in the Shen'dar Highlands."},
+  {t="A",q=92515,x=44.7,y=44.5,m=2521,npc="Indari Sunseam"},
+  {t="T",q=93951,x=44.9,y=44.2,m=2521,npc="Taleen Shimmerthread"},
+  {t="A",q=92553,x=43.9,y=43.8,m=2521,npc="Zerril Softbreeze"},
+  {t="C",q=92515,x=42.3,y=45.2,m=2521,text="Collect 10 Prideclaw Pelts from the Prideclaws in Shen'dar Highlands."},
+  {t="T",q=92515,x=44.7,y=44.5,m=2521,npc="Indari Sunseam"},
+  {t="C",q=92553,x=43.4,y=41.2,m=2521,text="Collect 3 Small Eggs and 8 Strider Meat from creatures found throughout the Shen'dar Highlands."},
+  {t="T",q=92553,x=43.9,y=43.8,m=2521,npc="Zerril Softbreeze"},
+  {t="A",q=93461,x=45.7,y=45.5,m=2521,npc="Constable Aonda"},
+  {t="A",q=92517,x=45.7,y=45.5,m=2521,npc="Constable Aonda"},
+  {t="C",q=92517,x=48.9,y=37.6,m=2521,text="Kill 10 Highlands Bandits and their leader, \"Badwind\" Bennic in the Shen'dar Highlands."},
+  {t="T",q=92517,x=45.7,y=45.5,m=2521,npc="Constable Aonda"},
+  {t="A",q=93036,x=45.7,y=45.5,m=2521,npc="Constable Aonda"},
+  {t="T",q=93036,x=44.9,y=45.5,m=2521,npc="Sania Silverstream"},
+  {t="A",q=92471,x=42.0,y=23.5,m=2521,npc="Rorian the Dayseeker"},
+  {t="A",q=96638,x=42.8,y=23.7,m=2521,npc="Aetheen of the Gales"},
+  {t="T",q=92471,x=42.8,y=23.7,m=2521,npc="Aetheen of the Gales"},
+  {t="T",q=96638,x=41.7,y=44.8,m=2521,npc="Raan Wildwind"},
+  {t="A",q=96101,x=41.7,y=44.8,m=2521,npc="Raan Wildwind"},
+  {t="C",q=96101,x=41.7,y=44.8,m=2521,text="Sit near Raan's Basic Campfire and wait until you receive the Boosted Rest buff."},
+  {t="T",q=96101,x=41.7,y=44.8,m=2521,npc="Raan Wildwind"},
+  {t="A",q=96646,x=41.7,y=44.8,m=2521,npc="Raan Wildwind"},
+  {t="C",q=96646,x=43.9,y=43.8,m=2521,text="Speak with Zerril Softbreeze in Shen'dar Village to learn to become a cook."},
+  {t="T",q=96646,x=43.9,y=43.8,m=2521,npc="Zerril Softbreeze"},
   {t="A",q=92679,x=62.1,y=73.2,m=2521,npc="Alvarion Windfield"},
   {t="C",q=92679,x=62.1,y=73.2,m=2521,text="Kill Alvarion Windfield",oname="Alvarion Windfield"},
   {t="A",q=93317,x=60.6,y=72.7,m=2521,npc="Nyalah Brightfire"},
   {t="C",q=92679,x=46.7,y=82.0,m=2521,text="Kill Aamelia Windfield",oname="Aamelia Windfield"},
   {t="T",q=92679,x=46.7,y=82.0,m=2521,npc="Aamelia Windfield"},
-  {t="A",q=92682,x=46.7,y=82.0,m=2521,npc="Aamelia Windfield"},
-  {t="A",q=92683,x=46.7,y=82.0,m=2521,npc="Aamelia Windfield"},
   {t="A",q=92684,x=46.7,y=82.0,m=2521,npc="Aamelia Windfield"},
+  {t="A",q=92683,x=46.7,y=82.0,m=2521,npc="Aamelia Windfield"},
+  {t="A",q=92682,x=46.7,y=82.0,m=2521,npc="Aamelia Windfield"},
+  {t="C",q=92682,x=48.1,y=81.0,m=2521,text="Gather 10 Ripe Stormapples and slay 5 Hungry Bandits at the Windfield Orchard."},
+  {t="T",q=92682,x=46.7,y=82.0,m=2521,npc="Aamelia Windfield"},
+  {t="C",q=92683,x=50.5,y=79.6,m=2521,text="Gather 5 Flutterfly Dust from the Flutterflies around the Gustberry Lowlands."},
+  {t="T",q=92683,x=46.7,y=82.0,m=2521,npc="Aamelia Windfield"},
   {t="A",q=92698,x=48.9,y=78.2,m=2521,npc="Malfunctioning Cyclone Construct"},
   {t="C",q=93317,x=53.2,y=49.9,m=2521,text="Collect 6 pieces of Windsong Crawler Meat."},
   {t="C",q=92684,x=57.2,y=71.0,m=2521,text="Gather 7 Lowlands Galestrider Tenderloins from the Ornery Galestriders found throughout the Gustberry Lowlands."},
   {t="T",q=93317,x=60.6,y=72.7,m=2521,npc="Nyalah Brightfire"},
-  {t="C",q=92683,x=50.5,y=79.6,m=2521,text="Gather 5 Flutterfly Dust from the Flutterflies around the Gustberry Lowlands."},
-  {t="C",q=92682,x=48.1,y=81.0,m=2521,text="Gather 10 Ripe Stormapples and slay 5 Hungry Bandits at the Windfield Orchard."},
   {t="T",q=92698,x=46.7,y=82.0,m=2521,npc="Aamelia Windfield"},
-  {t="T",q=92682,x=46.7,y=82.0,m=2521,npc="Aamelia Windfield"},
-  {t="T",q=92683,x=46.7,y=82.0,m=2521,npc="Aamelia Windfield"},
   {t="T",q=92684,x=46.7,y=82.0,m=2521,npc="Aamelia Windfield"},
   {t="A",q=92685,x=46.7,y=82.0,m=2521,npc="Aamelia Windfield"},
   {t="C",q=92685,x=48.8,y=75.0,m=2521,text="Loot 7 Blood-Stained Bandit Masks from Highwayman Bandits in the Gustberry Lowlands."},
@@ -916,51 +949,25 @@ SL.Routes["Alliance_thorough_dungeons"] = {
   {t="A",q=92703,x=46.7,y=82.0,m=2521,npc="Aamelia Windfield"},
   {t="T",q=92703,x=62.1,y=73.2,m=2521,npc="Alvarion Windfield"},
   {t="USEHS",x=43.0,y=43.2,m=2521,text="Hearth to Coriella Calmbreeze (saves ~3 min of running)"},
-  {t="A",q=93461,x=45.7,y=45.5,m=2521,npc="Constable Aonda"},
-  {t="A",q=92517,x=45.7,y=45.5,m=2521,npc="Constable Aonda"},
-  {t="C",q=92517,x=48.9,y=37.6,m=2521,text="Kill 10 Highlands Bandits and their leader, \"Badwind\" Bennic in the Shen'dar Highlands."},
-  {t="T",q=92517,x=45.7,y=45.5,m=2521,npc="Constable Aonda"},
-  {t="A",q=93036,x=45.7,y=45.5,m=2521,npc="Constable Aonda"},
-  {t="T",q=93036,x=44.9,y=45.5,m=2521,npc="Sania Silverstream"},
+  {t="A",q=92516,x=44.5,y=45.0,m=2521,npc="Teeri Wellwind"},
+  {t="C",q=92516,x=37.5,y=54.3,m=2521,text="Slay 8 Hippogryph Youths, 6 Hippogryph Protectors and a Hippogryph Matriarch in the Shen'dar Highlands."},
+  {t="T",q=92516,x=44.5,y=45.0,m=2521,npc="Teeri Wellwind"},
   {t="A",q=92529,x=44.9,y=45.5,m=2521,npc="Sania Silverstream"},
+  {t="C",q=93461,x=45.0,y=46.4,m=2521,text="Speak with Rathiril Sunlance and Coriella Calmbreeze in Shen'dar Village."},
   {t="T",q=92529,x=46.9,y=56.2,m=2521,npc="Missionary Jasaan"},
   {t="A",q=92528,x=46.9,y=56.2,m=2521,npc="Missionary Jasaan"},
   {t="C",q=92528,x=48.8,y=53.9,m=2521,text="Look around Falaath Village to learn about the cult's intentions in the Shen'dar Highlands."},
+  {t="T",q=93461,x=45.7,y=45.5,m=2521,npc="Constable Aonda"},
   {t="T",q=92528,x=45.7,y=45.5,m=2521,npc="Constable Aonda"},
-  {t="C",q=94413,x=39.2,y=47.4,m=2521,text="Slay 6 Windshaper Novice Seers in Shen'dar Highlands."},
-  {t="C",q=93461,x=45.0,y=46.4,m=2521,text="Speak with Rathiril Sunlance and Coriella Calmbreeze in Shen'dar Village."},
-  {t="T",q=94413,x=45.0,y=46.4,m=2521,npc="Rathiril Sunlance"},
-  {t="A",q=92551,x=45.2,y=45.2,m=2521,npc="Danarii Bellowveil"},
   {t="A",q=92550,x=45.7,y=45.5,m=2521,npc="Constable Aonda"},
   {t="A",q=93926,x=45.7,y=45.5,m=2521,npc="Constable Aonda"},
-  {t="T",q=93461,x=45.7,y=45.5,m=2521,npc="Constable Aonda"},
-  {t="C",q=92551,x=49.3,y=56.0,m=2521,text="Collect 10 packs of Stolen Shen'dar Supplies from Falaath Village in the Shen'dar Highlands."},
   {t="C",q=92550,x=49.3,y=56.0,m=2521,text="Travel to the ruins of Falaath Village and slay 6 Al'Aketh Stormcallers, 4 Living Lightning and take the head of Commander Cyclas."},
   {t="T",q=92550,x=45.7,y=45.5,m=2521,npc="Constable Aonda"},
-  {t="T",q=92551,x=45.2,y=45.2,m=2521,npc="Danarii Bellowveil"},
   {t="C",q=93926,x=42.3,y=62.0,m=2521,text="Find Peacekeeper Vaaniel at the western watchtower."},
   {t="T",q=93926,x=42.3,y=62.0,m=2521,npc="Peacekeeper Vaaniel"},
-  {t="A",q=93927,x=42.3,y=62.0,m=2521,npc="Peacekeeper Vaaniel"},
-  {t="C",q=93927,x=41.6,y=63.0,m=2521,text="Collect the note you found near the dead peacekeeper and read it to determine your next steps."},
-  {t="T",q=93927,x=45.7,y=45.5,m=2521,npc="Constable Aonda"},
-  {t="A",q=93951,x=44.9,y=44.2,m=2521,npc="Taleen Shimmerthread"},
-  {t="A",q=92515,x=44.7,y=44.5,m=2521,npc="Indari Sunseam"},
-  {t="A",q=93319,x=44.5,y=45.0,m=2521,npc="Teeri Wellwind"},
-  {t="C",q=93951,x=36.0,y=54.3,m=2521,text="Collect 8 Hippogryph Down feathers in the Shen'dar Highlands."},
-  {t="C",q=92515,x=42.3,y=45.2,m=2521,text="Collect 10 Prideclaw Pelts from the Prideclaws in Shen'dar Highlands."},
-  {t="T",q=92515,x=44.7,y=44.5,m=2521,npc="Indari Sunseam"},
-  {t="T",q=93951,x=44.9,y=44.2,m=2521,npc="Taleen Shimmerthread"},
-  {t="C",q=93319,x=48.9,y=37.6,m=2521,text="Collect 10 Pilfered Windstones from the Highlands Bandits in the Shen'dar Highlands."},
-  {t="T",q=93319,x=44.5,y=45.0,m=2521,npc="Teeri Wellwind"},
-  {t="A",q=96101,x=41.7,y=44.8,m=2521,npc="Raan Wildwind"},
-  {t="C",q=96101,x=41.7,y=44.8,m=2521,text="Sit near Raan's Basic Campfire and wait until you receive the Boosted Rest buff."},
-  {t="T",q=96101,x=41.7,y=44.8,m=2521,npc="Raan Wildwind"},
-  {t="A",q=96646,x=41.7,y=44.8,m=2521,npc="Raan Wildwind"},
-  {t="C",q=96646,x=43.9,y=43.8,m=2521,text="Speak with Zerril Softbreeze in Shen'dar Village to learn to become a cook."},
-  {t="T",q=96646,x=43.9,y=43.8,m=2521,npc="Zerril Softbreeze"},
   {t="NOTE",text="When you are done on Zephras Isle, follow 'The Magical City of Dalaran' to Alterac"},
 }},
-{title="Hunter: Taming the Beast (Skyborne)",map=2521,races={"Skyborne"},entry=12.36,exit=12.36,mins=0,classes={"HUNTER"},steps={
+{title="Hunter: Taming the Beast (Skyborne)",map=2521,races={"Skyborne"},entry=12.79,exit=12.79,mins=0,classes={"HUNTER"},steps={
   {t="A",q=94007,x=45.3,y=44.2,m=2521,npc="Elayaa Easewind"},
   {t="T",q=94007,x=59.6,y=72.6,m=2521,npc="Quel'ana Quickgale"},
   {t="A",q=94978,x=59.6,y=72.6,m=2521,npc="Quel'ana Quickgale"},
@@ -975,11 +982,11 @@ SL.Routes["Alliance_thorough_dungeons"] = {
   {t="A",q=94050,x=59.6,y=72.6,m=2521,npc="Quel'ana Quickgale"},
   {t="T",q=94050,x=59.9,y=72.9,m=2521,npc="Quel'dora Quickgale"},
 }},
-{title="Dalaran (Skyborne)",map=1416,races={"Skyborne"},entry=12.36,exit=12.42,mins=1,steps={
+{title="Dalaran (Skyborne)",map=1416,races={"Skyborne"},entry=12.79,exit=12.85,mins=1,steps={
   {t="A",q=94947,x=12.3,y=56.3,m=1416,npc="Denaaris Stargale"},
   {t="C",q=94947,x=12.0,y=56.2,m=1416,text="Take the Skyborne Portal to Stormwind and report to Bolvar Fordragon in Stormwind Keep."},
 }},
-{title="Stormwind (Skyborne)",map=1453,races={"Skyborne"},entry=12.42,exit=12.92,mins=8,steps={
+{title="Stormwind (Skyborne)",map=1453,races={"Skyborne"},entry=12.85,exit=13.31,mins=8,steps={
   {t="FP",x=71.3,y=72.2,m=1453,npc=352,name="Dungar Longdrink"},
   {t="HEARTH",x=60.4,y=75.3,m=1453,npc=6740,name="Innkeeper Allison",bind="Stormwind City"},
   {t="A",q=98021,x=80.2,y=38.4,m=1453,npc="Highlord Bolvar Fordragon"},
@@ -994,7 +1001,7 @@ SL.Routes["Alliance_thorough_dungeons"] = {
   {t="T",q=97222,x=66.6,y=73.4,m=1453,npc="Elaine Trias"},
   {t="TRAIN",text="Train new spells in Stormwind"},
 }},
-{title="Westfall",map=1436,races={"Human","Skyborne"},entry=13.39,exit=17.70,mins=149,steps={
+{title="Westfall",map=1436,races={"Human","Skyborne"},entry=13.58,exit=17.83,mins=149,steps={
   {t="GOTO",x=56.3,y=47.5,m=1436,text="Run south through Elwynn to Sentinel Hill in Westfall"},
   {t="FP",x=56.5,y=52.6,m=1436,npc=523,name="Thor"},
   {t="A",q=12,x=56.3,y=47.5,m=1436,npc="Gryan Stoutmantle"},
@@ -1062,7 +1069,7 @@ SL.Routes["Alliance_thorough_dungeons"] = {
   {t="T",q=22,x=56.4,y=30.5,m=1436,npc="Salma Saldean"},
   {t="T",q=38,x=56.4,y=30.5,m=1436,npc="Salma Saldean"},
 }},
-{title="Stormwind (quests for The Deadmines)",map=1453,races=nil,entry=17.66,exit=18.04,mins=4,steps={
+{title="Stormwind (quests for The Deadmines)",map=1453,races=nil,entry=17.72,exit=18.09,mins=4,steps={
   {t="NOTE",text="Stop by Stormwind: quests for The Deadmines"},
   {t="HEARTH",x=60.4,y=75.3,m=1453,npc=6740,name="Innkeeper Allison",bind="Stormwind City"},
   {t="FP",x=71.3,y=72.2,m=1453,npc=352,name="Dungar Longdrink",text="Grab the Stormwind City flight path while you are here"},
@@ -1074,7 +1081,7 @@ SL.Routes["Alliance_thorough_dungeons"] = {
   {t="A",q=2040,x=62.6,y=34.1,m=1453,npc="Shoni the Shilent"},
   {t="T",q=92748,x=61.9,y=30.6,m=1453,npc="Sprite Jumpsprocket"},
 }},
-{title="The Deadmines",map=291,races=nil,entry=18.04,exit=18.35,mins=67,dungeon=true,em=1436,ex=42.5,ey=71.7,steps={
+{title="The Deadmines",map=291,races=nil,entry=18.09,exit=18.40,mins=67,dungeon=true,em=1436,ex=42.5,ey=71.7,steps={
   {t="GOTO",x=42.5,y=71.7,m=1436,text="Travel to the The Deadmines entrance"},
   {t="DUNGEON",x=42.5,y=71.7,m=1436,name="The Deadmines",text="Group up and run The Deadmines (levels 16-24) - quests: Collecting Memories, Oh Brother. . ., Underground Assault"},
   {t="C",q=167,x=50.0,y=50.0,m=291,text="Bring Foreman Thistlenettle's Explorers' League Badge to Wilder Thistlenettle in Stormwind."},
@@ -1082,13 +1089,13 @@ SL.Routes["Alliance_thorough_dungeons"] = {
   {t="C",q=2040,x=50.0,y=50.0,m=291,text="Retrieve the Gnoam Sprecklesprocket from the Deadmines."},
   {t="USEHS",x=60.4,y=75.3,m=1453,bind="Stormwind City",text="Hearth to Stormwind City for the next zone"},
 }},
-{title="Stormwind (turn in The Deadmines)",map=1453,races=nil,entry=18.35,exit=18.85,mins=2,steps={
+{title="Stormwind (turn in The Deadmines)",map=1453,races=nil,entry=18.40,exit=18.90,mins=2,steps={
   {t="NOTE",text="Stop by Stormwind: turn in The Deadmines"},
   {t="T",q=167,x=70.3,y=40.8,m=1453,npc="Wilder Thistlenettle"},
   {t="T",q=168,x=70.3,y=40.8,m=1453,npc="Wilder Thistlenettle"},
   {t="T",q=2040,x=62.6,y=34.1,m=1453,npc="Shoni the Shilent"},
 }},
-{title="Redridge Mountains",map=1433,races={"Dwarf","Gnome","Human","Skyborne"},entry=18.85,exit=21.32,mins=108,steps={
+{title="Redridge Mountains",map=1433,races={"Dwarf","Gnome","Human","Skyborne"},entry=18.90,exit=21.36,mins=107,steps={
   {t="NOTE",text="Travel to Lakeshire in Redridge (east from Elwynn; Dwarves and Gnomes take the tram to Stormwind)"},
   {t="FP",x=71.3,y=72.2,m=1453,npc=352,name="Dungar Longdrink",text="Grab the Stormwind flight path when you pass through"},
   {t="FP",x=25.5,y=59.4,m=1433,npc=931,name="Ariena Stormfeather"},
@@ -1140,11 +1147,11 @@ SL.Routes["Alliance_thorough_dungeons"] = {
   {t="T",q=92,x=17.6,y=43.8,m=1433,npc="Chef Breanna"},
   {t="T",q=131,x=21.5,y=44.3,m=1433,npc="Darcy"},
 }},
-{title="Ashenvale (Night Elf)",map=1440,races={"NightElf"},entry=18.85,exit=22.83,mins=250,steps={
+{title="Ashenvale (Night Elf)",map=1440,races={"NightElf"},entry=18.90,exit=22.91,mins=256,steps={
   {t="NOTE",text="Run south from Darkshore into Ashenvale (Astranaar)"},
   {t="FP",x=34.4,y=48.0,m=1440,npc=4267,name="Daelyshia"},
   {t="A",q=1008,x=34.7,y=48.8,m=1440,npc="Shindrell Swiftfire"},
-  {t="GRIND",x=11.9,y=23.9,m=1440,text="Wrathtail Sorceress (level 18-19), about 15k XP/hour - finishes The Zoram Strand on the way",level=20.8},
+  {t="GRIND",x=11.9,y=23.9,m=1440,text="Wrathtail Sorceress (level 18-19), about 15k XP/hour - finishes The Zoram Strand on the way",level=20.9},
   {t="C",q=1008,x=11.8,y=26.5,m=1440,text="Bring 20 Wrathtail Heads to Shindrell Swiftfire in Astranaar."},
   {t="A",q=1010,x=26.4,y=38.6,m=1440,npc="Orendil Broadleaf"},
   {t="A",q=970,x=26.2,y=38.7,m=1440,npc="Delgren the Purifier"},
@@ -1160,9 +1167,6 @@ SL.Routes["Alliance_thorough_dungeons"] = {
   {t="A",q=1020,x=26.4,y=38.6,m=1440,npc="Orendil Broadleaf"},
   {t="T",q=970,x=26.2,y=38.7,m=1440,npc="Delgren the Purifier"},
   {t="A",q=973,x=26.2,y=38.7,m=1440,npc="Delgren the Purifier"},
-  {t="A",q=1009,x=14.8,y=31.3,m=1440,npc="Talen"},
-  {t="C",q=1009,x=7.2,y=13.1,m=1440,text="Bring the Ring of Zoram to Talen near the Zoram Strand."},
-  {t="T",q=1009,x=14.8,y=31.3,m=1440,npc="Talen"},
   {t="T",q=991,x=20.3,y=42.3,m=1440,npc="Teronis' Corpse"},
   {t="A",q=1023,x=20.3,y=42.3,m=1440,npc="Teronis' Corpse"},
   {t="C",q=1023,x=20.5,y=43.2,m=1440,text="Find the Glowing Gem."},
@@ -1186,9 +1190,12 @@ SL.Routes["Alliance_thorough_dungeons"] = {
   {t="T",q=1034,x=37.4,y=51.8,m=1440,npc="Pelturas Whitemoon"},
   {t="T",q=1054,x=36.6,y=49.6,m=1440,npc="Raene Wolfrunner"},
   {t="T",q=1025,x=36.6,y=49.6,m=1440,npc="Raene Wolfrunner"},
+  {t="A",q=1009,x=14.8,y=31.3,m=1440,npc="Talen"},
+  {t="C",q=1009,x=7.2,y=13.1,m=1440,text="Bring the Ring of Zoram to Talen near the Zoram Strand."},
+  {t="T",q=1009,x=14.8,y=31.3,m=1440,npc="Talen"},
 }},
-{title="Druid: Aquatic Form",map=1440,races={"NightElf"},entry=22.83,exit=22.83,mins=0,classes={"DRUID"},steps={
-  {t="FLY",x=34.4,y=48.0,m=1440,npc=4267,name="Daelyshia",text="saves ~12 min over running",dest="Fly to Teldrassil",fto=3838,tm=1438,tx=58.4,ty=94.0},
+{title="Druid: Aquatic Form",map=1440,races={"NightElf"},entry=22.91,exit=22.91,mins=0,classes={"DRUID"},steps={
+  {t="FLY",x=34.4,y=48.0,m=1440,npc=4267,name="Daelyshia",text="saves ~5 min over running",dest="Fly to Teldrassil",fto=3838,tm=1438,tx=58.4,ty=94.0},
   {t="A",q=26,x=35.4,y=8.4,m=1457,npc="Mathrengyl Bearwalker"},
   {t="T",q=26,x=56.2,y=30.6,m=1450,npc="Dendrite Starblaze"},
   {t="A",q=29,x=56.2,y=30.6,m=1450,npc="Dendrite Starblaze"},
@@ -1200,12 +1207,12 @@ SL.Routes["Alliance_thorough_dungeons"] = {
   {t="A",q=5061,x=56.2,y=30.6,m=1450,npc="Dendrite Starblaze"},
   {t="T",q=5061,x=35.4,y=8.4,m=1457,npc="Mathrengyl Bearwalker"},
 }},
-{title="Wetlands",map=1437,races=nil,entry=21.62,exit=26.84,mins=347,steps={
+{title="Wetlands",map=1437,races=nil,entry=21.67,exit=26.92,mins=351,steps={
   {t="NOTE",text="Travel to Menethil Harbor in the Wetlands (boat from Auberdine, or north through Loch Modan)"},
   {t="FP",x=9.5,y=59.7,m=1437,npc=1571,name="Shellei Brondir"},
   {t="HEARTH",x=10.7,y=61.0,m=1437,npc=1464,name="Innkeeper Helbrek",bind="Menethil Harbor"},
   {t="A",q=484,x=8.6,y=55.7,m=1437,npc="James Halloran"},
-  {t="GRIND",x=50.5,y=33.8,m=1437,text="Young Wetlands Crocolisk and Cat (level 7-30), about 17k XP/hour - finishes Young Crocolisk Skins on the way",level=23.6},
+  {t="GRIND",x=50.5,y=33.8,m=1437,text="Young Wetlands Crocolisk and Cat (level 7-30), about 17k XP/hour - finishes Young Crocolisk Skins on the way",level=23.7},
   {t="C",q=484,x=52.2,y=36.2,m=1437,text="Obtain 4 Young Crocolisk Skins for James Halloran in Menethil Harbor."},
   {t="USEHS",x=10.7,y=61.0,m=1437,bind="Menethil Harbor",text="Hearth to Menethil Harbor (saves ~5 min of running)"},
   {t="A",q=98189,x=8.3,y=58.6,m=1437,npc="Karl Boran"},
@@ -1275,27 +1282,28 @@ SL.Routes["Alliance_thorough_dungeons"] = {
   {t="USEHS",x=10.7,y=61.0,m=1437,bind="Menethil Harbor",text="Hearth to Menethil Harbor (saves ~5 min of running)"},
   {t="T",q=464,x=9.9,y=57.5,m=1437,npc="Captain Stoutfist"},
   {t="A",q=472,x=10.8,y=55.9,m=1437,npc="Harlo Barnaby"},
+  {t="A",q=98245,x=49.4,y=42.1,m=1437,npc="Howin Kindfeather"},
   {t="T",q=472,x=49.8,y=18.3,m=1437,npc="Longbraid the Grim"},
+  {t="C",q=98245,x=68.7,y=31.3,m=1437,text="Collect 10 Razormaw Incisors for Howin Kindfeather."},
+  {t="T",q=98245,x=49.4,y=42.1,m=1437,npc="Howin Kindfeather"},
   {t="A",q=296,x=38.2,y=50.9,m=1437,npc="Ormer Ironbraid"},
   {t="C",q=296,x=33.3,y=51.5,m=1437,text="Ormer Ironbraid at the Whelgar Excavation Site wants you to kill Sarltooth."},
   {t="T",q=296,x=38.2,y=50.9,m=1437,npc="Ormer Ironbraid"},
-  {t="A",q=98245,x=49.4,y=42.1,m=1437,npc="Howin Kindfeather"},
-  {t="C",q=98245,x=68.7,y=31.3,m=1437,text="Collect 10 Razormaw Incisors for Howin Kindfeather."},
-  {t="T",q=98245,x=49.4,y=42.1,m=1437,npc="Howin Kindfeather"},
 }},
-{title="Ironforge - 20s",map=1455,races=nil,entry=26.84,exit=26.90,mins=3,steps={
+{title="Ironforge - 20s",map=1455,races=nil,entry=26.92,exit=27.00,mins=4,steps={
   {t="NOTE",text="Head to Ironforge (fly, or run north through the Wetlands and Loch Modan)"},
   {t="FP",x=55.5,y=47.7,m=1455,npc=1573,name="Gryth Thurden"},
   {t="A",q=1698,x=70.3,y=90.7,m=1455,npc="Kelv Sternhammer"},
+  {t="A",q=467,x=72.7,y=94.0,m=1455,npc="Mountaineer Kadrell"},
+  {t="T",q=2925,x=67.9,y=46.1,m=1455,npc="Klockmort Spannerspan"},
   {t="A",q=1717,x=47.6,y=9.3,m=1455,npc="Lago Blackwrench"},
   {t="A",q=1939,x=27.2,y=8.3,m=1455,npc="Bink"},
   {t="A",q=5677,x=24.7,y=8.2,m=1455,npc="High Priest Rohan"},
-  {t="A",q=5675,x=24.7,y=8.2,m=1455,npc="High Priest Rohan"},
   {t="A",q=5641,x=24.7,y=8.2,m=1455,npc="High Priest Rohan"},
   {t="T",q=5641,x=24.7,y=8.2,m=1455,npc="High Priest Rohan"},
   {t="TRAIN",text="Train new spells in Ironforge"},
 }},
-{title="Stormwind - 20s",map=1453,races=nil,entry=26.90,exit=27.25,mins=14,steps={
+{title="Stormwind - 20s",map=1453,races=nil,entry=27.00,exit=27.34,mins=14,steps={
   {t="BOAT",x=76.5,y=51.5,m=1455,to=1453,text="Take the Deeprun Tram to Stormwind"},
   {t="FP",x=71.3,y=72.2,m=1453,npc=352,name="Dungar Longdrink"},
   {t="A",q=98191,x=80.2,y=38.4,m=1453,npc="Highlord Bolvar Fordragon"},
@@ -1323,7 +1331,7 @@ SL.Routes["Alliance_thorough_dungeons"] = {
   {t="T",q=1717,x=39.2,y=85.2,m=1453,npc="Gakin the Darkbinder"},
   {t="TRAIN",text="Train new spells in Stormwind"},
 }},
-{title="Warlock: Succubus",map=1453,races=nil,entry=27.25,exit=27.25,mins=0,classes={"WARLOCK"},steps={
+{title="Warlock: Succubus",map=1453,races=nil,entry=27.34,exit=27.34,mins=0,classes={"WARLOCK"},steps={
   {t="A",q=1716,x=39.2,y=85.2,m=1453,npc="Gakin the Darkbinder"},
   {t="T",q=1716,x=49.3,y=57.1,m=1413,npc="Takar the Seer"},
   {t="A",q=1738,x=49.3,y=57.1,m=1413,npc="Takar the Seer"},
@@ -1336,19 +1344,19 @@ SL.Routes["Alliance_thorough_dungeons"] = {
   {t="C",q=65602,x=26.6,y=22.0,m=1440,text="Retrieve the Wooden Figurine and bring it to Gakin the Darkbinder in the Mage Quarter of Stormwind."},
   {t="T",q=65602,x=39.2,y=85.2,m=1453,npc="Gakin the Darkbinder"},
 }},
-{title="The Stockade",map=225,races=nil,entry=27.25,exit=27.56,mins=101,dungeon=true,em=1453,ex=52.4,ey=70.0,steps={
+{title="The Stockade",map=225,races=nil,entry=27.34,exit=27.65,mins=101,dungeon=true,em=1453,ex=52.4,ey=70.0,steps={
   {t="GOTO",x=52.4,y=70.0,m=1453,text="Travel to the The Stockade entrance"},
   {t="DUNGEON",x=52.4,y=70.0,m=1453,name="The Stockade",text="Group up and run The Stockade (levels 22-30) - quests: Quell The Uprising, The Color of Blood, What Comes Around..."},
   {t="C",q=386,x=50.0,y=50.0,m=225,text="Bring the head of Targorr the Dread to Guard Berton in Lakeshire."},
   {t="C",q=388,x=50.0,y=50.0,m=225,text="Nikova Raskol of Stormwind wants you to collect 10 Red Wool Bandanas."},
   {t="C",q=387,x=50.0,y=50.0,m=225,text="Warden Thelwater of Stormwind wants you to kill 10 Defias Prisoners, 8 Defias Convicts, and 8 Defias Insurgents in The Stockade."},
 }},
-{title="Stormwind (turn in The Stockade)",map=1453,races=nil,entry=27.56,exit=28.47,mins=2,steps={
+{title="Stormwind (turn in The Stockade)",map=1453,races=nil,entry=27.65,exit=28.55,mins=2,steps={
   {t="NOTE",text="Stop by Stormwind: turn in The Stockade"},
   {t="T",q=388,x=76.4,y=63.7,m=1453,npc="Nikova Raskol"},
   {t="T",q=387,x=51.5,y=69.4,m=1453,npc="Warden Thelwater"},
 }},
-{title="Redridge Mountains 2",map=1433,races=nil,entry=28.47,exit=29.47,mins=72,steps={
+{title="Redridge Mountains 2",map=1433,races=nil,entry=28.55,exit=29.55,mins=72,steps={
   {t="FLY",x=71.3,y=72.2,m=1453,npc=352,name="Dungar Longdrink",text="Fly to Lakeshire",dest="Fly to Lakeshire"},
   {t="FP",x=25.5,y=59.4,m=1433,npc=931,name="Ariena Stormfeather"},
   {t="A",q=128,x=26.4,y=57.9,m=1433,npc="Guard Howe"},
@@ -1383,7 +1391,7 @@ SL.Routes["Alliance_thorough_dungeons"] = {
   {t="C",q=91,x=73.9,y=49.4,m=1433,text="Bring 10 Shadowhide Pendants to Bailiff Conacher in the Lakeshire Town Hall."},
   {t="T",q=91,x=24.6,y=44.3,m=1433,npc="Bailiff Conacher"},
 }},
-{title="Duskwood",map=1431,races=nil,entry=29.47,exit=31.14,mins=129,steps={
+{title="Duskwood",map=1431,races=nil,entry=29.55,exit=31.20,mins=129,steps={
   {t="NOTE",text="Travel to Darkshire in Duskwood (south-west from Redridge)"},
   {t="FP",x=77.5,y=44.3,m=1431,npc=2409,name="Felicia Maline"},
   {t="HEARTH",x=73.9,y=44.4,m=1431,npc=6790,name="Innkeeper Trelayne",bind="Darkshire"},
@@ -1455,7 +1463,7 @@ SL.Routes["Alliance_thorough_dungeons"] = {
   {t="A",q=269,x=7.8,y=34.1,m=1431,npc="Sven Yorgen"},
   {t="USEHS",x=73.9,y=44.4,m=1431,bind="Darkshire",text="Hearth to Darkshire for the next zone"},
 }},
-{title="Rogue: Poisons",map=1431,races=nil,entry=31.14,exit=31.14,mins=0,classes={"ROGUE"},steps={
+{title="Rogue: Poisons",map=1431,races=nil,entry=31.20,exit=31.20,mins=0,classes={"ROGUE"},steps={
   {t="A",q=2360,x=78.3,y=70.7,m=1453,npc="Master Mathias Shaw"},
   {t="T",q=2360,x=68.5,y=70.1,m=1436,npc="Agent Kearnen"},
   {t="A",q=2359,x=68.5,y=70.1,m=1436,npc="Agent Kearnen"},
@@ -1470,7 +1478,7 @@ SL.Routes["Alliance_thorough_dungeons"] = {
   {t="C",q=2609,x=50.6,y=60.1,m=1453,text="Bring Doc Mixilpixil one bundle of Simple Wildflowers, one Leaded Vial, one Bronze Tube, and one Spool of Light Chartreuse Silk Thread. The 'itis' doesn't cure itself, young <fella/lady>."},
   {t="T",q=2609,x=80.1,y=69.9,m=1453,npc="Doc Mixilpixil"},
 }},
-{title="Hillsbrad Foothills",map=1424,races=nil,entry=31.14,exit=32.08,mins=60,steps={
+{title="Hillsbrad Foothills",map=1424,races=nil,entry=31.20,exit=32.13,mins=60,steps={
   {t="NOTE",text="Travel to Southshore in Hillsbrad (fly to Menethil, then north through the Wetlands and Arathi)"},
   {t="FP",x=49.3,y=52.3,m=1424,npc=2432,name="Darla Harris"},
   {t="A",q=536,x=51.5,y=58.4,m=1424,npc="Lieutenant Farren Orinelle"},
@@ -1496,7 +1504,7 @@ SL.Routes["Alliance_thorough_dungeons"] = {
   {t="A",q=563,x=51.5,y=58.4,m=1424,npc="Lieutenant Farren Orinelle"},
   {t="T",q=564,x=52.4,y=56.0,m=1424,npc="Darren Malvew"},
 }},
-{title="Stormwind (quests for Gnomeregan)",map=1453,races=nil,entry=32.08,exit=32.32,mins=0,steps={
+{title="Stormwind (quests for Gnomeregan)",map=1453,races=nil,entry=32.13,exit=32.37,mins=0,steps={
   {t="NOTE",text="Stop by Stormwind: quests for Gnomeregan"},
   {t="FLY",x=49.3,y=52.3,m=1424,npc=2432,name="Darla Harris",text="saves ~18 min over running",dest="Fly to Stormwind City",fto=352,tm=1453,tx=71.3,ty=72.2},
   {t="T",q=1940,x=51.8,y=83.5,m=1453,npc="Wynne Larson"},
@@ -1508,7 +1516,7 @@ SL.Routes["Alliance_thorough_dungeons"] = {
   {t="T",q=1702,x=64.6,y=37.2,m=1453,npc="Furen Longbeard"},
   {t="T",q=563,x=75.8,y=36.7,m=1453,npc="Major Samuelson"},
 }},
-{title="Ironforge (quests for Gnomeregan)",map=1455,races=nil,entry=32.32,exit=32.39,mins=0,steps={
+{title="Ironforge (quests for Gnomeregan)",map=1455,races=nil,entry=32.37,exit=32.44,mins=0,steps={
   {t="NOTE",text="Stop by Ironforge: quests for Gnomeregan"},
   {t="FLY",x=71.3,y=72.2,m=1453,npc=352,name="Dungar Longdrink",text="saves ~6 min over running",dest="Fly to Ironforge",fto=1573,tm=1455,tx=55.5,ty=47.7},
   {t="HEARTH",x=18.1,y=51.5,m=1455,npc=5111,name="Innkeeper Firebrew",bind="Ironforge"},
@@ -1520,13 +1528,7 @@ SL.Routes["Alliance_thorough_dungeons"] = {
   {t="A",q=2924,x=67.9,y=46.1,m=1455,npc="Klockmort Spannerspan"},
   {t="T",q=94819,x=24.6,y=10.0,m=1455,npc="High Priestess Mims"},
 }},
-{title="Darnassus (quests for Gnomeregan)",map=1457,races=nil,entry=32.39,exit=32.45,mins=2,steps={
-  {t="NOTE",text="Stop by Darnassus: quests for Gnomeregan"},
-  {t="A",q=1199,x=55.2,y=24.0,m=1457,npc="Argent Guard Manados"},
-  {t="A",q=2925,x=59.5,y=45.4,m=1457,npc="Mathiel"},
-  {t="T",q=5675,x=39.5,y=81.2,m=1457,npc="Priestess Alathea"},
-}},
-{title="Gnomeregan",map=226,races=nil,entry=32.45,exit=32.76,mins=86,dungeon=true,em=1426,ex=24.3,ey=39.8,steps={
+{title="Gnomeregan",map=226,races=nil,entry=32.44,exit=32.75,mins=86,dungeon=true,em=1426,ex=24.3,ey=39.8,steps={
   {t="GOTO",x=24.3,y=39.8,m=1426,text="Travel to the Gnomeregan entrance"},
   {t="DUNGEON",x=24.3,y=39.8,m=1426,name="Gnomeregan",text="Group up and run Gnomeregan (levels 24-34) - quests: Data Rescue, Essential Artificials, Gnogaine, Gyrodrillmatic Excavationators, Save Techbot's Brain!, The Grand Betrayal, The Only Cure is More Green Glow"},
   {t="C",q=2926,x=50.0,y=50.0,m=226,text="Use the Empty Leaden Collection Phial on Irradiated Invaders or Irradiated Pillagers to collect radioactive fallout. Once it is full, take it back to Ozzie Togglevolt in Kharanos."},
@@ -1538,22 +1540,22 @@ SL.Routes["Alliance_thorough_dungeons"] = {
   {t="C",q=2930,x=50.0,y=50.0,m=226,text="Bring a Prismatic Punch Card to Master Mechanic Castpipe in Ironforge."},
   {t="USEHS",x=18.1,y=51.5,m=1455,bind="Ironforge",text="Hearth to Ironforge for the next zone"},
 }},
-{title="Ironforge (turn in Gnomeregan)",map=1455,races=nil,entry=32.76,exit=33.15,mins=2,steps={
+{title="Ironforge (turn in Gnomeregan)",map=1455,races=nil,entry=32.75,exit=33.13,mins=2,steps={
   {t="NOTE",text="Stop by Ironforge: turn in Gnomeregan"},
+  {t="T",q=2924,x=67.9,y=46.1,m=1455,npc="Klockmort Spannerspan"},
   {t="T",q=2929,x=68.8,y=49.0,m=1455,npc="High Tinker Mekkatorque"},
   {t="T",q=2922,x=69.5,y=50.3,m=1455,npc="Tinkmaster Overspark"},
   {t="T",q=2930,x=69.8,y=48.1,m=1455,npc="Master Mechanic Castpipe"},
-  {t="T",q=2924,x=67.9,y=46.1,m=1455,npc="Klockmort Spannerspan"},
-  {t="T",q=2925,x=67.9,y=46.1,m=1455,npc="Klockmort Spannerspan"},
   {t="A",q=1050,x=75.0,y=12.5,m=1455,npc="Librarian Mae Paledust"},
 }},
-{title="Dun Morogh (turn in Gnomeregan)",map=1426,races=nil,entry=33.15,exit=33.34,mins=0,steps={
+{title="Dun Morogh (turn in Gnomeregan)",map=1426,races=nil,entry=33.13,exit=33.32,mins=1,steps={
   {t="NOTE",text="Stop by Dun Morogh: turn in Gnomeregan"},
   {t="T",q=2926,x=45.9,y=49.4,m=1426,npc="Ozzie Togglevolt"},
   {t="T",q=2962,x=45.9,y=49.4,m=1426,npc="Ozzie Togglevolt"},
   {t="T",q=2927,x=45.9,y=49.4,m=1426,npc="Ozzie Togglevolt"},
+  {t="T",q=467,x=49.6,y=48.6,m=1426,npc="Pilot Stonegear"},
 }},
-{title="Ashenvale",map=1440,races=nil,entry=33.34,exit=33.73,mins=50,steps={
+{title="Ashenvale",map=1440,races=nil,entry=33.32,exit=33.72,mins=50,steps={
   {t="NOTE",text="Travel to Astranaar in Ashenvale (boat from Menethil Harbor to Auberdine, then fly)"},
   {t="FP",x=36.3,y=45.6,m=1439,npc=3841,name="Caylais Moonfeather",text="Grab the Auberdine flight path when you arrive"},
   {t="FP",x=34.4,y=48.0,m=1440,npc=4267,name="Daelyshia"},
@@ -1574,12 +1576,11 @@ SL.Routes["Alliance_thorough_dungeons"] = {
   {t="T",q=98027,x=36.6,y=50.0,m=1440,npc="Maliynn"},
   {t="T",q=1022,x=22.2,y=53.0,m=1440,npc="Sentinel Melyria Frostshadow"},
 }},
-{title="Blackfathom Deeps",map=221,races=nil,entry=33.73,exit=34.04,mins=71,dungeon=true,em=1440,ex=14.5,ey=14.2,steps={
+{title="Blackfathom Deeps",map=221,races=nil,entry=33.72,exit=34.03,mins=60,dungeon=true,em=1440,ex=14.5,ey=14.2,steps={
   {t="GOTO",x=14.5,y=14.2,m=1440,text="Travel to the Blackfathom Deeps entrance"},
-  {t="DUNGEON",x=14.5,y=14.2,m=1440,name="Blackfathom Deeps",text="Group up and run Blackfathom Deeps (levels 22-32) - quests: Twilight Falls"},
-  {t="C",q=1199,x=50.0,y=50.0,m=221,text="Bring 10 Twilight Pendants to Argent Guard Manados in Darnassus."},
+  {t="DUNGEON",x=14.5,y=14.2,m=1440,name="Blackfathom Deeps",text="Group up and run Blackfathom Deeps (levels 22-32)"},
 }},
-{title="Stonetalon Mountains",map=1442,races=nil,entry=34.04,exit=34.21,mins=18,steps={
+{title="Stonetalon Mountains",map=1442,races=nil,entry=34.03,exit=34.20,mins=18,steps={
   {t="NOTE",text="Travel west from Astranaar into the Stonetalon Mountains (Stonetalon Peak)"},
   {t="FP",x=36.4,y=7.2,m=1442,npc=4407,name="Teloren"},
   {t="HEARTH",x=35.8,y=5.7,m=1442,npc=16458,name="Innkeeper Faralia",bind="Stonetalon Peak"},
@@ -1588,7 +1589,7 @@ SL.Routes["Alliance_thorough_dungeons"] = {
   {t="USEHS",x=35.8,y=5.7,m=1442,bind="Stonetalon Peak",text="Hearth to Stonetalon Peak (saves ~4 min of running)"},
   {t="T",q=1057,x=37.1,y=8.1,m=1442,npc="Keeper Albagorm"},
 }},
-{title="Stranglethorn Vale",map=1434,races=nil,entry=34.21,exit=36.36,mins=202,steps={
+{title="Stranglethorn Vale",map=1434,races=nil,entry=34.20,exit=36.34,mins=202,steps={
   {t="NOTE",text="Travel to Stranglethorn Vale (boat Auberdine - Menethil, then south through Duskwood; Booty Bay has the flight path)"},
   {t="FP",x=27.5,y=77.8,m=1434,npc=2859,name="Gyll"},
   {t="HEARTH",x=27.0,y=77.3,m=1434,npc=6807,name="Innkeeper Skindle",bind="Booty Bay"},
@@ -1679,7 +1680,7 @@ SL.Routes["Alliance_thorough_dungeons"] = {
   {t="T",q=601,x=27.2,y=76.9,m=1434,npc="Baron Revilgaz"},
   {t="A",q=602,x=27.2,y=76.9,m=1434,npc="Baron Revilgaz"},
 }},
-{title="Desolace",map=1443,races=nil,entry=36.36,exit=38.04,mins=195,steps={
+{title="Desolace",map=1443,races=nil,entry=36.34,exit=38.03,mins=195,steps={
   {t="NOTE",text="Travel to Nijel's Point in Desolace (fly to Stonetalon Peak, then run south)"},
   {t="FP",x=64.7,y=10.5,m=1443,npc=6706,name="Baritanas Skyriver"},
   {t="A",q=93224,x=66.7,y=10.9,m=1443,npc="Captain Pentigast"},
@@ -1748,7 +1749,7 @@ SL.Routes["Alliance_thorough_dungeons"] = {
   {t="T",q=6161,x=30.0,y=8.7,m=1443,npc="Rackmore's Chest"},
   {t="T",q=6027,x=38.9,y=27.2,m=1443,npc="Azore Aldamort"},
 }},
-{title="Arathi Highlands",map=1417,races=nil,entry=38.04,exit=38.65,mins=58,steps={
+{title="Arathi Highlands",map=1417,races=nil,entry=38.03,exit=38.63,mins=58,steps={
   {t="NOTE",text="Travel to Refuge Pointe in the Arathi Highlands (boat Auberdine - Menethil, then north-east)"},
   {t="FP",x=45.7,y=46.1,m=1417,npc=2835,name="Cedrik Prose"},
   {t="A",q=681,x=45.8,y=47.6,m=1417,npc="Captain Nials"},
@@ -1772,7 +1773,7 @@ SL.Routes["Alliance_thorough_dungeons"] = {
   {t="C",q=642,x=81.8,y=35.9,m=1417,text="Gather 12 Motes of Myzrael, then bring them to the Iridescent Shards in Drywhisker Gorge."},
   {t="T",q=642,x=84.3,y=30.9,m=1417,npc="Iridescent Shards"},
 }},
-{title="Alterac Mountains",map=1416,races=nil,entry=38.65,exit=38.77,mins=2,steps={
+{title="Alterac Mountains",map=1416,races=nil,entry=38.63,exit=38.76,mins=2,steps={
   {t="FLY",x=45.7,y=46.1,m=1417,npc=2835,name="Cedrik Prose",text="saves ~3 min over running",dest="Fly to Southshore",fto=2432,tm=1424,tx=49.3,ty=52.3},
   {t="HEARTH",x=18.2,y=66.5,m=1416,npc=28687,name="Amisi Azuregaze"},
   {t="T",q=602,x=18.8,y=78.5,m=1416,npc="Archmage Ansirem Runeweaver"},
@@ -1781,14 +1782,14 @@ SL.Routes["Alliance_thorough_dungeons"] = {
   {t="A",q=92457,x=14.3,y=59.6,m=1416,npc="Image of Archmage Modera"},
   {t="T",q=92459,x=14.2,y=60.0,m=1416,npc="Archmage Celindra"},
 }},
-{title="Stormwind (quests for City of Dalaran)",map=1453,races=nil,entry=38.77,exit=38.86,mins=0,steps={
+{title="Stormwind (quests for City of Dalaran)",map=1453,races=nil,entry=38.76,exit=38.85,mins=0,steps={
   {t="NOTE",text="Stop by Stormwind: quests for City of Dalaran"},
   {t="FLY",x=49.3,y=52.3,m=1424,npc=2432,name="Darla Harris",text="saves ~17 min over running",dest="Fly to Stormwind City",fto=352,tm=1453,tx=71.3,ty=72.2},
   {t="A",q=92489,x=48.7,y=87.6,m=1453,npc="High Sorcerer Andromath"},
   {t="A",q=92456,x=31.5,y=62.6,m=1453,npc="Shylamiir"},
   {t="T",q=2928,x=62.6,y=34.1,m=1453,npc="Shoni the Shilent"},
 }},
-{title="City of Dalaran",map=916544,races=nil,entry=38.86,exit=39.16,mins=45,dungeon=true,em=1416,ex=8.5,ey=59.2,steps={
+{title="City of Dalaran",map=916544,races=nil,entry=38.85,exit=39.15,mins=45,dungeon=true,em=1416,ex=8.5,ey=59.2,steps={
   {t="FLY",x=71.3,y=72.2,m=1453,npc=352,name="Dungar Longdrink",text="saves ~14 min over running",dest="Fly to Southshore",fto=2432,tm=1424,tx=49.3,ty=52.3},
   {t="GOTO",x=8.5,y=59.2,m=1416,text="Travel to the City of Dalaran entrance"},
   {t="DUNGEON",x=8.5,y=59.2,m=1416,name="City of Dalaran",text="Group up and run City of Dalaran (levels 30-36) - quests: A Green Sample, Heart of Disruption, Power Overwhelming, Starving Arcane"},
@@ -1797,24 +1798,24 @@ SL.Routes["Alliance_thorough_dungeons"] = {
   {t="C",q=92489,x=50.0,y=50.0,m=916544,text="Slay the Mana Elemental in the City of Dalaran for High Sorcerer Andromath in Stormwind City."},
   {t="C",q=92456,x=50.0,y=50.0,m=916544,text="Collect a Fel Infused Blossom from the City of Dalaran for Shylamiir in Stormwind City."},
 }},
-{title="Stormwind (turn in City of Dalaran)",map=1453,races=nil,entry=39.16,exit=39.28,mins=4,steps={
+{title="Stormwind (turn in City of Dalaran)",map=1453,races=nil,entry=39.15,exit=39.27,mins=4,steps={
   {t="NOTE",text="Stop by Stormwind: turn in City of Dalaran"},
   {t="T",q=92489,x=48.7,y=87.6,m=1453,npc="High Sorcerer Andromath"},
   {t="T",q=92456,x=31.5,y=62.6,m=1453,npc="Shylamiir"},
   {t="A",q=3636,x=50.3,y=45.5,m=1453,npc="Archbishop Benedictus"},
   {t="USEHS",x=18.2,y=66.5,m=1416,text="Hearth to Amisi Azuregaze for the next zone"},
 }},
-{title="Alterac Mountains (turn in City of Dalaran)",map=1416,races=nil,entry=39.28,exit=39.46,mins=0,steps={
+{title="Alterac Mountains (turn in City of Dalaran)",map=1416,races=nil,entry=39.27,exit=39.45,mins=0,steps={
   {t="NOTE",text="Stop by Alterac Mountains: turn in City of Dalaran"},
   {t="T",q=92457,x=14.3,y=59.6,m=1416,npc="Image of Archmage Modera"},
   {t="T",q=92458,x=14.3,y=59.6,m=1416,npc="Image of Archmage Modera"},
 }},
-{title="Scarlet Monastery",map=302,races=nil,entry=39.46,exit=39.77,mins=91,dungeon=true,em=1420,ex=82.6,ey=33.8,steps={
+{title="Scarlet Monastery",map=302,races=nil,entry=39.45,exit=39.76,mins=91,dungeon=true,em=1420,ex=82.6,ey=33.8,steps={
   {t="GOTO",x=82.6,y=33.8,m=1420,text="Travel to the Scarlet Monastery entrance"},
   {t="DUNGEON",x=82.6,y=33.8,m=1420,name="Scarlet Monastery",text="Group up and run Scarlet Monastery (levels 28-42) - quests: Mythology of the Titans"},
   {t="C",q=1050,x=50.0,y=50.0,m=302,text="Retrieve Mythology of the Titans from the Monastery and bring it to Librarian Mae Paledust in Ironforge."},
 }},
-{title="Thousand Needles - Shimmering Flats",map=1441,races=nil,entry=39.77,exit=39.96,mins=23,steps={
+{title="Thousand Needles - Shimmering Flats",map=1441,races=nil,entry=39.76,exit=39.95,mins=23,steps={
   {t="NOTE",text="Travel to the Shimmering Flats in Thousand Needles (south-east, from Tanaris or Feralas)"},
   {t="A",q=5762,x=77.8,y=77.3,m=1441,npc="Kravel Koalbeard"},
   {t="A",q=1110,x=77.8,y=77.3,m=1441,npc="Kravel Koalbeard"},
@@ -1825,12 +1826,12 @@ SL.Routes["Alliance_thorough_dungeons"] = {
   {t="C",q=1175,x=76.9,y=57.6,m=1441,text="Kill Saltstone Basilisk",oname="Saltstone Basilisk"},
   {t="T",q=1175,x=81.6,y=78.0,m=1441,npc="Trackmaster Zherin"},
 }},
-{title="Razorfen Downs",map=300,races=nil,entry=39.96,exit=40.27,mins=62,dungeon=true,em=1413,ex=49.0,ey=93.9,steps={
+{title="Razorfen Downs",map=300,races=nil,entry=39.95,exit=40.26,mins=62,dungeon=true,em=1413,ex=49.0,ey=93.9,steps={
   {t="GOTO",x=49.0,y=93.9,m=1413,text="Travel to the Razorfen Downs entrance"},
   {t="DUNGEON",x=49.0,y=93.9,m=1413,name="Razorfen Downs",text="Group up and run Razorfen Downs (levels 33-42) - quests: Bring the Light"},
   {t="C",q=3636,x=50.0,y=50.0,m=300,text="Archbishop Bendictus wants you to slay Amnennar the Coldbringer in Razorfen Downs."},
 }},
-{title="Dustwallow Marsh",map=1445,races=nil,entry=40.27,exit=40.92,mins=62,steps={
+{title="Dustwallow Marsh",map=1445,races=nil,entry=40.26,exit=40.91,mins=62,steps={
   {t="NOTE",text="Travel to Theramore Isle in Dustwallow Marsh (boat from Menethil Harbor)"},
   {t="FP",x=67.5,y=51.3,m=1445,npc=4321,name="Baldruc"},
   {t="HEARTH",x=66.6,y=45.2,m=1445,npc=6272,name="Innkeeper Janene",bind="Theramore Isle"},
@@ -1867,7 +1868,7 @@ SL.Routes["Alliance_thorough_dungeons"] = {
   {t="T",q=1320,x=68.2,y=48.6,m=1445,npc="Captain Garran Vimes"},
   {t="T",q=1286,x=36.1,y=54.3,m=1445,npc="Balos Jacken"},
 }},
-{title="Warlock: Felhunter",map=1445,races=nil,entry=40.92,exit=40.92,mins=0,classes={"WARLOCK"},steps={
+{title="Warlock: Felhunter",map=1445,races=nil,entry=40.91,exit=40.91,mins=0,classes={"WARLOCK"},steps={
   {t="A",q=1758,x=62.6,y=35.5,m=1413,npc="Strahad Farsan"},
   {t="FP",x=63.1,y=37.2,m=1413,npc=16227,name="Bragok",text="Grab the Ratchet flight path while you are here"},
   {t="T",q=1758,x=74.2,y=9.4,m=1455,npc="Krom Stoutarm"},
@@ -1891,14 +1892,14 @@ SL.Routes["Alliance_thorough_dungeons"] = {
   {t="C",q=1795,x=62.6,y=35.3,m=1413,text="Using the Tome of the Cabal, summon and subdue a felhunter."},
   {t="T",q=1795,x=62.6,y=35.5,m=1413,npc="Strahad Farsan"},
 }},
-{title="Warrior: Berserker Stance",map=1445,races=nil,entry=40.92,exit=40.92,mins=0,classes={"WARRIOR"},steps={
+{title="Warrior: Berserker Stance",map=1445,races=nil,entry=40.91,exit=40.91,mins=0,classes={"WARRIOR"},steps={
   {t="A",q=1718,x=70.3,y=90.7,m=1455,npc="Kelv Sternhammer"},
   {t="T",q=1718,x=68.6,y=49.2,m=1413,npc="Klannoc Macleod"},
   {t="A",q=1719,x=68.6,y=49.2,m=1413,npc="Klannoc Macleod"},
   {t="C",q=1719,x=68.6,y=48.7,m=1413,text="Kill Big Will, then speak to Klannoc Macleod on Fray Island."},
   {t="T",q=1719,x=68.6,y=49.2,m=1413,npc="Klannoc Macleod"},
 }},
-{title="Swamp of Sorrows",map=1435,races=nil,entry=40.92,exit=41.31,mins=34,steps={
+{title="Swamp of Sorrows",map=1435,races=nil,entry=40.91,exit=41.30,mins=34,steps={
   {t="NOTE",text="Travel to the Swamp of Sorrows (east from Duskwood, or south from Redridge)"},
   {t="A",q=1389,x=26.0,y=31.4,m=1435,npc="Magtoor"},
   {t="A",q=1393,x=65.5,y=18.2,m=1435,npc="Galen Goodward"},
@@ -1918,7 +1919,7 @@ SL.Routes["Alliance_thorough_dungeons"] = {
   {t="C",q=1398,x=84.8,y=87.7,m=1435,text="Bring 8 pieces of Sundried Driftwood to Watcher Biggs in the Swamp of Sorrows."},
   {t="T",q=1398,x=26.7,y=59.8,m=1435,npc="Watcher Biggs"},
 }},
-{title="Badlands",map=1418,races=nil,entry=41.31,exit=42.12,mins=77,steps={
+{title="Badlands",map=1418,races=nil,entry=41.30,exit=42.11,mins=77,steps={
   {t="NOTE",text="Travel to the Badlands (south from Loch Modan)"},
   {t="A",q=703,x=42.4,y=52.9,m=1418,npc="Rigglefuzz"},
   {t="A",q=2418,x=42.4,y=52.9,m=1418,npc="Rigglefuzz"},
@@ -1956,14 +1957,14 @@ SL.Routes["Alliance_thorough_dungeons"] = {
   {t="T",q=733,x=53.8,y=43.3,m=1418,npc="Sigrun Ironhew"},
   {t="T",q=732,x=61.9,y=54.3,m=1418,npc="Garek"},
 }},
-{title="Ironforge (quests for Uldaman)",map=1455,races=nil,entry=42.12,exit=42.30,mins=1,steps={
+{title="Ironforge (quests for Uldaman)",map=1455,races=nil,entry=42.11,exit=42.29,mins=1,steps={
   {t="NOTE",text="Stop by Ironforge: quests for Uldaman"},
   {t="T",q=727,x=50.8,y=5.6,m=1455,npc="Gerrig Bonegrip"},
   {t="A",q=1360,x=74.2,y=9.4,m=1455,npc="Krom Stoutarm"},
   {t="T",q=1050,x=75.0,y=12.5,m=1455,npc="Librarian Mae Paledust"},
   {t="T",q=724,x=77.5,y=11.8,m=1455,npc="Historian Karnik"},
 }},
-{title="Uldaman",map=230,races=nil,entry=42.30,exit=42.61,mins=133,dungeon=true,em=1418,ex=44.6,ey=12.1,steps={
+{title="Uldaman",map=230,races=nil,entry=42.29,exit=42.60,mins=133,dungeon=true,em=1418,ex=44.6,ey=12.1,steps={
   {t="GOTO",x=44.6,y=12.1,m=1418,text="Travel to the Uldaman entrance"},
   {t="DUNGEON",x=44.6,y=12.1,m=1418,name="Uldaman",text="Group up and run Uldaman (levels 36-48) - quests: Amulet of Secrets, Power Stones, Reclaimed Treasures, Solution to Doom"},
   {t="C",q=2418,x=50.0,y=50.0,m=230,text="Bring 8 Dentrium Power Stones and 8 An'Alleum Power Stones to Rigglefuzz in the Badlands."},
@@ -1971,13 +1972,13 @@ SL.Routes["Alliance_thorough_dungeons"] = {
   {t="C",q=722,x=50.0,y=50.0,m=230,text="Find Hammertoe's Amulet."},
   {t="C",q=1360,x=50.0,y=50.0,m=230,text="Get Krom Stoutarm's treasured possession from his chest in the North Common Hall of Uldaman, and bring it to him in Ironforge."},
 }},
-{title="Badlands (turn in Uldaman)",map=1418,races=nil,entry=42.61,exit=43.01,mins=3,steps={
+{title="Badlands (turn in Uldaman)",map=1418,races=nil,entry=42.60,exit=43.00,mins=3,steps={
   {t="NOTE",text="Stop by Badlands: turn in Uldaman"},
   {t="T",q=709,x=51.4,y=76.9,m=1418,npc="Theldurin the Lost"},
   {t="T",q=2418,x=42.4,y=52.9,m=1418,npc="Rigglefuzz"},
   {t="T",q=722,x=37.9,y=10.6,m=1418,npc="Hammertoe Grez"},
 }},
-{title="Arathi Highlands 2",map=1417,races=nil,entry=43.01,exit=43.35,mins=27,steps={
+{title="Arathi Highlands 2",map=1417,races=nil,entry=43.00,exit=43.34,mins=27,steps={
   {t="A",q=665,x=33.9,y=80.5,m=1417,npc="Professor Phizzlethorpe"},
   {t="C",q=665,x=33.9,y=80.6,m=1417,text="Escort Professor Phizzlethorpe to the cave and back."},
   {t="T",q=665,x=33.9,y=80.5,m=1417,npc="Doctor Draxlegauge"},
@@ -1999,7 +2000,7 @@ SL.Routes["Alliance_thorough_dungeons"] = {
   {t="C",q=651,x=25.5,y=30.1,m=1417,text="Burning Key",oname="Burning Key"},
   {t="T",q=651,x=36.2,y=57.4,m=1417,npc="Stone of Inner Binding"},
 }},
-{title="Stranglethorn Vale 2",map=1434,races=nil,entry=43.35,exit=44.67,mins=152,steps={
+{title="Stranglethorn Vale 2",map=1434,races=nil,entry=43.34,exit=44.66,mins=152,steps={
   {t="FLY",x=45.7,y=46.1,m=1417,npc=2835,name="Cedrik Prose",text="Fly to Booty Bay",dest="Fly to Booty Bay"},
   {t="HEARTH",x=27.0,y=77.3,m=1434,npc=6807,name="Innkeeper Skindle",bind="Booty Bay"},
   {t="A",q=2872,x=27.8,y=77.1,m=1434,npc="\"Sea Wolf\" MacKinley"},
@@ -2053,7 +2054,7 @@ SL.Routes["Alliance_thorough_dungeons"] = {
   {t="T",q=613,x=27.8,y=77.1,m=1434,npc="\"Sea Wolf\" MacKinley"},
   {t="T",q=576,x=28.6,y=75.9,m=1434,npc="Dizzy One-Eye"},
 }},
-{title="Stormwind - 40s",map=1453,races=nil,entry=44.67,exit=44.82,mins=0,steps={
+{title="Stormwind - 40s",map=1453,races=nil,entry=44.66,exit=44.81,mins=0,steps={
   {t="NOTE",text="Head back to Stormwind to train and turn in"},
   {t="FLY",x=27.5,y=77.8,m=1434,npc=2859,name="Gyll",text="saves ~4 min over running",dest="Fly to Stormwind City",fto=352,tm=1453,tx=71.3,ty=72.2},
   {t="A",q=1271,x=51.8,y=93.6,m=1453,npc="Angus Stern"},
@@ -2063,10 +2064,9 @@ SL.Routes["Alliance_thorough_dungeons"] = {
   {t="A",q=1661,x=50.5,y=47.5,m=1453,npc="Duthorian Rall"},
   {t="T",q=1661,x=50.5,y=47.5,m=1453,npc="Duthorian Rall"},
   {t="T",q=3636,x=50.3,y=45.5,m=1453,npc="Archbishop Benedictus"},
-  {t="A",q=6141,x=52.6,y=43.2,m=1453,npc="Brother Crowley"},
   {t="TRAIN",text="Train new spells in Stormwind"},
 }},
-{title="Tanaris",map=1446,races=nil,entry=44.82,exit=47.20,mins=373,steps={
+{title="Tanaris",map=1446,races=nil,entry=44.81,exit=47.20,mins=374,steps={
   {t="NOTE",text="Travel to Gadgetzan in Tanaris (boat to Theramore, then fly or run south)"},
   {t="FP",x=51.0,y=29.3,m=1446,npc=7823,name="Bera Stonehammer"},
   {t="HEARTH",x=52.5,y=27.9,m=1446,npc=7733,name="Innkeeper Fizzgrimble",bind="Gadgetzan"},
@@ -2236,7 +2236,6 @@ SL.Routes["Alliance_thorough_dungeons"] = {
   {t="NOTE",text="Stop by Desolace: turn in Maraudon"},
   {t="T",q=7028,x=62.2,y=39.6,m=1443,npc="Willow"},
   {t="T",q=7041,x=68.5,y=8.9,m=1443,npc="Talendria"},
-  {t="T",q=6141,x=66.5,y=7.9,m=1443,npc="Brother Anton"},
   {t="T",q=7065,x=63.8,y=10.7,m=1443,npc="Keeper Marandis"},
   {t="T",q=7067,x=50.4,y=86.7,m=1443,npc="Centaur Pariah"},
 }},
@@ -2274,7 +2273,7 @@ SL.Routes["Alliance_thorough_dungeons"] = {
   {t="T",q=2989,x=9.8,y=44.5,m=1425,npc="Gryphon Master Talonaxe"},
   {t="A",q=2990,x=9.8,y=44.5,m=1425,npc="Gryphon Master Talonaxe"},
 }},
-{title="Searing Gorge",map=1427,races=nil,entry=50.35,exit=50.99,mins=72,steps={
+{title="Searing Gorge",map=1427,races=nil,entry=50.35,exit=50.99,mins=68,steps={
   {t="NOTE",text="Travel to Thorium Point in the Searing Gorge"},
   {t="FLY",x=11.1,y=46.1,m=1425,npc=8018,name="Guthrum Thunderfist",text="saves ~5 min over running",dest="Fly to Ironforge",fto=1573,tm=1455,tx=55.5,ty=47.7},
   {t="FP",x=37.9,y=30.9,m=1427,npc=2941,name="Lanie Reed"},
@@ -2293,10 +2292,8 @@ SL.Routes["Alliance_thorough_dungeons"] = {
   {t="A",q=3377,x=29.6,y=26.3,m=1427,npc="Zamael Lunthistle"},
   {t="C",q=3377,x=29.6,y=26.3,m=1427,text="Hear Zamael tell his tale."},
   {t="T",q=3377,x=29.6,y=26.3,m=1427,npc="Zamael Lunthistle"},
-  {t="A",q=3378,x=29.6,y=26.3,m=1427,npc="Zamael Lunthistle"},
   {t="A",q=7729,x=37.6,y=26.5,m=1427,npc="Wanted/Missing/Lost & Found"},
   {t="A",q=7728,x=37.6,y=26.5,m=1427,npc="Wanted/Missing/Lost & Found"},
-  {t="C",q=3378,x=21.6,y=36.3,m=1427,text="Find the Prayer to Elune and take it to Astarii Starseeker in Darnassus."},
   {t="C",q=7728,x=33.7,y=51.9,m=1427,text="Find."},
   {t="C",q=7729,x=42.5,y=33.6,m=1427,text="Slay 15 Dark Iron Taskmasters and 15 Dark Iron Slavers. Return to Taskmaster Scrange in the Searing Gorge once you have accomplished this task."},
   {t="T",q=7729,x=39.0,y=27.5,m=1427,npc="Taskmaster Scrange"},
@@ -2334,7 +2331,6 @@ SL.Routes["Alliance_thorough_dungeons"] = {
 {title="Tanaris 2",map=1446,races=nil,entry=51.37,exit=51.61,mins=0,steps={
   {t="FLY",x=11.9,y=77.6,m=1447,npc=12577,name="Jarrodenus",text="saves ~10 min over running",dest="Fly to Gadgetzan",fto=7823,tm=1446,tx=51.0,ty=29.3},
   {t="T",q=4450,x=51.5,y=28.8,m=1446,npc="Krinkle Goodsteel"},
-  {t="A",q=162,x=50.2,y=27.5,m=1446,npc="Senior Surveyor Fizzledowser"},
   {t="T",q=2641,x=51.1,y=26.9,m=1446,npc="Sprinkle"},
   {t="A",q=4324,x=67.0,y=24.0,m=1446,npc="Yorba Screwspigot"},
   {t="T",q=3520,x=67.0,y=22.4,m=1446,npc="Yeh'kinya"},
@@ -2342,7 +2338,6 @@ SL.Routes["Alliance_thorough_dungeons"] = {
 }},
 {title="Stormwind - 50s",map=1453,races=nil,entry=51.61,exit=51.67,mins=3,steps={
   {t="NOTE",text="Head to Stormwind to train and turn in"},
-  {t="A",q=3789,x=60.4,y=75.3,m=1453,npc="Innkeeper Allison"},
   {t="A",q=5066,x=56.4,y=74.1,m=1453,npc="Crier Goodman"},
   {t="A",q=8415,x=48.4,y=50.2,m=1453,npc="Lord Grayson Shadowbreaker"},
   {t="A",q=9063,x=36.1,y=64.4,m=1453,npc="Mathrengyl Bearwalker"},
@@ -2525,7 +2520,6 @@ SL.Routes["Alliance_thorough_dungeons"] = {
   {t="A",q=5219,x=43.0,y=84.5,m=1422,npc="High Priestess MacDonnell"},
   {t="C",q=4985,x=64.4,y=49.7,m=1422,text="Destroy 8 Diseased Grizzlies."},
   {t="T",q=4985,x=53.7,y=64.7,m=1422,npc="Mulgris Deepriver"},
-  {t="A",q=4986,x=53.7,y=64.7,m=1422,npc="Mulgris Deepriver"},
   {t="C",q=5219,x=46.1,y=52.6,m=1422,text="Go to Dalson's Tears in Western Plaguelands to locate and defeat the Cauldron Lord present there, and use its key to gain access to the cauldron. You must have the Empty Dalson's Tears Bottle with you to secure a sample of the poisons used inside the cauldron."},
   {t="T",q=5219,x=46.2,y=51.9,m=1422,npc="Scourge Cauldron"},
   {t="A",q=5220,x=46.2,y=51.9,m=1422,npc="Scourge Cauldron"},
@@ -2684,37 +2678,26 @@ SL.Routes["Alliance_thorough_dungeons"] = {
   {t="T",q=9664,x=71.5,y=49.7,m=1423,npc="Emmisary Whitebeard"},
   {t="T",q=9124,x=71.7,y=48.9,m=1423,npc="Huntsman Leopold"},
 }},
-{title="Darnassus (quests for Dire Maul)",map=1457,races=nil,entry=58.86,exit=59.03,mins=3,steps={
-  {t="NOTE",text="Stop by Darnassus: quests for Dire Maul"},
-  {t="T",q=1199,x=55.2,y=24.0,m=1457,npc="Argent Guard Manados"},
-  {t="T",q=3378,x=38.3,y=81.0,m=1457,npc="Astarii Starseeker"},
-  {t="T",q=162,x=41.8,y=85.6,m=1457,npc="Gracina Spiritmight"},
-  {t="A",q=7494,x=47.8,y=82.0,m=1457,npc="Crier Goodman"},
-  {t="T",q=3789,x=34.8,y=9.3,m=1457,npc="Arch Druid Fandral Staghelm"},
-  {t="T",q=4986,x=35.4,y=8.4,m=1457,npc="Mathrengyl Bearwalker"},
-}},
-{title="Dire Maul",map=234,races=nil,entry=59.03,exit=59.34,mins=90,dungeon=true,em=1444,ex=59.2,ey=45.1,steps={
-  {t="FLY",x=36.3,y=45.6,m=1439,npc=3841,name="Caylais Moonfeather",text="saves ~8 min over running",dest="Fly to Feathermoon Stronghold",fto=8019,tm=1444,tx=30.2,ty=43.2},
+{title="Dire Maul",map=234,races=nil,entry=58.86,exit=59.16,mins=98,dungeon=true,em=1444,ex=59.2,ey=45.1,steps={
   {t="GOTO",x=59.2,y=45.1,m=1444,text="Travel to the Dire Maul entrance"},
   {t="DUNGEON",x=59.2,y=45.1,m=1444,name="Dire Maul",text="Group up and run Dire Maul (levels 52-60) - quests: Elven Legends, Lethtendris's Web, Pusillin and the Elder Azj'Tordin"},
   {t="C",q=7482,x=50.0,y=50.0,m=234,text="Search Dire Maul for Telmius Dreamseeker. Report back to Scholar Runethorn at Feathermoon with whatever information that you may find."},
   {t="C",q=7488,x=50.0,y=50.0,m=234,text="Bring Lethtendris' Web to Latronicus Moonspear at the Feathermoon Stronghold in Feralas."},
   {t="C",q=7441,x=50.0,y=50.0,m=234,text="Travel to Dire Maul and locate the Imp, Pusillin. Convince Pusillin to give you Azj'Tordin's Book of Incantations through any means necessary. Return to Azj'Tordin at the Lariss Pavilion in Feralas should you recover the Book of Incantations."},
 }},
-{title="Feralas (turn in Dire Maul)",map=1444,races=nil,entry=59.34,exit=59.58,mins=1,steps={
+{title="Feralas (turn in Dire Maul)",map=1444,races=nil,entry=59.16,exit=59.41,mins=1,steps={
   {t="NOTE",text="Stop by Feralas: turn in Dire Maul"},
   {t="T",q=7441,x=76.9,y=37.4,m=1444,npc="Azj'Tordin"},
   {t="USEHS",x=31.0,y=43.5,m=1444,bind="Feathermoon Stronghold",text="Hearth to Feathermoon Stronghold (saves ~5 min of running)"},
   {t="T",q=7482,x=31.6,y=43.5,m=1444,npc="Scholar Runethorn"},
   {t="T",q=7488,x=30.4,y=46.2,m=1444,npc="Latronicus Moonspear"},
-  {t="T",q=7494,x=30.4,y=46.2,m=1444,npc="Latronicus Moonspear"},
 }},
-{title="Silithus",map=1451,races=nil,entry=59.58,exit=60.00,mins=122,steps={
+{title="Silithus",map=1451,races=nil,entry=59.41,exit=60.00,mins=117,steps={
   {t="FP",x=50.6,y=34.5,m=1451,npc=15177,name="Cloud Skydancer"},
   {t="A",q=9415,x=50.7,y=34.7,m=1451,npc="Rifleman Torrig"},
   {t="A",q=8304,x=49.2,y=34.2,m=1451,npc="Commander Mar'alith"},
-  {t="A",q=9419,x=33.3,y=51.1,m=1451,npc="Marshal Bluewall"},
   {t="T",q=9415,x=33.3,y=51.1,m=1451,npc="Marshal Bluewall"},
+  {t="A",q=9419,x=33.3,y=51.1,m=1451,npc="Marshal Bluewall"},
   {t="C",q=9419,x=33.0,y=50.8,m=1451,text="Find and deliver Silithyst to the Silithyst Extractor, then speak with Marshal Bluewall at the Alliance encampment near Hive'Zora."},
   {t="T",q=9419,x=33.3,y=51.1,m=1451,npc="Marshal Bluewall"},
   {t="C",q=8304,x=40.8,y=88.9,m=1451,text="Commander Mar'alith at Cenarion Hold in Silithus wants you to question the inhabitants of Bronzebeard's Encampment. You will find Bronzebeard's Encampment south of Cenarion Hold. Once you have gathered the requested information."},
@@ -2748,43 +2731,43 @@ SL.Routes["Alliance_thorough_dungeons"] = {
   {t="A",q=8287,x=67.2,y=69.8,m=1451,npc="Hermit Ortell"},
   {t="T",q=8287,x=49.2,y=34.2,m=1451,npc="Commander Mar'alith"},
   {t="C",q=8323,x=39.2,y=44.6,m=1451,text="Hermit Ortell wants you to bring him 10 Encrypted Twilight Texts."},
-  {t="T",q=8323,x=67.2,y=69.8,m=1451,npc="Hermit Ortell"},
-  {t="A",q=8341,x=52.0,y=38.2,m=1451,npc="Aurel Goldleaf"},
-  {t="C",q=8341,x=37.6,y=44.8,m=1451,text="Bring 5 Large Brilliant Shards and 3 Abyssal Signets to Aurel Goldleaf in Cenarion Hold."},
-  {t="T",q=8341,x=52.0,y=38.2,m=1451,npc="Aurel Goldleaf"},
-  {t="A",q=8351,x=52.0,y=38.2,m=1451,npc="Aurel Goldleaf"},
-  {t="T",q=8351,x=48.6,y=37.8,m=1451,npc="Bor Wildmane"},
-  {t="A",q=8332,x=52.0,y=38.2,m=1451,npc="Aurel Goldleaf"},
-  {t="C",q=8332,x=39.0,y=42.4,m=1451,text="Bring 1 Large Brilliant Shard and 3 Abyssal Crests to Aurel Goldleaf in Cenarion Hold."},
-  {t="T",q=8332,x=52.0,y=38.2,m=1451,npc="Aurel Goldleaf"},
-  {t="A",q=8349,x=52.0,y=38.2,m=1451,npc="Aurel Goldleaf"},
-  {t="T",q=8349,x=48.6,y=37.8,m=1451,npc="Bor Wildmane"},
-  {t="A",q=8343,x=48.6,y=37.9,m=1451,npc="Huum Wildmane"},
   {t="A",q=8331,x=48.6,y=37.9,m=1451,npc="Huum Wildmane"},
-  {t="A",q=8320,x=48.6,y=37.9,m=1451,npc="Huum Wildmane"},
-  {t="C",q=8320,x=26.4,y=34.0,m=1451,text="Kill 10 Twilight Geolords."},
-  {t="T",q=8320,x=48.6,y=37.9,m=1451,npc="Huum Wildmane"},
+  {t="A",q=8343,x=48.6,y=37.9,m=1451,npc="Huum Wildmane"},
   {t="A",q=8361,x=48.6,y=37.8,m=1451,npc="Bor Wildmane"},
   {t="C",q=8361,x=39.0,y=42.4,m=1451,text="Bor Wildmane at Cenarion Hold in Silithus wants you to destroy an Abyssal Templar and bring him an Abyssal Crest as proof of the deed."},
   {t="T",q=8361,x=48.6,y=37.8,m=1451,npc="Bor Wildmane"},
+  {t="A",q=8351,x=52.0,y=38.2,m=1451,npc="Aurel Goldleaf"},
+  {t="T",q=8331,x=52.0,y=38.2,m=1451,npc="Aurel Goldleaf"},
+  {t="T",q=8343,x=52.0,y=38.2,m=1451,npc="Aurel Goldleaf"},
+  {t="A",q=8349,x=52.0,y=38.2,m=1451,npc="Aurel Goldleaf"},
+  {t="T",q=8349,x=48.6,y=37.8,m=1451,npc="Bor Wildmane"},
+  {t="A",q=8348,x=48.6,y=37.8,m=1451,npc="Bor Wildmane"},
+  {t="T",q=8351,x=48.6,y=37.8,m=1451,npc="Bor Wildmane"},
   {t="A",q=8352,x=48.6,y=37.8,m=1451,npc="Bor Wildmane"},
   {t="C",q=8352,x=39.6,y=45.1,m=1451,text="Bring an Abyssal Scepter to Bor Wildmane in Cenarion Hold."},
-  {t="T",q=8352,x=48.6,y=37.8,m=1451,npc="Bor Wildmane"},
-  {t="A",q=8348,x=48.6,y=37.8,m=1451,npc="Bor Wildmane"},
   {t="C",q=8348,x=37.6,y=44.8,m=1451,text="Bring the Abyssal Signet to Bor Wildmane in Cenarion Hold."},
+  {t="T",q=8352,x=48.6,y=37.8,m=1451,npc="Bor Wildmane"},
   {t="T",q=8348,x=48.6,y=37.8,m=1451,npc="Bor Wildmane"},
   {t="A",q=8321,x=48.6,y=37.9,m=1451,npc="Huum Wildmane"},
-  {t="A",q=8800,x=50.0,y=36.4,m=1451,npc="Windcaller Kaldon"},
+  {t="A",q=8341,x=52.0,y=38.2,m=1451,npc="Aurel Goldleaf"},
   {t="C",q=8321,x=72.4,y=15.6,m=1451,text="Bring Vyral's Signet Ring to Huum Wildmane in Cenarion Hold."},
-  {t="T",q=8343,x=52.0,y=38.2,m=1451,npc="Aurel Goldleaf"},
-  {t="T",q=8331,x=52.0,y=38.2,m=1451,npc="Aurel Goldleaf"},
-  {t="T",q=8800,x=51.2,y=38.9,m=1451,npc="Vargus"},
   {t="T",q=8321,x=48.6,y=37.9,m=1451,npc="Huum Wildmane"},
-  {t="GRIND",x=56.5,y=32.6,m=1451,text="Not 60 yet? Finish here: Stonelash Scorpid (level 54-55)",level=60.0},
+  {t="C",q=8341,x=37.6,y=44.8,m=1451,text="Bring 5 Large Brilliant Shards and 3 Abyssal Signets to Aurel Goldleaf in Cenarion Hold."},
+  {t="A",q=8800,x=50.0,y=36.4,m=1451,npc="Windcaller Kaldon"},
+  {t="T",q=8800,x=51.2,y=38.9,m=1451,npc="Vargus"},
+  {t="A",q=8332,x=52.0,y=38.2,m=1451,npc="Aurel Goldleaf"},
+  {t="T",q=8341,x=52.0,y=38.2,m=1451,npc="Aurel Goldleaf"},
+  {t="A",q=8320,x=48.6,y=37.9,m=1451,npc="Huum Wildmane"},
+  {t="C",q=8320,x=26.4,y=34.0,m=1451,text="Kill 10 Twilight Geolords."},
+  {t="C",q=8332,x=39.0,y=42.4,m=1451,text="Bring 1 Large Brilliant Shard and 3 Abyssal Crests to Aurel Goldleaf in Cenarion Hold."},
+  {t="T",q=8320,x=48.6,y=37.9,m=1451,npc="Huum Wildmane"},
+  {t="T",q=8332,x=52.0,y=38.2,m=1451,npc="Aurel Goldleaf"},
+  {t="T",q=8323,x=67.2,y=69.8,m=1451,npc="Hermit Ortell"},
+  {t="GRIND",x=66.4,y=32.7,m=1451,text="Not 60 yet? Finish here: Stonelash Scorpid (level 54-55)",level=60.0},
 }},
 }
 SL.RouteVersions = SL.RouteVersions or {}
-SL.RouteVersions["Alliance_thorough_dungeons"] = "26d2317903a6"
+SL.RouteVersions["Alliance_thorough_dungeons"] = "33d7c4694a9b"
 -- modelled minutes per level along this route (for the time-to-60 estimate)
 SL.LevelMinutes = SL.LevelMinutes or {}
 SL.LevelMinutes["Alliance_thorough_dungeons"] = {60.0,60.0,60.0,60.0,60.0,60.0,60.0,60.0,60.0,60.0,60.0,60.0,60.0,60.0,60.0,60.0,60.0,60.0,60.0,60.0,60.0,60.0,60.0,60.0,60.0,60.0,60.0,60.0,60.0,60.0,60.0,60.0,60.0,60.0,60.0,60.0,60.0,60.0,60.0,60.0,60.0,60.0,60.0,60.0,60.0,60.0,60.0,60.0,60.0,60.0,60.0,60.0,60.0,60.0,60.0,60.0,60.0,60.0,60.0}

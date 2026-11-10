@@ -1,5 +1,20 @@
 # Changelog
 
+## 1.2.2
+
+- **No more pickups the quest giver won't offer.** The guide now knows the rules that hide quests:
+  - a **breadcrumb** (a quest that only sends you to another quest, like "Trollbane") disappears once
+    you have the quest it leads to - the guide skips it instead of sending you to pick it up;
+  - quests that are only available **until** another quest is done are skipped after that;
+  - quests **disabled while** another quest is in your log wait and come back once it's done.
+- **The route orders these correctly**, e.g. Denalan's Timberling quests in Teldrassil now come after
+  turning in Denalan's Earth (he doesn't offer them before), and breadcrumbs come before the quest they
+  lead to. Quests that can never be offered at their point in the route are left out.
+- **Givers that open no window**: if you stand at the giver with them targeted for a few seconds and the
+  quest isn't there, the guide parks the pickup (it comes back at your next level, or as soon as they
+  offer it) - breadcrumbs are skipped. Previously it waited for a dialog that never opened.
+- Quests that need a spell or profession are no longer planned.
+
 ## 1.2.1
 
 - **Better grind spots.** The pin now sits in the thick of a pack (the spawn with the most mobs

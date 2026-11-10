@@ -362,6 +362,20 @@ function E:ComputeStatus(i)
                     if P:IsCompleted(x) or P:InLog(x) then return SKIP, "exclusive quest taken" end
                 end
             end
+            -- a breadcrumb is gone once you have the quest it leads to
+            for _, x in ipairs((d and d[10]) or {}) do
+                if P:IsCompleted(x) or P:InLog(x) then
+                    return SKIP, "no longer offered (you have " .. self:QuestName(x) .. ")"
+                end
+            end
+            -- "available until" another quest is completed
+            for _, x in ipairs((d and d[11]) or {}) do
+                if P:IsCompleted(x) then return SKIP, "no longer offered (" .. self:QuestName(x) .. " done)" end
+            end
+            -- "disabled by" another quest while that one is in your log: comes back afterwards
+            for _, x in ipairs((d and d[12]) or {}) do
+                if P:InLog(x) then return WAIT, "comes back once " .. self:QuestName(x) .. " is done" end
+            end
             if not prereqOK(q, i) then return SKIP, "prerequisite missing" end
             -- too low to take it yet: WAIT.  The cursor moves on; the pickup comes back as soon as
             -- you reach the level (while you are still in this zone).
@@ -372,6 +386,8 @@ function E:ComputeStatus(i)
             end
             -- you talked to the giver at this level and it did not offer the quest
             local no = char.notOffered and char.notOffered[q]
+            -- a breadcrumb the giver will not offer never comes back: skip it for good
+            if no and d and d[10] then return SKIP, "not offered" end
             if no and no >= P.level then return WAIT, "not offered yet" end
             for _, p in ipairs((d and d[6]) or {}) do
                 local ps = self.questSteps[p]
@@ -1235,6 +1251,48 @@ function E:RegisterEvents()
 end
 
 -- 1s heartbeat for things without events (arrival, taxi take-off, bind location)
+-- standing at a pickup's quest giver and the quest is not there: some givers open no window at all
+-- when they have nothing for you, so the gossip check never sees it.  Targeted at the giver for ~8 s
+-- (or right next to them for 45 s) without the quest showing up -> park it like an unoffered pickup.
+local GIVER_YARDS, GIVER_TARGET_SECS, GIVER_NEAR_SECS = 12, 8, 45
+function E:CheckGiver()
+    local i = self:Focus()
+    local st = i and self.steps[i]
+    local P = SL.Player
+    if not st or st.t ~= "A" or not st.npc or not st.q or P:InLog(st.q) or P:IsCompleted(st.q) then
+        self.atGiver = nil
+        return
+    end
+    local d = st.m and P:VectorTo(st.m, st.x, st.y)
+    if not d or d > GIVER_YARDS then
+        self.atGiver = nil
+        return
+    end
+    -- a dialog is open: the player is talking to someone - wait
+    if (QuestFrame and QuestFrame:IsShown()) or (GossipFrame and GossipFrame:IsShown()) then return end
+    local now = GetTime()
+    if not self.atGiver or self.atGiver.i ~= i then self.atGiver = { i = i, since = now } end
+    local targeted = SL.Clean(UnitName and UnitName("target")) == st.npc
+    if targeted and not self.atGiver.targetSince then self.atGiver.targetSince = now end
+    if not targeted then self.atGiver.targetSince = nil end
+    local waited = (self.atGiver.targetSince and now - self.atGiver.targetSince >= GIVER_TARGET_SECS)
+        or now - self.atGiver.since >= GIVER_NEAR_SECS
+    if not waited then return end
+    self.atGiver = nil
+    SL.char.notOffered = SL.char.notOffered or {}
+    SL.char.notOffered[st.q] = P.level
+    if SL.Telemetry.NotOffered then SL.Telemetry:NotOffered(st.q, P.level) end
+    local qd = SL.Quests[st.q]
+    if qd and qd[10] then
+        SL:Print(st.npc .. " is not offering |cffffd100" .. self:QuestName(st.q) .. "|r - it only leads to another quest, so it is skipped.")
+    else
+        SL:Print(st.npc .. " is not offering |cffffd100" .. self:QuestName(st.q) .. "|r - parked; it comes back at your next level, "
+            .. "or straight away if they offer it.")
+    end
+    self:Invalidate()
+    SL:RequestUpdate()
+end
+
 function E:Tick()
     if not SL.ready then return end
     local st = self.steps[SL.char.cursor]
@@ -1252,6 +1310,7 @@ function E:Tick()
         local bind = GetBindLocation()
         if bind and sub and sub ~= "" and bind == sub then self:Flag(st.i) end
     end
+    self:CheckGiver()
     -- keep the arrow / distance text fresh; re-check flight / hearth advice every 3 s
     self.reaim = (self.reaim or 0) + 1
     if self.reaim >= 3 then
