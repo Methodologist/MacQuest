@@ -1,0 +1,117 @@
+# Mac Quest: Horde 1-60 leveling guide for WoW Forever
+
+An in-game, step-by-step leveling guide addon for **World of Warcraft: Forever** (Horde, levels 1-60),
+in the style of RestedXP. It shows you what to do next and points an arrow at it. It accepts and
+turns in quests for you, and it works out where you are in the route from your level, your
+completed quests and your quest log, skipping anything that is grey for you.
+
+> Beta. The route is generated from the community quest database and has not been played through end
+> to end. Expect some wrong steps; right-click a step to skip it and `/mq report <note>` to flag it.
+> Not affiliated with or endorsed by Blizzard Entertainment.
+
+The addon is developed under the working name **SpeedLevel** (`SpeedLevel/` in this repo).
+`tools/package.py` builds the release as **Mac Quest**.
+
+## Install
+
+1. Download `MacQuest-<version>.zip` from [Releases](../../releases).
+2. Unzip it so the folder sits at `World of Warcraft\_forever_\Interface\AddOns\MacQuest\`.
+3. Log in to a Horde character and type `/mq`.
+
+## Features
+
+* **Guide window**: the current step with live objective progress, the next few steps, an XP bar
+  with rested XP, XP/hour, time to level, and an estimate of time to 60 adjusted to your pace.
+* **Arrow and map**: an arrow to the current step that follows real terrain around cliffs and
+  mountains, plus numbered pins with a dashed route line on the world map and minimap.
+* **Automation**: auto accept / turn-in for quests on the route (hold **Shift** to pause).
+  Rewards with a choice are left to you.
+* **Knows your progress**: completed quests, grey quests, other races' starting zones and outlevelled
+  zones are skipped. Pickups you are too low for wait and come back the moment you reach the level.
+  Failed (timed-out) quests are offered for abandon and pickup again. Timed quests jump to the top.
+* **Modes** (`/mq mode`): **Speed** (fastest solo), **Dungeons** (adds dungeon runs with their quests
+  at the right levels), **Thorough** (no cuts, no death-skips).
+* **Speedrun tricks**:
+  * hearthstone planning: where to bind, when to use it, and cooldown awareness;
+  * quest stacking within Forever's 40-quest log;
+  * planned grind spots chosen for XP/hour;
+  * death-skips at level 10 and below.
+
+Commands: `/mq` show/hide · `/mq skip` · `/mq back` · `/mq sync` (re-detect your place) ·
+`/mq mode speed|dungeons|thorough` · `/mq compact` · `/mq report <note>` · `/mq options`.
+Left-click a step to make it current, right-click to skip it.
+
+## How the route is chosen
+
+The route is generated from data rather than written by hand, so it covers Forever's new quests in the
+classic zones.
+
+* **`route/horde.plan`**: a hand-written zone plan. It sets the zone order, level windows, hubs,
+  flight paths, zeppelins, dungeon runs, and race-specific starts (Orc/Troll, Tauren, Undead, Skyborne).
+* **QuestieDB (Forever)**: quest IDs, levels, prerequisites, NPC and objective locations, quest XP,
+  and measured item drop rates.
+
+For each zone visit, `tools/build_route.py`:
+
+1. takes every Horde quest available there at that level;
+2. drops these quests:
+   * elite, profession, repeatable and item-started quests;
+   * item quests with bad drop rates (under 15% per kill for 3+ items) or more than ~60 expected kills;
+3. orders pickups, objectives and turn-ins as a short tour that keeps prerequisite order. Pickups are
+   placed only where you are certain to have the required level, using exact quest XP and the
+   required kills only;
+4. keeps a quest only if its XP/hour (travel + kills at the real drop rates) is at least 65% of
+   grinding nearby;
+5. plans hearths, death-skips and grind spots, and caps the quest log.
+
+`route/report.txt` has per-zone time estimates. `route/skipped_quests.txt` lists every quest skipped
+for drop rate or kill count, with the reason.
+
+### Terrain-aware arrow
+
+WoW gives addons no terrain data. `tools/terrain_extract.py` reads the Forever client's own height
+maps and liquids (via [TACTSharp/TACTTool](https://github.com/wowdev/TACTSharp)) and turns them into a
+walkable region graph per zone. Cliffs, mesas and mountain ridges are respected, and deep water counts
+as swimming. Only the derived regions are included; no game files are distributed. Paths you actually
+walk are remembered and preferred. Zones without terrain data use a fallback grid built from NPC
+spawns and patrol paths.
+
+### Tuning from real play
+
+The addon records how long each step takes you (idle time excluded), what you skip, the real XP of
+new Forever quests, and `/mq report` notes. These are written to your SavedVariables. The next
+`build_route.py` run reads them. To include a friend's data, drop their `MacQuest.lua` /
+`SpeedLevel.lua` SavedVariables file into `telemetry/`. Recording can be turned off in settings.
+
+## Building it yourself
+
+Needs Python 3.11+ with numpy, an installed WoW Forever client with Questie (for QuestieDB), and
+internet access (wago.tools tables, TACTTool download).
+
+```
+python tools/extract_questiedb.py "<WoW>/_forever_/Interface/AddOns/QuestieDB" data/questiedb.json
+python tools/terrain_extract.py     # close WoW first; reads terrain from the local client
+python tools/build_route.py         # writes SpeedLevel/Data/*.lua and route/report*.txt
+python tools/package.py             # dist/MacQuest-<version>.zip
+```
+
+The WoW folder is auto-detected; set `SPEEDLEVEL_WOW_ROOT` to override it. Offline tests use a
+mocked WoW API: `pip install lupa`, then `python tools/test_addon.py`. Diagnostics:
+`tools/why.py <uiMapID>` and `tools/coverage.py`.
+
+## Known limits
+
+* **Riverglades** (Forever's 35-45 zone) has no quest data in QuestieDB yet, so it is not routed.
+* Some XP figures are estimates. About 870 new Forever quests have no XP in the database until it is
+  measured in play. Dungeon XP on Forever is also unpublished, so the Dungeons mode time estimate is rough.
+* Hearthstone cooldown (60 min) and resurrection sickness (from level 11) are assumed to follow
+  classic rules.
+* If Questie's or RestedXP's auto-accept is also on, turn one of them off.
+
+## Credits
+
+* Quest, NPC, item and drop-rate data come from **[Questie / QuestieDB](https://github.com/Questie/Questie)**
+  (GPL-3.0). Thank you to the Questie team and contributors.
+* Terrain extraction uses **[TACTSharp / TACTTool](https://github.com/wowdev/TACTSharp)** by the wowdev
+  community, and game tables from **[wago.tools](https://wago.tools)**.
+* World of Warcraft is a trademark of Blizzard Entertainment. This project is unofficial.

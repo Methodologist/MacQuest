@@ -1,0 +1,127 @@
+    -> keep hearth (unbound) instead of binding at Razor Hill
+[00] Valley of Trials                       map=1411 races=Orc,Troll entry= 1.00 exit= 7.63 quests=30 deferredIn=0 ~  49min HS=0 death=0 stacked=0
+    -> keep hearth (unbound) instead of binding at Razor Hill
+[01] Durotar                                map=1411 races=Orc,Troll entry= 7.63 exit=14.07 quests=42 deferredIn=0 ~ 175min HS=0 death=0 stacked=0
+    -> keep hearth (unbound) instead of binding at Orgrimmar
+[02] Orgrimmar                              map=1454 races=Orc,Troll entry=14.07 exit=14.36 quests=1 deferredIn=5 ~   4min HS=0 death=0 stacked=0
+    -> keep hearth (unbound) instead of binding at Bloodhoof Village
+[03] Red Cloud Mesa                         map=1412 races=Tauren entry= 1.00 exit= 9.72 quests=21 deferredIn=0 ~ 104min HS=0 death=0 stacked=0
+    -> set hearth at Bloodhoof Village (worth ~3 min more than keeping the old bind)
+[04] Mulgore                                map=1412 races=Tauren entry= 9.72 exit=14.01 quests=27 deferredIn=0 ~ 117min HS=1 death=0 stacked=0
+    -> keep hearth (Bloodhoof Village) instead of binding at Thunder Bluff
+[05] Thunder Bluff                          map=1456 races=Tauren entry=14.01 exit=14.99 quests=4 deferredIn=6 ~  19min HS=0 death=0 stacked=0
+    -> keep hearth (unbound) instead of binding at Brill
+[06] Deathknell                             map=1420 races=Undead entry= 1.00 exit= 7.89 quests=23 deferredIn=0 ~  59min HS=0 death=0 stacked=0
+    -> keep hearth (unbound) instead of binding at Brill
+[07] Tirisfal Glades                        map=1420 races=Undead entry= 7.89 exit=15.55 quests=49 deferredIn=0 ~ 203min HS=0 death=0 stacked=0
+    left for later (level too low): [1998, 2378]
+    -> keep hearth (unbound) instead of binding at Undercity
+[08] Undercity                              map=1458 races=Undead entry=15.55 exit=15.92 quests=4 deferredIn=4 ~   4min HS=0 death=0 stacked=2
+    -> keep hearth (unbound) instead of binding at The Sepulcher
+[09] Silverpine Forest                      map=1421 races=Undead entry=15.92 exit=18.58 quests=29 deferredIn=2 ~ 118min HS=0 death=0 stacked=0
+    left for later (level too low): [235, 1507, 1508, 1509, 1528, 1823, 2458, 2460, 5646, 65601]
+    -> keep hearth (unbound) instead of binding at Orgrimmar
+[10] Orgrimmar (Undead)                     map=1454 races=Undead entry=18.58 exit=19.14 quests=9 deferredIn=0 ~  10min HS=0 death=0 stacked=1
+    left for later (level too low): [97243, 97244, 97245, 97257]
+    left for later (level too low): [94007]
+    left for later (level too low): [93159, 93160, 93172]
+    left for later (level too low): [94003, 94013, 94050, 94978, 94979]
+    left for later (level too low): [93165, 94006, 94484, 94485, 94486, 94487, 94488, 94489, 94638, 94896, 94897]
+    -> set hearth at Coriella Calmbreeze (worth ~1 min more than keeping the old bind)
+[11] Zephras Isle                           map=2521 races=Skyborne entry= 1.00 exit=15.07 quests=69 deferredIn=0 ~ 241min HS=1 death=0 stacked=0
+    -> keep hearth (Coriella Calmbreeze) instead of binding at Bloodhoof Village
+[12] Mulgore (Skyborne)                     map=1412 races=Skyborne entry=15.07 exit=15.13 quests=1 deferredIn=0 ~   0min HS=0 death=0 stacked=0
+    -> set hearth at The Crossroads (worth ~6 min more than keeping the old bind)
+[13] The Barrens - Crossroads               map=1413 races=all entry=11.50 exit=17.74 quests=37 deferredIn=9 ~ 211min HS=2 death=0 stacked=0
+    left for later (level too low): [1530, 1535, 6382]
+    -> keep hearth (The Crossroads) instead of binding at Camp Taurajo
+[14] The Barrens - Camp Taurajo             map=1413 races=all entry=17.74 exit=21.80 quests=40 deferredIn=0 ~ 226min HS=2 death=0 stacked=6
+    -> keep hearth (The Crossroads) instead of binding at Sun Rock Retreat
+[15] Stonetalon Mountains                   map=1442 races=all entry=21.80 exit=22.63 quests=10 deferredIn=7 ~  71min HS=0 death=0 stacked=0
+    -> keep hearth (The Crossroads) instead of binding at Splintertree Post
+[16] Ashenvale                              map=1440 races=all entry=22.63 exit=25.02 quests=15 deferredIn=1 ~ 132min HS=0 death=0 stacked=0
+    -> hearth to The Crossroads for The Barrens - Wrap up
+    -> keep hearth (The Crossroads) instead of binding at Ratchet
+[17] The Barrens - Wrap up                  map=1413 races=all entry=25.02 exit=26.61 quests=5 deferredIn=17 ~  91min HS=1 death=0 stacked=0
+    left for later (level too low): [1431, 1432, 1531]
+    -> keep hearth (The Crossroads) instead of binding at Orgrimmar
+[18] Orgrimmar - 20s                        map=1454 races=all entry=26.61 exit=26.78 quests=6 deferredIn=3 ~   9min HS=0 death=0 stacked=0
+    left for later (level too low): [1104, 1105, 1110, 1175, 1176, 5762]
+    -> keep hearth (The Crossroads) instead of binding at Freewind Post
+[19] Thousand Needles                       map=1441 races=all entry=26.78 exit=27.79 quests=12 deferredIn=0 ~  60min HS=0 death=0 stacked=1
+    -> keep hearth (The Crossroads) instead of binding at Undercity
+[20] Undercity - 20s                        map=1458 races=all entry=27.79 exit=28.04 quests=1 deferredIn=10 ~   5min HS=0 death=0 stacked=0
+    -> set hearth at Tarren Mill (worth ~3 min more than keeping the old bind)
+[21] Hillsbrad Foothills                    map=1424 races=all entry=28.04 exit=30.06 quests=15 deferredIn=0 ~ 134min HS=1 death=0 stacked=0
+[22] Alterac Mountains                      map=1416 races=all entry=30.06 exit=30.14 quests=1 deferredIn=0 ~   2min HS=0 death=0 stacked=0
+    left for later (level too low): [639, 640, 641, 662, 663, 664, 665, 666, 668, 669]
+    -> keep hearth (Tarren Mill) instead of binding at Hammerfall
+[23] Arathi Highlands                       map=1417 races=all entry=30.14 exit=31.66 quests=12 deferredIn=2 ~ 108min HS=0 death=0 stacked=2
+    left for later (level too low): [568, 569, 570, 572]
+    left for later (level too low): [576, 587, 595, 597, 599, 604, 617]
+    -> set hearth at Grom'gol Base Camp (worth ~11 min more than keeping the old bind)
+[24] Stranglethorn Vale                     map=1434 races=all entry=31.66 exit=33.59 quests=25 deferredIn=0 ~ 199min HS=2 death=0 stacked=6
+    -> keep hearth (Grom'gol Base Camp) instead of binding at Shadowprey Village
+[25] Desolace                               map=1443 races=all entry=33.59 exit=35.37 quests=22 deferredIn=0 ~ 145min HS=0 death=0 stacked=0
+    -> keep hearth (Grom'gol Base Camp) instead of binding at Freewind Post
+[26] Thousand Needles - Shimmering Flats    map=1441 races=all entry=35.37 exit=36.03 quests=7 deferredIn=2 ~  66min HS=0 death=0 stacked=0
+[27] Dustwallow Marsh                       map=1445 races=all entry=36.03 exit=38.29 quests=15 deferredIn=0 ~ 220min HS=0 death=0 stacked=0
+    -> keep hearth (Grom'gol Base Camp) instead of binding at Stonard
+[28] Swamp of Sorrows                       map=1435 races=all entry=38.29 exit=39.04 quests=9 deferredIn=0 ~  69min HS=0 death=0 stacked=0
+    -> keep hearth (Grom'gol Base Camp) instead of binding at Kargath
+[29] Badlands                               map=1418 races=all entry=39.04 exit=40.12 quests=9 deferredIn=2 ~ 118min HS=0 death=0 stacked=0
+    -> keep hearth (Grom'gol Base Camp) instead of binding at Hammerfall
+[30] Arathi Highlands 2                     map=1417 races=all entry=40.12 exit=40.96 quests=10 deferredIn=5 ~  74min HS=0 death=0 stacked=0
+    -> hearth to Grom'gol Base Camp for Stranglethorn Vale 2
+    -> keep hearth (Grom'gol Base Camp) instead of binding at Booty Bay
+[31] Stranglethorn Vale 2                   map=1434 races=all entry=40.96 exit=43.24 quests=21 deferredIn=15 ~ 231min HS=0 death=0 stacked=0
+    left for later (level too low): [8151, 8250, 8254, 8419]
+    -> keep hearth (Grom'gol Base Camp) instead of binding at Orgrimmar
+[32] Orgrimmar - 40s                        map=1454 races=all entry=43.24 exit=43.31 quests=3 deferredIn=1 ~   3min HS=0 death=0 stacked=0
+    left for later (level too low): [4324]
+    left for later (level too low): [3362]
+    -> set hearth at Gadgetzan (worth ~3 min more than keeping the old bind)
+[33] Tanaris                                map=1446 races=all entry=43.31 exit=44.57 quests=22 deferredIn=2 ~ 128min HS=1 death=0 stacked=0
+    -> set hearth at Camp Mojache (worth ~3 min more than keeping the old bind)
+[34] Feralas                                map=1444 races=all entry=44.57 exit=45.99 quests=19 deferredIn=2 ~ 179min HS=1 death=0 stacked=0
+    -> keep hearth (Camp Mojache) instead of binding at Undercity
+[35] Undercity - 40s                        map=1458 races=all entry=45.99 exit=46.08 quests=3 deferredIn=1 ~   1min HS=0 death=0 stacked=0
+    -> set hearth at Revantusk Village (worth ~4 min more than keeping the old bind)
+[36] The Hinterlands                        map=1425 races=all entry=46.08 exit=47.51 quests=16 deferredIn=3 ~ 131min HS=1 death=0 stacked=0
+[37] Searing Gorge                          map=1427 races=all entry=47.51 exit=48.17 quests=8 deferredIn=0 ~  66min HS=0 death=0 stacked=0
+[38] Azshara                                map=1447 races=all entry=48.17 exit=50.29 quests=10 deferredIn=0 ~ 290min HS=0 death=0 stacked=0
+    -> set hearth at Gadgetzan (worth ~3 min more than keeping the old bind)
+[39] Tanaris 2                              map=1446 races=all entry=50.29 exit=50.64 quests=3 deferredIn=4 ~  27min HS=1 death=0 stacked=0
+    left for later (level too low): [8276]
+    -> keep hearth (Gadgetzan) instead of binding at Orgrimmar
+[40] Orgrimmar - 50s                        map=1454 races=all entry=50.64 exit=50.94 quests=1 deferredIn=6 ~   2min HS=0 death=0 stacked=0
+[41] Un'Goro Crater                         map=1449 races=all entry=50.94 exit=52.00 quests=21 deferredIn=0 ~ 100min HS=0 death=0 stacked=0
+[42] Felwood                                map=1448 races=all entry=52.00 exit=52.78 quests=13 deferredIn=2 ~ 100min HS=0 death=0 stacked=0
+[43] Burning Steppes                        map=1428 races=all entry=52.78 exit=52.95 quests=4 deferredIn=1 ~  10min HS=0 death=0 stacked=0
+[44] Blasted Lands                          map=1419 races=all entry=52.95 exit=53.41 quests=7 deferredIn=0 ~  32min HS=0 death=0 stacked=0
+    -> set hearth at Everlook (worth ~7 min more than keeping the old bind)
+[45] Winterspring                           map=1452 races=all entry=53.41 exit=55.17 quests=13 deferredIn=3 ~ 236min HS=2 death=0 stacked=0
+[46] Western Plaguelands                    map=1422 races=all entry=55.17 exit=55.72 quests=14 deferredIn=0 ~  46min HS=0 death=0 stacked=0
+    left for later (level too low): [7621, 7622, 9121]
+    -> keep hearth (Everlook) instead of binding at Light's Hope Chapel
+[47] Eastern Plaguelands                    map=1423 races=all entry=55.72 exit=56.78 quests=9 deferredIn=8 ~ 166min HS=0 death=0 stacked=0
+    left for later (level too low): [8361]
+    left for later (level too low): [8320, 8321, 8331, 8343, 8800]
+    left for later (level too low): [8332, 8341, 8348, 8349, 8351, 8352]
+    -> keep hearth (Everlook) instead of binding at Cenarion Hold
+[48] Silithus                               map=1451 races=all entry=56.78 exit=58.28 quests=13 deferredIn=0 ~ 201min HS=0 death=0 stacked=0
+    -> grind 58.28 -> 60.0  (Twilight Avenger and Stonelash Scorpid ~74k xp/h)
+
+telemetry: 1 SavedVariables file(s), 20 timed steps, 19 measured step keys, 0 player reports
+
+hearths=18 death-skips=0 stacked quests=18 time saved by hearths/deaths ~76 min
+quest log peak Orc       25 (in Ashenvale)
+quest log peak Skyborne  25 (in Ashenvale)
+quest log peak Tauren    24 (in Ashenvale)
+quest log peak Troll     25 (in Ashenvale)
+quest log peak Undead    29 (in Ashenvale)
+estimated /played to 60 for Orc       ~68.6 h (questing + planned grinding, excl. class/vendor stops)
+estimated /played to 60 for Skyborne  ~68.8 h (questing + planned grinding, excl. class/vendor stops)
+estimated /played to 60 for Tauren    ~68.8 h (questing + planned grinding, excl. class/vendor stops)
+estimated /played to 60 for Troll     ~68.6 h (questing + planned grinding, excl. class/vendor stops)
+estimated /played to 60 for Undead    ~71.4 h (questing + planned grinding, excl. class/vendor stops)

@@ -1,0 +1,545 @@
+# SpeedLevel - Horde 1-60 zone plan (WoW Forever)
+#
+# The plan decides zone order, level windows, hubs and travel.  build_route.py fills
+# each SEGMENT with every worthwhile Horde quest whose giver is on that map and whose
+# level fits, orders them as a shortest tour and drops quests whose detour costs more
+# than their XP is worth.
+#
+# Segment keywords:
+#   races  Orc Troll Tauren Undead Skyborne   (default: all Horde)
+#   map    <uiMapID>                            (Forever uiMap ids: Durotar 1411, Mulgore 1412, ...)
+#   levels <minQuestLevel> <maxQuestLevel>      quest level window
+#   entry  <level>                              override simulated entry level
+#   endlevel <level>                            grind here until this level if behind
+#   start  <x> <y> | npc <Name>                 where the tour starts
+#   region x1 y1 x2 y2                          only quest givers inside this box
+#   include / exclude / only <questIDs>
+#   noauto                                      no automatic quests (travel-only segment)
+#   prune <factor>                              travel/XP pruning strength (0 = off)
+#   pre / post <STEP>                           manual steps before / after the quest tour
+#   modes <speed dungeons thorough>             only build this segment in these modes
+#   dungeon <areaIds>                           a dungeon run: its quests are done inside (dungeons mode)
+#   entrance <map> <x> <y>                      instance portal (the arrow leads there)
+#   runtime <minutes>                           time for the run incl. finding a group
+#
+# STEP kinds:
+#   GOTO x y text            run somewhere
+#   NOTE text                informational (click to continue)
+#   HEARTH "Innkeeper Name"  set your hearthstone here
+#   FP "Flight Master"       grab the flight path
+#   FLY "Flight Master" Dest fly somewhere
+#   USEHS text               use your hearthstone
+#   BOAT x y text map=ID     take a boat / zeppelin (done when you arrive on map=ID)
+#   TRAIN text               visit your class trainer
+#   GRIND level text         grind mobs until level reached
+
+# ===================================================================== ORC / TROLL
+SEGMENT Valley of Trials
+  races Orc Troll
+  map 1411
+  levels 1 7
+  entry 1
+  start npc Kaltunk
+  region 33 55 53 82
+
+SEGMENT Durotar
+  races Orc Troll
+  map 1411
+  levels 3 12
+  start 47 60
+  pre GOTO 51.9 43.5 "Run to Razor Hill"
+  pre HEARTH "Innkeeper Grosk"
+  post TRAIN "Train new spells (Razor Hill or Orgrimmar)"
+
+SEGMENT Orgrimmar
+  races Orc Troll
+  map 1454
+  levels 8 14
+  start npc Doras
+  pre GOTO 45.5 12.0 "Run north into Orgrimmar" map=1411
+  pre FP "Doras"
+  post TRAIN "Train new spells in Orgrimmar"
+  post GOTO 34.3 42.2 "Leave Orgrimmar through the west gate and follow the road to the Crossroads" map=1411
+
+# ===================================================================== TAUREN
+SEGMENT Red Cloud Mesa
+  races Tauren
+  map 1412
+  levels 1 7
+  entry 1
+  start npc Grull Hawkwind
+  region 30 62 70 100
+
+SEGMENT Mulgore
+  races Tauren
+  map 1412
+  levels 3 12
+  start npc Innkeeper Kauth
+  pre HEARTH "Innkeeper Kauth"
+  post TRAIN "Train new spells in Bloodhoof Village"
+
+SEGMENT Thunder Bluff
+  races Tauren
+  map 1456
+  levels 8 14
+  start npc Tal
+  pre FP "Tal"
+  post TRAIN "Train new spells in Thunder Bluff"
+  post NOTE "Leave Mulgore through the north-east pass and follow the road to the Crossroads"
+
+# ===================================================================== UNDEAD
+SEGMENT Deathknell
+  races Undead
+  map 1420
+  levels 1 7
+  entry 1
+  start npc Undertaker Mordo
+  region 25 55 45 80
+
+SEGMENT Tirisfal Glades
+  races Undead
+  map 1420
+  levels 3 13
+  start npc Innkeeper Renee
+  pre HEARTH "Innkeeper Renee"
+  post TRAIN "Train new spells in Brill"
+
+SEGMENT Undercity
+  races Undead
+  map 1458
+  levels 8 14
+  start npc Michael Garrett
+  pre GOTO 61.8 65.0 "Enter the Undercity" map=1420
+  pre FP "Michael Garrett"
+  post TRAIN "Train new spells in the Undercity"
+
+SEGMENT Silverpine Forest
+  races Undead
+  map 1421
+  levels 9 17
+  start npc Karos Razok
+  pre FP "Karos Razok"
+  pre HEARTH "Innkeeper Bates"
+  post BOAT 60.7 58.8 "Take the zeppelin from the towers outside Undercity to Orgrimmar" map=1420 to=1411
+
+SEGMENT Orgrimmar (Undead)
+  races Undead
+  map 1454
+  levels 10 16
+  start npc Doras
+  pre FP "Doras"
+  post TRAIN "Train new spells in Orgrimmar"
+  post GOTO 34.3 42.2 "Leave Orgrimmar through the west gate and follow the road to the Crossroads" map=1411
+
+# ===================================================================== SKYBORNE (Windshaper)
+SEGMENT Zephras Isle
+  races Skyborne
+  map 2521
+  levels 1 13
+  entry 1
+  start npc Ailee Farheart
+  prune 0.6
+  post NOTE "When you are done on Zephras Isle, speak with Ayessa Dawnsinger to leave for Kalimdor"
+
+SEGMENT Mulgore (Skyborne)
+  races Skyborne
+  map 1412
+  levels 10 14
+  start npc Alaana Stormwalker
+  post NOTE "Head east out of Mulgore and follow the road to the Crossroads"
+
+# ===================================================================== THE BARRENS 1
+SEGMENT The Barrens - Crossroads
+  map 1413
+  levels 10 17
+  entry 11.5
+  start npc Devrak
+  region 30 0 80 50
+  pre FP "Devrak"
+  pre HEARTH "Innkeeper Boorand Plainswind"
+  pre FP "Bragok" "Grab the Ratchet flight path when you pass through Ratchet"
+
+
+SEGMENT Ragefire Chasm
+  modes dungeons
+  dungeon 2437
+  map 213
+  levels 13 18
+  entrance 1454 52.6 49
+  runtime 35
+
+SEGMENT The Barrens - Camp Taurajo
+  map 1413
+  levels 13 21
+  start npc Omusa Thunderhorn
+  pre FP "Omusa Thunderhorn"
+  post TRAIN "Train new spells"
+
+
+SEGMENT Wailing Caverns
+  modes dungeons
+  dungeon 718
+  map 279
+  levels 16 24
+  entrance 1413 46 36.5
+  runtime 60
+
+# ===================================================================== STONETALON / ASHENVALE
+SEGMENT Stonetalon Mountains
+  map 1442
+  levels 15 24
+  start npc Tharm
+  pre GOTO 35.2 27.8 "Travel west from the Crossroads to Stonetalon Mountains (Sun Rock Retreat)" map=1413
+  pre FP "Tharm"
+
+SEGMENT Ashenvale
+  map 1440
+  levels 18 27
+  start npc Vhulgra
+  pre FLY "Devrak" "Fly to the Crossroads and run north into Ashenvale (Splintertree Post)"
+  pre FP "Vhulgra"
+  pre HEARTH "Innkeeper Kaylisk"
+  pre FP "Andruk" "Grab the Zoram'gar Outpost flight path when you are on the west coast"
+
+
+SEGMENT Blackfathom Deeps
+  modes dungeons
+  dungeon 719
+  map 221
+  levels 22 32
+  entrance 1440 14.5 14.2
+  runtime 60
+
+SEGMENT The Barrens - Wrap up
+  map 1413
+  levels 17 27
+  start npc Devrak
+  pre FLY "Vhulgra" "Fly to the Crossroads"
+  post TRAIN "Train new spells in Orgrimmar or Thunder Bluff"
+
+SEGMENT Orgrimmar - 20s
+  map 1454
+  levels 16 32
+  start npc Doras
+  pre FLY "Devrak" "Fly to Orgrimmar"
+  post TRAIN "Train new spells in Orgrimmar"
+
+# ===================================================================== THOUSAND NEEDLES / HILLSBRAD
+SEGMENT Thousand Needles
+  map 1441
+  levels 22 30
+  start npc Nyse
+  pre GOTO 44.4 59.5 "Run south from Camp Taurajo through the Great Lift into Thousand Needles" map=1413
+  pre FP "Nyse"
+  pre HEARTH "Innkeeper Abeqwa"
+
+
+SEGMENT Razorfen Kraul
+  modes dungeons
+  dungeon 491 1717
+  map 301
+  levels 25 34
+  entrance 1413 42.9 90.2
+  runtime 60
+
+SEGMENT Undercity - 20s
+  map 1458
+  levels 18 34
+  start npc Michael Garrett
+  pre BOAT 50.8 13.8 "Take the zeppelin from Orgrimmar to the Undercity" map=1411 to=1420
+  pre FP "Michael Garrett"
+
+
+SEGMENT Ruins of Lordaeron
+  modes dungeons
+  dungeon 16611
+  map 916611
+  levels 19 26
+  entrance 1458 72.4 11.4
+  runtime 40
+
+SEGMENT Shadowfang Keep
+  modes dungeons
+  dungeon 209
+  map 310
+  levels 22 30
+  entrance 1421 44.8 67.8
+  runtime 60
+
+SEGMENT Hillsbrad Foothills
+  map 1424
+  levels 22 32
+  start npc Zarise
+  pre GOTO 62.0 20.0 "Run south through Silverpine to Tarren Mill (or fly if you have the path)"
+  pre FP "Zarise"
+  pre HEARTH "Innkeeper Shay"
+
+SEGMENT Alterac Mountains
+  map 1416
+  levels 28 38
+  start 58 70
+  prune 1.3
+
+
+SEGMENT City of Dalaran
+  modes dungeons
+  dungeon 16544
+  map 916544
+  levels 30 36
+  entrance 1416 8.5 59.2
+  runtime 45
+
+SEGMENT Arathi Highlands
+  map 1417
+  levels 28 37
+  start npc Urda
+  pre GOTO 73.0 32.5 "Travel east to Hammerfall in the Arathi Highlands"
+  pre FP "Urda"
+
+
+SEGMENT Scarlet Monastery
+  modes dungeons
+  dungeon 796
+  map 302
+  levels 28 42
+  entrance 1420 82.6 33.8
+  runtime 90
+
+# ===================================================================== STRANGLETHORN / DESOLACE / NEEDLES 2
+SEGMENT Stranglethorn Vale
+  map 1434
+  levels 30 39
+  start npc Thysta
+  pre BOAT 61.9 59.1 "Take the zeppelin from the Undercity towers to Grom'gol" map=1420 to=1434
+  pre FP "Thysta"
+  pre HEARTH "Innkeeper Thulbek"
+  pre FP "Gringer" "Grab the Booty Bay flight path when you first visit Booty Bay"
+
+SEGMENT Desolace
+  map 1443
+  levels 30 40
+  start npc Thalon
+  pre NOTE "Fly to Sun Rock Retreat and run south-west into Desolace (Shadowprey Village)"
+  pre FP "Thalon"
+  pre HEARTH "Innkeeper Sikewa"
+
+SEGMENT Thousand Needles - Shimmering Flats
+  map 1441
+  levels 29 38
+  start npc Nyse
+  pre FLY "Thalon" "Fly to Freewind Post"
+
+
+SEGMENT Razorfen Downs
+  modes dungeons
+  dungeon 722
+  map 300
+  levels 33 42
+  entrance 1413 49 93.9
+  runtime 60
+
+# ===================================================================== 35-45
+SEGMENT Dustwallow Marsh
+  map 1445
+  levels 34 44
+  start npc Shardi
+  pre NOTE "Travel to Brackenwall Village in Dustwallow Marsh (south from the Barrens)"
+  pre FP "Shardi"
+
+SEGMENT Swamp of Sorrows
+  map 1435
+  levels 34 44
+  start npc Breyk
+  pre NOTE "Travel to Stonard (zeppelin to Grom'gol, then run north through Duskwood)"
+  pre FP "Breyk"
+
+SEGMENT Badlands
+  map 1418
+  levels 35 46
+  start npc Gorrik
+  pre NOTE "Travel to Kargath in the Badlands"
+  pre FP "Gorrik"
+
+
+SEGMENT Uldaman
+  modes dungeons
+  dungeon 1337 1517
+  map 230
+  levels 36 48
+  entrance 1418 44.6 12.1
+  runtime 90
+
+SEGMENT Arathi Highlands 2
+  map 1417
+  levels 33 45
+  start npc Urda
+
+SEGMENT Stranglethorn Vale 2
+  map 1434
+  levels 35 47
+  start npc Thysta
+  pre FLY "Urda" "Fly to Grom'gol (or take the zeppelin from Undercity)"
+
+SEGMENT Orgrimmar - 40s
+  map 1454
+  levels 34 48
+  start npc Doras
+  pre NOTE "Head back to Orgrimmar (zeppelin from Grom'gol)"
+  post TRAIN "Train new spells in Orgrimmar"
+
+# ===================================================================== 42-52
+SEGMENT Tanaris
+  map 1446
+  levels 40 50
+  start npc Bulkrek Ragefist
+  pre NOTE "Travel to Gadgetzan in Tanaris"
+  pre FP "Bulkrek Ragefist"
+  pre HEARTH "Innkeeper Fizzgrimble"
+
+
+SEGMENT Zul'Farrak
+  modes dungeons
+  dungeon 1176 978
+  map 219
+  levels 42 50
+  entrance 1446 38.7 20.1
+  runtime 75
+
+SEGMENT Feralas
+  map 1444
+  levels 40 50
+  start npc Shyn
+  pre NOTE "Travel to Camp Mojache in Feralas"
+  pre FP "Shyn"
+
+
+SEGMENT Maraudon
+  modes dungeons
+  dungeon 2100
+  map 280
+  levels 42 52
+  entrance 1443 29.1 62.5
+  runtime 90
+
+SEGMENT Undercity - 40s
+  map 1458
+  levels 36 50
+  start npc Michael Garrett
+  pre NOTE "Travel to the Undercity (zeppelin from Orgrimmar)"
+
+SEGMENT The Hinterlands
+  map 1425
+  levels 42 52
+  start npc Gorkas
+  pre NOTE "Travel to Revantusk Village in the Hinterlands (through Hillsbrad)"
+  pre FP "Gorkas"
+
+SEGMENT Searing Gorge
+  map 1427
+  levels 43 53
+  start npc Grisha
+  pre NOTE "Travel to Thorium Point in the Searing Gorge"
+  pre FP "Grisha"
+
+SEGMENT Azshara
+  map 1447
+  levels 45 55
+  start npc Kroum
+  pre FP "Kroum"
+
+SEGMENT Tanaris 2
+  map 1446
+  levels 44 54
+  start npc Bulkrek Ragefist
+
+SEGMENT Orgrimmar - 50s
+  map 1454
+  levels 44 56
+  start npc Doras
+  pre NOTE "Head to Orgrimmar to train and turn in"
+  post TRAIN "Train new spells in Orgrimmar"
+
+# ===================================================================== 48-60
+SEGMENT Un'Goro Crater
+  map 1449
+  levels 47 57
+  start npc Gryfe
+  pre NOTE "Run from Tanaris into Un'Goro Crater (Marshal's Refuge)"
+  pre FP "Gryfe"
+
+
+SEGMENT Sunken Temple
+  modes dungeons
+  dungeon 1477 1417
+  map 220
+  levels 45 55
+  entrance 1435 69.9 53.5
+  runtime 90
+
+SEGMENT Felwood
+  map 1448
+  levels 47 58
+  start npc Brakkar
+  pre FP "Brakkar"
+
+SEGMENT Burning Steppes
+  map 1428
+  levels 49 58
+  start npc Vahgruk
+  pre FP "Vahgruk"
+
+
+SEGMENT Blackrock Depths
+  modes dungeons
+  dungeon 1584 1585
+  map 242
+  levels 48 60
+  entrance 1427 34.8 85.3
+  runtime 120
+
+SEGMENT Lower Blackrock Spire
+  modes dungeons
+  dungeon 1583
+  map 253
+  levels 52 60
+  entrance 1427 34.8 85.3
+  runtime 90
+
+SEGMENT Blasted Lands
+  map 1419
+  levels 48 60
+  start 50 14
+  pre NOTE "Fly to Stonard and run south into the Blasted Lands"
+
+SEGMENT Winterspring
+  map 1452
+  levels 52 60
+  start npc Yugrek
+  pre FP "Yugrek"
+
+SEGMENT Western Plaguelands
+  map 1422
+  levels 51 60
+  start 46 70
+
+SEGMENT Eastern Plaguelands
+  map 1423
+  levels 53 60
+  start npc Georgia
+  pre FP "Georgia"
+
+
+SEGMENT Dire Maul
+  modes dungeons
+  dungeon 2557
+  map 234
+  levels 52 60
+  entrance 1444 59.2 45.1
+  runtime 90
+
+SEGMENT Silithus
+  map 1451
+  levels 55 60
+  start npc Runk Windtamer
+  pre FP "Runk Windtamer"
+  endlevel 60

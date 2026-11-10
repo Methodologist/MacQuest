@@ -1,0 +1,30 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/">
+    <!-- World-map pin used by SpeedLevel's MapCanvas data provider (mixin is defined in MapPins.lua) -->
+    <Frame name="SpeedLevelMapPinTemplate" mixin="SpeedLevelMapPinMixin" virtual="true" enableMouse="true">
+        <Size x="22" y="22"/>
+        <Layers>
+            <Layer level="BACKGROUND">
+                <Texture parentKey="Glow" file="Interface\AddOns\SpeedLevel\Media\PinGlow" alphaMode="ADD" hidden="true">
+                    <Size x="48" y="48"/>
+                    <Anchors>
+                        <Anchor point="CENTER"/>
+                    </Anchors>
+                </Texture>
+            </Layer>
+            <Layer level="ARTWORK">
+                <Texture parentKey="Ring" file="Interface\AddOns\SpeedLevel\Media\Pin" setAllPoints="true"/>
+            </Layer>
+            <Layer level="OVERLAY">
+                <FontString parentKey="Num" inherits="GameFontHighlightSmall" justifyH="CENTER">
+                    <Anchors>
+                        <Anchor point="CENTER" x="0" y="0"/>
+                    </Anchors>
+                </FontString>
+            </Layer>
+        </Layers>
+        <!-- only OnLoad: the map canvas wires OnEnter/OnLeave/OnMouseUp itself (and asserts they are unset) -->
+        <Scripts>
+            <OnLoad method="OnLoad"/>
+        </Scripts>
+    </Frame>
+</Ui>

@@ -1,0 +1,12 @@
+# raw game files / large regenerable intermediates - never publish these
+data/terrain_cache/
+data/questiedb.json
+# personal SavedVariables (telemetry from friends)
+telemetry/
+# build outputs (zips go to GitHub releases)
+dist/
+__pycache__/
+*.pyc
+
+# TACTTool download cache (raw Blizzard CDN files)
+cache/
