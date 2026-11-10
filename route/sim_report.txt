@@ -1,27 +1,27 @@
-Orc Warrior        speed              reached 60                  1343 steps   99.1 h (grind 37.7 h)  orange  36  issues 0
-Troll Shaman       speed              reached 60                  1371 steps   99.6 h (grind 36.6 h)  orange  31  issues 0
-Tauren Druid       speed              reached 60                  1351 steps   98.7 h (grind 36.8 h)  orange  28  issues 0
-Undead Warlock     speed              reached 60                  1441 steps   98.4 h (grind 34.0 h)  orange  30  issues 0
-Skyborne Hunter    speed              reached 60                  1330 steps   98.9 h (grind 38.3 h)  orange  35  issues 0
-Orc Rogue          speed              reached 60                  1336 steps   98.9 h (grind 37.9 h)  orange  36  issues 0
-Orc Warrior        speed_dungeons     reached 60                  1369 steps  101.0 h (grind 26.0 h)  orange  37  issues 0
-Troll Shaman       speed_dungeons     reached 60                  1416 steps  101.6 h (grind 23.9 h)  orange  31  issues 0
-Tauren Druid       speed_dungeons     reached 60                  1401 steps  100.3 h (grind 23.8 h)  orange  26  issues 0
-Undead Warlock     speed_dungeons     reached 60                  1485 steps   98.8 h (grind 21.6 h)  orange  27  issues 0
-Skyborne Hunter    speed_dungeons     reached 60                  1359 steps  101.4 h (grind 26.5 h)  orange  36  issues 0
-Orc Rogue          speed_dungeons     reached 60                  1369 steps  100.8 h (grind 26.0 h)  orange  37  issues 0
-Orc Warrior        thorough           reached 60                  1403 steps   99.1 h (grind 33.2 h)  orange  44  issues 0
-Troll Shaman       thorough           reached 60                  1438 steps   99.5 h (grind 31.9 h)  orange  38  issues 0
-Tauren Druid       thorough           reached 60                  1416 steps   98.5 h (grind 32.1 h)  orange  35  issues 0
-Undead Warlock     thorough           reached 60                  1494 steps   97.6 h (grind 29.8 h)  orange  36  issues 0
-Skyborne Hunter    thorough           reached 60                  1397 steps   99.0 h (grind 33.6 h)  orange  43  issues 0
-Orc Rogue          thorough           reached 60                  1403 steps   98.9 h (grind 33.2 h)  orange  44  issues 0
-Orc Warrior        thorough_dungeons  reached 60                  1433 steps  100.4 h (grind 23.3 h)  orange  38  issues 0
-Troll Shaman       thorough_dungeons  reached 60                  1475 steps  101.4 h (grind 21.5 h)  orange  32  issues 0
-Tauren Druid       thorough_dungeons  reached 60                  1459 steps   99.9 h (grind 21.4 h)  orange  27  issues 0
-Undead Warlock     thorough_dungeons  reached 60                  1545 steps   98.7 h (grind 19.2 h)  orange  27  issues 0
-Skyborne Hunter    thorough_dungeons  reached 60                  1424 steps  100.9 h (grind 23.7 h)  orange  37  issues 0
-Orc Rogue          thorough_dungeons  reached 60                  1433 steps  100.3 h (grind 23.3 h)  orange  38  issues 0
+Orc Warrior        speed              reached 60                  1344 steps   98.8 h (grind 37.6 h)  orange  37  issues 0
+Troll Shaman       speed              reached 60                  1373 steps   99.5 h (grind 36.5 h)  orange  33  issues 0
+Tauren Druid       speed              reached 60                  1356 steps   98.5 h (grind 36.6 h)  orange  29  issues 0
+Undead Warlock     speed              reached 60                  1445 steps   98.1 h (grind 33.8 h)  orange  31  issues 0
+Skyborne Hunter    speed              reached 60                  1334 steps   98.6 h (grind 38.0 h)  orange  36  issues 0
+Orc Rogue          speed              reached 60                  1337 steps   98.5 h (grind 37.8 h)  orange  37  issues 0
+Orc Warrior        speed_dungeons     reached 60                  1359 steps  100.8 h (grind 26.8 h)  orange  36  issues 0
+Troll Shaman       speed_dungeons     reached 60                  1406 steps  101.3 h (grind 24.6 h)  orange  31  issues 0
+Tauren Druid       speed_dungeons     reached 60                  1394 steps  100.0 h (grind 24.4 h)  orange  25  issues 0
+Undead Warlock     speed_dungeons     reached 60                  1478 steps   98.5 h (grind 22.2 h)  orange  26  issues 0
+Skyborne Hunter    speed_dungeons     reached 60                  1352 steps  101.2 h (grind 27.0 h)  orange  35  issues 0
+Orc Rogue          speed_dungeons     reached 60                  1359 steps  100.7 h (grind 26.8 h)  orange  36  issues 0
+Orc Warrior        thorough           reached 60                  1392 steps   98.7 h (grind 34.0 h)  orange  40  issues 0
+Troll Shaman       thorough           reached 60                  1428 steps   99.3 h (grind 32.7 h)  orange  35  issues 0
+Tauren Druid       thorough           reached 60                  1409 steps   98.2 h (grind 32.8 h)  orange  31  issues 0
+Undead Warlock     thorough           reached 60                  1486 steps   97.2 h (grind 30.5 h)  orange  32  issues 0
+Skyborne Hunter    thorough           reached 60                  1389 steps   98.6 h (grind 34.2 h)  orange  39  issues 0
+Orc Rogue          thorough           reached 60                  1392 steps   98.5 h (grind 34.0 h)  orange  40  issues 0
+Orc Warrior        thorough_dungeons  reached 60                  1431 steps  100.9 h (grind 23.4 h)  orange  41  issues 0
+Troll Shaman       thorough_dungeons  reached 60                  1472 steps  101.7 h (grind 21.6 h)  orange  35  issues 0
+Tauren Druid       thorough_dungeons  reached 60                  1459 steps  100.2 h (grind 21.4 h)  orange  30  issues 0
+Undead Warlock     thorough_dungeons  reached 60                  1545 steps   98.8 h (grind 19.2 h)  orange  28  issues 0
+Skyborne Hunter    thorough_dungeons  reached 60                  1424 steps  101.2 h (grind 23.6 h)  orange  40  issues 0
+Orc Rogue          thorough_dungeons  reached 60                  1431 steps  100.7 h (grind 23.4 h)  orange  41  issues 0
 
 Pickups left behind waiting for a level (zone: count over all runs):
     48  Desolace
@@ -42,35 +42,35 @@ Quests picked up but then dropped (turn-in skipped), by zone:
      4  The Barrens (turn in Wailing Caverns) - turn-in: objectives skipped; objective: grey
 
 Travel between maps, as the guide advises it (average per run):
-  walk      2.11 h over  23.5 trips
-  boat      1.72 h over   8.6 trips
-  hearth    0.94 h over   6.6 trips
-  fly       0.56 h over   5.1 trips
+  walk      2.05 h over  23.1 trips
+  boat      1.77 h over   8.8 trips
+  hearth    0.89 h over   6.5 trips
+  fly       0.57 h over   5.2 trips
   spell     0.01 h over   0.5 trips
   unknown   0.01 h over   0.2 trips
 
 Level on arrival vs plan (avg difference, biggest first):
-  -2.18  Tirisfal Glades
-  -2.05  Undercity
-  -2.01  Ruins of Lordaeron
-  -2.01  Shadowfang Keep
-  -2.01  City of Dalaran
-  -2.00  Undercity (turn in City of Dalaran)
-  -1.96  Silverpine Forest
-  -1.92  Alterac Mountains
-  -1.81  Hunter: Taming the Beast (Skyborne)
-  +1.78  The Barrens - Crossroads
-  -1.69  The Barrens (turn in Razorfen Kraul)
-  -1.69  Razorfen Kraul
+  -2.01  Tirisfal Glades
+  -1.99  Shadowfang Keep
+  -1.99  Ruins of Lordaeron
+  -1.98  City of Dalaran
+  -1.98  Undercity (turn in City of Dalaran)
+  -1.88  Alterac Mountains
+  -1.83  Undercity
+  -1.75  Silverpine Forest
+  -1.68  Razorfen Kraul
+  -1.67  The Barrens (turn in Razorfen Kraul)
+  -1.65  Undercity - 20s
+  +1.62  The Barrens - Crossroads
 
 Slowest zones (Speed, average hours):
    9.41 h  Eastern Plaguelands
    8.37 h  Stranglethorn Vale
-   7.45 h  Tanaris
+   7.77 h  Tanaris
    7.16 h  Winterspring
    6.14 h  Arathi Highlands
    5.12 h  Swamp of Sorrows
-   4.50 h  Felwood
    4.37 h  Stranglethorn Vale 2
-   3.83 h  The Barrens - Camp Taurajo
+   4.24 h  Felwood
+   3.77 h  The Barrens - Camp Taurajo
    3.53 h  The Barrens - Crossroads

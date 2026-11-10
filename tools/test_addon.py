@@ -807,6 +807,17 @@ def main():
         end
     end)()""")
     wi, req = [int(x) for x in res.split(",")]
+    # carry the quests you would have picked up in this zone by then (their objectives come later)
+    L.execute(f"""
+        local E = SpeedLevel.Engine
+        for i = E.sections[E.steps[{wi}].sec].first, {wi} - 1 do
+          local st = E.steps[i]
+          if st.t == "A" and st.q and E:Status(i) == E.ACTIVE then
+            table.insert(STATE.log, {{ id = st.q, complete = false }})
+          end
+        end
+        SpeedLevel.Player:Refresh()
+    """)
     L.execute(f"SpeedLevel.Engine:Jump({wi})")
     cur_i = L.eval("select(2, SpeedLevel.Engine:Current())")
     check(cur_i != wi, f"level-{req} pickup does not block a level-2 player (current {cur_i}, pickup {wi})")

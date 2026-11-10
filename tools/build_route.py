@@ -740,6 +740,19 @@ def quest_info(qid):
                     info["why"] = f"bad drop rate ({it.get('name', 'item')}: {rate:.1f}% per kill)"
                     return info
     info["drop_rate"] = worst_rate
+    # the mobs the objectives are about: kill targets, kill-credit groups, what drops the items -
+    # quests sharing any of them are done in one pass of killing
+    mobs = set()
+    for o in cre:
+        if o and isinstance(o[0], int):
+            mobs.add(o[0])
+    for o in killcred:
+        if o and isinstance(o[0], list):
+            mobs |= {x for x in o[0] if isinstance(x, int)}
+    for o in items:
+        if o:
+            mobs |= set(int(x) for x in (I.get(str(o[0]), {}).get("npcDrops") or []))
+    info["mobs"] = mobs
     if kills > MAX_EXPECTED_KILLS and not info.get("dungeon"):
         info["why"] = f"too many kills (~{kills:.0f})"
         return info
@@ -768,7 +781,7 @@ def pick_point(ptsmap, m, near):
 
 
 class Node:
-    __slots__ = ("kind", "qid", "pos", "text", "seg", "map", "part", "spot", "free")
+    __slots__ = ("kind", "qid", "pos", "text", "seg", "map", "part", "spot", "free", "keff", "mates")
 
     def __init__(self, kind, qid, pos, m, text=""):
         self.kind = kind  # A C T
@@ -779,6 +792,8 @@ class Node:
         self.part = None  # C of a split quest: index into quest_info(qid)["split"]
         self.spot = None  # G: the grind spot (x, y, mobs, levels, xp/h) when chosen up front
         self.free = False  # C: its kills happen during a grind on the same mobs
+        self.keff = None   # C: its share of the kills when other quests here need the same mobs
+        self.mates = None  # C: names of those quests (shown on the step)
 
     def __repr__(self):
         return f"{self.kind}{self.qid}"
@@ -1136,6 +1151,8 @@ class UsedQuests(dict):
 def main(mode="speed", keep=None, dry=False):
     global MODE
     MODE = mode
+    SHARED_KILLS.clear()
+    NO_REACH.clear()
     plan = [sg for sg in parse_plan(PLAN_FILE)
             if not sg.modes or mode in sg.modes or ("dungeons" in sg.modes and has_dungeons(mode))]
     plan = insert_class_chains(plan, CHAINS)
@@ -1325,6 +1342,9 @@ def main(mode="speed", keep=None, dry=False):
                     t = Node("T", qid, pick_point(info["end"], plan[tgt].map, plan[tgt].start), plan[tgt].map)
                     later.append((tgt, t))
             if not ok:
+                # no later visit to where its objective / turn-in is (within reach on this race path)
+                where = sorted(set(info["end"]) | (set(info["obj"]) if info.get("has_obj") else set()))
+                NO_REACH.append((si, qid, where))
                 continue
             for i in range(1, len(nodes)):
                 before[nodes[i]].add(nodes[i - 1])
@@ -1375,6 +1395,7 @@ def main(mode="speed", keep=None, dry=False):
             for b in bl["done"]:
                 if b in nodes_by_q and b in keep_ids and nodes_by_q[b][-1].kind == "T":
                     before[nodes_by_q[b][-1]].add(a)
+        share_kills(qrecs, before)
         # sort by dependency depth for insertion
         def depth(qid, seen=()):
             q = qget(qid)
@@ -1466,7 +1487,7 @@ def main(mode="speed", keep=None, dry=False):
         def q_xp(qid):
             q = qget(qid)
             lvl = q.get("level") or 1
-            return quest_xp(qid) * xp_factor(int(level), lvl) + quest_info(qid)["kills"] * mob_xp(lvl) * 0.6
+            return quest_xp(qid) * xp_factor(int(level), lvl) + SHARED_KILLS.get(qid, quest_info(qid)["kills"]) * mob_xp(lvl) * 0.6
 
         def tour_secs(nodes):
             t, p = 0.0, start
@@ -1959,6 +1980,121 @@ def grind_quest(seg, cands, level, tgt, used, start, generic):
     return best
 
 
+NO_REACH = []         # (segment, qid, maps): quests dropped because the route never gets back to their turn-in
+SHARED_KILLS = {}     # qid -> kills charged to it after sharing mobs with other quests (this build pass)
+SHARED_EXTRA = 0.3    # mobs only some of a group's quests need: a third of their kills on top
+
+
+CLUSTER_PICKUP_YARDS = 800   # pickups this close (one hub): their quests can be done in one pass
+# Forcing every clustered pickup before any of the cluster's objectives was measured slower in the
+# run simulator (Horde Speed +0.4 to +1.1 h: extra trips between quest givers), so the tour keeps
+# choosing its own order; clustering only changes how the shared killing is costed.
+CLUSTER_ORDER = False
+# Costing clustered quests with their shared kills was also measured: -0.4 h to +0.7 h across the eight
+# routes (no real gain), so the route is planned as before; clustering only labels the steps
+# ("Same mobs as X - do them together") so you don't kill the same mobs twice.
+CLUSTER_COST = False
+CAMP_YARDS = 160             # objectives this close are one camp: cleared in one sweep
+CAMP_DISCOUNT = 0.15         # ... which saves ~15% of the killing (less walking between packs)
+
+
+def share_kills(qrecs, before, seg=None):
+    """cluster quests that are done at the same time.
+    * same mobs ("kill 10 Kolkar" + "8 Kolkar ears"): one pass of killing - the group is charged its
+      biggest single requirement plus a share of the rest, split over its quests;
+    * same camp (objectives within CAMP_YARDS, different mobs): one sweep - a bit less killing each.
+    Clustered quests whose pickups are in one hub are all picked up before any of their objectives,
+    so the camp is visited once.  Quests that lead to one another (prerequisite chains) are left alone."""
+    recs = []
+    for r in qrecs:
+        info = quest_info(r["qid"])
+        cs = [n for n in r["nodes"] if n.kind == "C" and not n.free]
+        if cs and info.get("kills") and not info.get("split") and not info.get("dungeon") \
+                and r["nodes"][0].kind == "A":
+            recs.append((r, info, cs))
+    if len(recs) < 2:
+        return
+
+    def yd(a, b):
+        if a.pos is None or b.pos is None or a.map != b.map:
+            return 1e9
+        return tricks.yards(a.map, a.pos, b.pos)
+
+    def chained(a, b):
+        seen, todo = set(), [b]
+        while todo:
+            x = todo.pop()
+            if x == a:
+                return True
+            if x in seen:
+                continue
+            seen.add(x)
+            q = qget(x) or {}
+            todo += (q.get("preGroup") or []) + (q.get("preSingle") or [])
+        return False
+
+    n = len(recs)
+    hub = [[False] * n for _ in range(n)]
+    for i in range(n):
+        for j in range(i + 1, n):
+            ri, rj = recs[i][0], recs[j][0]
+            ok = yd(ri["nodes"][0], rj["nodes"][0]) <= CLUSTER_PICKUP_YARDS \
+                and not chained(ri["qid"], rj["qid"]) and not chained(rj["qid"], ri["qid"])
+            hub[i][j] = hub[j][i] = ok
+    # same mobs: union-find groups
+    parent = list(range(n))
+
+    def find(i):
+        while parent[i] != i:
+            parent[i] = parent[parent[i]]
+            i = parent[i]
+        return i
+    for i in range(n):
+        for j in range(i + 1, n):
+            if hub[i][j] and recs[i][1].get("mobs") and recs[i][1]["mobs"] & (recs[j][1].get("mobs") or set()):
+                parent[find(i)] = find(j)
+    groups = defaultdict(list)
+    for i in range(n):
+        groups[find(i)].append(i)
+    eff = {}
+    mates = defaultdict(list)
+    for g in groups.values():
+        ks = [recs[i][1]["kills"] for i in g]
+        if len(g) < 2:
+            eff[g[0]] = ks[0]
+            continue
+        total, top = sum(ks), max(ks)
+        shared = top + SHARED_EXTRA * (total - top)
+        for i, k in zip(g, ks):
+            eff[i] = shared * k / total
+            # name only quests everyone here carries (not another class's quest)
+            mates[i] += [qget(recs[j][0]["qid"])["name"] for j in g
+                         if j != i and not qget(recs[j][0]["qid"]).get("classes")]
+    # same camp, different mobs: one sweep
+    camp = defaultdict(list)
+    for i in range(n):
+        for j in range(n):
+            if i != j and hub[i][j] and find(i) != find(j) and \
+                    any(yd(a, b) <= CAMP_YARDS for a in recs[i][2] for b in recs[j][2]):
+                camp[i].append(j)
+    for i in range(n):
+        r, info, cs = recs[i]
+        k = eff[i] * ((1 - CAMP_DISCOUNT) if camp[i] else 1.0)
+        for c in cs:
+            c.mates = mates[i] or None
+        if CLUSTER_COST and k != info["kills"]:
+            SHARED_KILLS[r["qid"]] = k
+            for c in cs:
+                c.keff = k / len(cs)
+        # pickups first: every clustered partner's pickup before this quest's objectives
+        partners = {j for j in range(n) if j != i and (find(j) == find(i) or j in camp[i])}
+        if CLUSTER_ORDER:
+            for j in partners:
+                if hub[i][j]:
+                    for c in cs:
+                        before[c].add(recs[j][0]["nodes"][0])
+
+
 def is_timed(qid):
     q = qget(qid) or {}
     return bool(_TIMED.search(" ".join(q.get("objText") or [])))
@@ -2024,7 +2160,7 @@ def simulate(order, level):
                 continue
             ql = q.get("level") or 1
             base = quest_xp(n.qid) * xp_factor(int(lvl), ql)
-            kills = quest_info(n.qid)["kills"] * mob_xp(min(ql, int(lvl) + 1))
+            kills = SHARED_KILLS.get(n.qid, quest_info(n.qid)["kills"]) * mob_xp(min(ql, int(lvl) + 1))
             lvl = add_xp(lvl, base * 1.35 + kills)  # +35%: mobs killed on the way, exploration
         out.append(lvl)
     return out
@@ -2358,6 +2494,10 @@ def build_steps(seg):
             txt = " ".join(t for t in (q.get("objText") or []) if t)
             txt = re.split(r",? (?:and )?(?:then )?(?:return|bring them back|report back)", txt, maxsplit=1)[0]
             st["text"] = txt.strip().rstrip(",.;") + "."
+        if n.kind == "C" and getattr(n, "keff", None) is not None:
+            st["k"] = round(n.keff, 1)
+        if n.kind == "C" and getattr(n, "mates", None):
+            st["text"] = (st.get("text") or "") + " Same mobs as " + ", ".join(n.mates[:2]) + " - do them together."
         steps.append(st)
     steps += [step_from_plan(p, seg) for p in seg.post]
     return steps
@@ -2555,7 +2695,7 @@ def write_lua(plan, mode):
             nsteps += 1
             parts = []
             for k in ("t", "q", "x", "y", "m", "to", "max", "npc", "name", "bind", "text", "dest", "level",
-                      "fto", "tm", "tx", "ty", "oname"):
+                      "fto", "tm", "tx", "ty", "oname", "k"):
                 if k in st and st[k] not in (None, ""):
                     v = st[k]
                     parts.append(f"{k}={lua_str(v) if isinstance(v, str) else (repr(v) if isinstance(v, float) else v)}")

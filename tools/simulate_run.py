@@ -93,7 +93,7 @@ function SIM.focus()
   if not st then return nil end
   local m, x, y = E:StepTarget(st)
   local s, why = E:Status(i)
-  return { i = i, t = st.t, q = st.q, sec = st.sec, m = m, x = x, y = y, oname = st.oname, npc = st.npc,
+  return { i = i, t = st.t, q = st.q, sec = st.sec, m = m, x = x, y = y, oname = st.oname, npc = st.npc, k = st.k,
            fto = st.fto, tm = st.tm, tx = st.tx, ty = st.ty, level = st.level, bind = st.bind,
            text = st.text, status = s, why = why }
 end
@@ -186,6 +186,7 @@ def run(char, mode):
     zone_rows = []           # (section title, plan entry, actual entry)
     left_behind = []         # (section, [quest ids])
     orange = []
+    shared_k = {}            # qid -> kills charged when done together with other quests
     travel = Counter()       # seconds between maps, by how the guide sent you (walk/fly/hearth/boat)
     travel_n = Counter()
     long_walks = []          # (zone, from map, to map, minutes): 20+ minute runs with no better way
@@ -300,6 +301,10 @@ def run(char, mode):
             clock += teleport(f.get("m"), f.get("x"), f.get("y"))
             info = br.quest_info(q)
             kills = info.get("kills", 0)
+            if f.get("k") is not None and not os.environ.get("SIM_FULL_KILLS"):
+                # its share of the kills when quests on the same mobs / in the same camp are done together
+                kills = float(f["k"])
+                shared_k[q] = shared_k.get(q, 0.0) + kills
             share = 1.0
             if f.get("oname") and e.objectives:
                 mine = set(f["oname"].split("|"))
@@ -331,7 +336,7 @@ def run(char, mode):
             ql = br.qget(q).get("level") or 1
             base = br.quest_xp(q) * br.xp_factor(level_now, ql)
             L.execute(f"SIM.removeLog({q}); STATE.completed[{q}] = true; FireEvent('QUEST_TURNED_IN', {q}, {int(base)}, 0)")
-            gain(base * 1.35 + br.quest_info(q)["kills"] * br.mob_xp(min(ql, level_now + 1)))
+            gain(base * 1.35 + shared_k.get(q, br.quest_info(q)["kills"]) * br.mob_xp(min(ql, level_now + 1)))
         elif t == "FP":
             clock += teleport(f.get("m"), f.get("x"), f.get("y")) + 10
             if f.get("npc"):

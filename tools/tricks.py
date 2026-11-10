@@ -151,7 +151,9 @@ def node_time(n, level):
             return m * 0.8   # measured time includes walking to the area; keep ~80% as objective time
         info = br.quest_info(n.qid)
         kills = info["kills"]
-        if getattr(n, "part", None) is not None and info.get("split"):
+        if getattr(n, "keff", None) is not None:
+            kills = n.keff              # its share of kills made together with quests on the same mobs
+        elif getattr(n, "part", None) is not None and info.get("split"):
             kills = kills * len(n.part) / len(info["split"])     # the killing is shared out over the stops
         t = 20.0 + kills * (14.0 + level * 0.25)
         # orange quests (3-4 levels above you): slower kills, more resting, real risk of dying -

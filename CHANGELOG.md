@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.2.4
+
+- **"Same mobs as ..." hints**: when an objective uses the same mobs as another quest you're carrying,
+  the step says so ("Same mobs as Sting of the Scorpid - do them together"), so one round of killing
+  covers both.
+
 ## 1.2.3
 
 - **Minimap line goes only to your current objective** (in green). The numbered pins for the next steps
