@@ -232,6 +232,11 @@ local function drawDashed(o, anchor, pts, thick, dash, gap, alpha, maxDashes)
         local dx, dy = b.x - a.x, b.y - a.y
         local len = math.sqrt(dx * dx + dy * dy)
         local tA, tB = a.trim or 0, b.trim or 0
+        if len <= tA + tB and len > 0 then
+            -- pins close together: shrink the gaps so a short line still shows between them
+            local f = (len * 0.6) / (tA + tB)
+            tA, tB = tA * f, tB * f
+        end
         if len > tA + tB then
             local ux, uy = dx / len, dy / len
             local pos, n = tA, 0
@@ -395,10 +400,12 @@ end
 function MP.MakeRouteDrawer(provider)
     function provider:Overlay()
         if not self.overlay then
-            local canvas = self:GetMap():GetCanvas()
+            local map = self:GetMap()
+            local canvas = map:GetCanvas()
             local o = linePool(CreateFrame("Frame", nil, canvas))
             o:SetAllPoints(canvas)
-            o:SetFrameLevel((canvas:GetFrameLevel() or 1) + 5)
+            self.overlay = o
+            self:PlaceOverlay()
             local acc = 0
             o:SetScript("OnUpdate", SL:Guard("world map route", function(_, elapsed)
                 acc = acc + elapsed
@@ -410,6 +417,22 @@ function MP.MakeRouteDrawer(provider)
         end
         return self.overlay
     end
+    -- the line layer sits right below our pins: above the map's terrain tiles (their own frames,
+    -- which can be higher than the canvas), below the numbered badges
+    function provider:PlaceOverlay()
+        local o = self.overlay
+        if not o then return end
+        local map = self:GetMap()
+        local canvas = map:GetCanvas()
+        local lvl
+        local ok, mgr = pcall(function() return map.GetPinFrameLevelsManager and map:GetPinFrameLevelsManager() end)
+        if ok and mgr and mgr.GetValidFrameLevel then
+            local ok2, v = pcall(mgr.GetValidFrameLevel, mgr, "PIN_FRAME_LEVEL_AREA_POI")
+            if ok2 and type(v) == "number" then lvl = v - 1 end
+        end
+        o:SetFrameLevel(math.max(1, lvl or ((canvas:GetFrameLevel() or 1) + 5)))
+        if o.SetFrameStrata and canvas.GetFrameStrata then o:SetFrameStrata(canvas:GetFrameStrata()) end
+    end
     function provider:HideLines()
         if self.overlay then self.overlay:Reset() end
     end
@@ -417,6 +440,7 @@ function MP.MakeRouteDrawer(provider)
         self:HideLines()
         if not SL.db.mapRoute or not self.points or #self.points == 0 then return end
         local o = self:Overlay()
+        self:PlaceOverlay()
         local w, h = o:GetWidth(), o:GetHeight()
         if not w or w == 0 then return end
         local scale = self:GetMap().GetCanvasScale and self:GetMap():GetCanvasScale() or 1

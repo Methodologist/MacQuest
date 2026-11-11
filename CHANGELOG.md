@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.2.8
+
+- **World map route line fixes**: the line is drawn just below the quest pins (it could end up beneath
+  the map's terrain), and pins close together get a short line between them instead of none.
+- `/mq mapinfo` (with the map open) shows what the map's line layer sees, for troubleshooting.
+
 ## 1.2.7
 
 - **Several objectives at once are numbered in the order you'd do them**: #1 is the nearest (the arrow

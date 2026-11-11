@@ -320,6 +320,21 @@ SlashCmdList.SPEEDLEVEL = function(msg)
         SL.Telemetry:Report(arg)
     elseif cmd == "telemetry" then
         if arg == "clear" then SL.Telemetry:Clear() else SL.Telemetry:Summary() end
+    elseif cmd == "mapinfo" then
+        -- what the world map's pin / line layer sees (open the map first)
+        local prov = SL.MapPins and SL.MapPins.provider
+        if not prov then
+            SL:Print("world map layer not set up (map pins setting off, or the map never opened).")
+        else
+            local o = prov.overlay
+            SL:Print(string.format("world map: map %s, %d points, line layer %s (size %s x %s, level %s), %d dashes, route line %s",
+                tostring(prov.mapID), prov.points and #prov.points or 0, o and "yes" or "no",
+                o and tostring(math.floor((o:GetWidth() or 0) + 0.5)) or "-", o and tostring(math.floor((o:GetHeight() or 0) + 0.5)) or "-",
+                o and tostring(o:GetFrameLevel()) or "-", o and o.used or 0, SL.db.mapRoute and "on" or "off"))
+            for where, e in pairs(SL.errors) do
+                if where:find("map") then print(("  %s x%d: %s"):format(where, e.n, e.msg)) end
+            end
+        end
     elseif cmd == "minimap" then
         SL.MinimapButton:Toggle()
     elseif cmd == "pins" then

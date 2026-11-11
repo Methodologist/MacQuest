@@ -773,6 +773,20 @@ def main():
     w_lines, w_pins, w_after, w_err = wm.split(",")
     check(int(w_pins) > 0 and int(w_lines) > 0, f"world map: pins and route line drawn ({w_pins} pins, {w_lines} dashes)")
     check(int(w_after) > 0, f"world map: route line still drawn when a pin fails ({w_after} dashes)")
+    close = L.eval("""(function()
+        local SL = SpeedLevel
+        local canvas = CreateFrame("Frame")
+        local prov = { GetMap = function() return { GetCanvas = function() return canvas end, GetCanvasScale = function() return 1 end } end }
+        SL.MapPins.MakeRouteDrawer(prov)
+        prov.mapID = 9999
+        local t = SL.MapPins:Targets(3)
+        -- three pins 15-20 units apart on a 300-wide canvas (closer than the gaps around two pins)
+        prov.points = { { x = 0.50, y = 0.50, st = t[1].st, n = 1, g = 0 }, { x = 0.55, y = 0.50, st = t[2].st, n = 2, g = 0.5 },
+                        { x = 0.55, y = 0.57, st = t[3].st, n = 3, g = 1 } }
+        prov:DrawRoute()
+        return prov.overlay.used
+    end)()""")
+    check(int(close) >= 2, f"world map: pins close together still get a line between them ({close} dashes)")
     check(w_err == "logged", "a failing pin is reported in /sl errors")
     check(True, "compact mode toggles without errors")
 
