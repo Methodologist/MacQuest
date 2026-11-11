@@ -74,9 +74,43 @@ end
 function MP:Targets(count)
     local out = {}
     local E = SL.Engine
-    -- #1 is the step the arrow is taking you to (the nearest of the current group, say), so the
-    -- numbers, the line and the arrow always agree
     local up = E:Upcoming(count + 6)
+    -- several objectives at once (the current group): number them in the order you would do them -
+    -- #1 the nearest (where the arrow and the minimap line take you), #2 the nearest from there, ...
+    local group = E:CurrentGroup()
+    if #group > 1 and E.steps[group[1]].t == "C" then
+        local A = SL.Advisor
+        local pm, px, py = SL.Player:Position()
+        local pc, cx, cy
+        if pm and A then pc, cx, cy = A:World(pm, px, py) end
+        local left = {}
+        for _, idx in ipairs(group) do
+            local m, x, y = E:StepTarget(E.steps[idx])
+            local c, wx, wy
+            if m and A then c, wx, wy = A:World(m, x, y) end
+            left[#left + 1] = { idx = idx, c = c, wx = wx, wy = wy }
+        end
+        local ordered = {}
+        if pc then
+            while #left > 0 do
+                local bk, bd
+                for k, g in ipairs(left) do
+                    local d = (g.c == pc and g.wx) and ((g.wx - cx) ^ 2 + (g.wy - cy) ^ 2) or 1e18
+                    if not bd or d < bd then bk, bd = k, d end
+                end
+                local g = table.remove(left, bk)
+                ordered[#ordered + 1] = g.idx
+                if g.wx and g.c == pc then cx, cy = g.wx, g.wy end
+            end
+            local inGroup = {}
+            for _, idx in ipairs(ordered) do inGroup[idx] = true end
+            local rest = {}
+            for _, idx in ipairs(up) do if not inGroup[idx] then rest[#rest + 1] = idx end end
+            up = ordered
+            for _, idx in ipairs(rest) do up[#up + 1] = idx end
+        end
+    end
+    -- and #1 is always the step the arrow is taking you to, so the numbers, the line and the arrow agree
     local at = SL.Arrow and SL.Arrow.target and SL.Arrow.target.step
     if at and at.i then
         for k, idx in ipairs(up) do

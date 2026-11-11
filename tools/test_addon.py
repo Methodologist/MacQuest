@@ -682,6 +682,46 @@ def main():
     f_first, f_used, f_ex, f_ey = fol.split(",")
     check(f_first == "true", "pin #1 is the step the arrow is taking you to")
     check(int(f_used) > 0 and float(f_ey) > 0, f"the minimap line goes where the arrow points ({fol})")
+    # several objectives at once: numbered nearest-first from where you stand, the arrow and line on #1
+    grp = L.eval("""(function()
+        local SL, E = SpeedLevel, SpeedLevel.Engine
+        -- a run of 3 objective steps on one map, for different quests
+        local start
+        for i = 1, #E.steps - 2 do
+          local a, b, c = E.steps[i], E.steps[i + 1], E.steps[i + 2]
+          if a.t == "C" and b.t == "C" and c.t == "C" and a.m and a.m == b.m and b.m == c.m
+             and a.q ~= b.q and b.q ~= c.q and a.q ~= c.q and E:SectionApplies(E.sections[a.sec]) then
+            start = i break
+          end
+        end
+        if not start then return "none" end
+        local saved = { log = STATE.log, level = STATE.level, map = STATE.map, x = STATE.x, y = STATE.y }
+        STATE.log = {}
+        for k = 0, 2 do table.insert(STATE.log, { id = E.steps[start + k].q, complete = false }) end
+        local q1 = SL.Quests[E.steps[start].q]
+        STATE.level = math.max(STATE.level, (q1 and q1[2] or 1))
+        SL.Player:Refresh()
+        E:Jump(start)
+        -- stand at the LAST of the three
+        local last = E.steps[start + 2]
+        STATE.map, STATE.x, STATE.y = last.m, last.x / 100, last.y / 100
+        SL:Update()
+        local t = SL.MapPins:Targets(4)
+        local arrow = SL.Arrow.target and SL.Arrow.target.step and SL.Arrow.target.step.i
+        -- which of the other two is nearer to the last one?
+        local function d2(a, b) return (a.x - b.x) ^ 2 + (a.y - b.y) ^ 2 end
+        local s1, s2 = E.steps[start], E.steps[start + 1]
+        local nearer = d2(s1, last) <= d2(s2, last) and start or start + 1
+        local out = string.format("%d,%d,%s,%d,%d", t[1].idx, start + 2, tostring(arrow), t[2].idx, nearer)
+        STATE.log, STATE.level, STATE.map, STATE.x, STATE.y = saved.log, saved.level, saved.map, saved.x, saved.y
+        SL.Player:Refresh()
+        return out
+    end)()""")
+    print("    group:", grp)
+    if grp != "none":
+        g1, glast, garrow, g2, gnear = grp.split(",")
+        check(g1 == glast and garrow == glast, "objectives at once: #1 is the nearest, and the arrow points at it")
+        check(g2 == gnear, "objectives at once: #2 is the nearest one from #1")
     # the real world-map path: data provider -> pins from the XML template -> route line
     wm = L.eval("""(function()
         local SL = SpeedLevel

@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.2.7
+
+- **Several objectives at once are numbered in the order you'd do them**: #1 is the nearest (the arrow
+  and the minimap line take you there), #2 the nearest one from there, and so on - on the minimap and
+  the world map alike. Previously they kept the route's listed order, so the line could pull you to a
+  far objective while another one was right next to you.
+
 ## 1.2.6
 
 - **Pins, line and arrow always agree.** Pin #1 is now the step the arrow is taking you to (the arrow
