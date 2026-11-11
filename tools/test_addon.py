@@ -48,6 +48,7 @@ local methods = {
   GetHeight = function() return 200 end,
   CreateLine = function() return newMock() end,
   SetStartPoint = function(self, anchor, rel, x, y) self._start = { anchor, x, y } end,
+  SetColorTexture = function(self, r, g, b, a) self._color = { r, g, b, a } end,
   SetEndPoint = function(self, anchor, rel, x, y) self._end = { anchor, x, y } end,
   CreateAnimationGroup = function() return newMock() end,
   CreateAnimation = function() return newMock() end,
@@ -787,6 +788,34 @@ def main():
         return prov.overlay.used
     end)()""")
     check(int(close) >= 2, f"world map: pins close together still get a line between them ({close} dashes)")
+    grad = L.eval("""(function()
+        local SL = SpeedLevel
+        local canvas = CreateFrame("Frame")
+        local prov = { GetMap = function() return { GetCanvas = function() return canvas end, GetCanvasScale = function() return 1 end } end }
+        SL.MapPins.MakeRouteDrawer(prov)
+        prov.mapID = STATE.map
+        local t = SL.MapPins:Targets(4)
+        local spread = { {0.2, 0.2}, {0.6, 0.3}, {0.8, 0.7}, {0.3, 0.9} }
+        prov.points = {}
+        for i, ti in ipairs(t) do
+          prov.points[i] = { x = spread[i][1], y = spread[i][2], st = ti.st, n = ti.n, g = (ti.n - 1) / (#t - 1) }
+        end
+        prov:DrawRoute()
+        local o = prov.overlay
+        local first, last = o.lines[1], o.lines[o.used]
+        local px, py = STATE.x * o:GetWidth(), -STATE.y * o:GetHeight()
+        local s = first._start
+        local fromYou = math.abs(s[2] - px) < 1 and math.abs(s[3] - py) < 1
+        return string.format("%s|%.2f,%.2f,%.2f|%.2f,%.2f,%.2f", tostring(fromYou), first._color[1], first._color[2], first._color[3],
+            last._color[1], last._color[2], last._color[3])
+    end)()""")
+    print("    world map line:", grad)
+    g_from, g_first, g_last = grad.split("|")
+    fr, fg, fb = [float(v) for v in g_first.split(",")]
+    lr, lg, lb = [float(v) for v in g_last.split(",")]
+    check(g_from == "true", "world map line starts at you")
+    check(fg > 0.8 and fr < 0.5, f"world map line starts green ({g_first})")
+    check(lr > 0.95 and 0.4 < lg < 0.65, f"world map line ends orange at the last objective ({g_last})")
     check(w_err == "logged", "a failing pin is reported in /sl errors")
     check(True, "compact mode toggles without errors")
 
