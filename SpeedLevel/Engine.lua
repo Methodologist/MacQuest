@@ -213,6 +213,14 @@ local function questData(q)
     return SL.Quests[q]
 end
 
+-- how hard a quest's objectives are: its level, or the level of its mobs when even the easiest of
+-- them are higher (a level 35 quest whose mobs are all 41 is a level-41 fight)
+function E:Difficulty(q)
+    local d = SL.Quests[q]
+    local ql = self:QuestLevel(q) or 0
+    return (d and d[13] and d[13] > ql) and d[13] or ql
+end
+
 function E:QuestName(q)
     local d = questData(q)
     if d then return d[1] end
@@ -381,8 +389,8 @@ function E:ComputeStatus(i)
             -- you reach the level (while you are still in this zone).
             if d and d[3] and d[3] > P.level then return WAIT, "requires level " .. d[3] end
             -- never a red quest (5+ levels above you) when it has things to fight / do
-            if qs.C and self:QuestLevel(q) >= P.level + 5 then
-                return WAIT, "red for you - comes back at level " .. (self:QuestLevel(q) - 4)
+            if qs.C and self:Difficulty(q) >= P.level + 5 then
+                return WAIT, "red for you - comes back at level " .. (self:Difficulty(q) - 4)
             end
             -- you talked to the giver at this level and it did not offer the quest
             local no = char.notOffered and char.notOffered[q]
@@ -405,8 +413,8 @@ function E:ComputeStatus(i)
             end
             if P:IsQuestReady(q) then return DONE, "objectives complete" end
             if db.skipGrey and P:IsGrey(level) then return SKIP, "grey" end
-            if self:QuestLevel(q) >= P.level + 5 then
-                return WAIT, "red for you - comes back at level " .. (self:QuestLevel(q) - 4)
+            if self:Difficulty(q) >= P.level + 5 then
+                return WAIT, "red for you - comes back at level " .. (self:Difficulty(q) - 4)
             end
             -- one stop of a quest whose objectives are in different places: done when its own
             -- objectives (names separated by |) are all finished

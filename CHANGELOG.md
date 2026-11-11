@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.2.5
+
+- **Objectives point at mobs that suit your level.** When several mobs give what a quest needs (the
+  Singing Crystal Shards drop from basilisks of level 31 to 44), the guide now sends you to the ones
+  closest to your level instead of the biggest group - Crystal Spine Basilisks (34-35), not the 40s.
+- **Difficulty counts the mobs, not just the quest.** A quest whose mobs are all well above its own
+  level is treated as that hard: it's never planned or shown while those mobs are red for you.
+- **Hover panel**: hovering a quest step (in the guide, the upcoming steps or the route list) shows the
+  objective, which mobs or drops it involves and their levels, a warning when the mobs are tougher than
+  the quest, your live progress, the XP reward at your level, and why a step is waiting or skipped.
+  Map pins show the mobs too.
+
 ## 1.2.4
 
 - **"Same mobs as ..." hints**: when an objective uses the same mobs as another quest you're carrying,

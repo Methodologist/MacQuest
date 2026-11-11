@@ -170,17 +170,58 @@ local function iconButton(parent, texture, tip, onClick)
     return b
 end
 
+local STEP_KIND = {
+    A = "Pick up", T = "Turn in", C = "Objective", GRIND = "Grind", DEATH = "Death-skip", FP = "Flight path",
+    FLY = "Flight", HEARTH = "Set hearth", USEHS = "Hearth", GOTO = "Travel", NOTE = "Note", TRAIN = "Train",
+    BOAT = "Boat / zeppelin", DUNGEON = "Dungeon",
+}
+
+-- the hover panel for a step: what the quest wants, which mobs (and how tough), your progress
 local function stepTooltip(owner, idx)
-    local st = SL.Engine.steps[idx]
+    local E, P = SL.Engine, SL.Player
+    local st = E.steps[idx]
     if not st then return end
     GameTooltip:SetOwner(owner, "ANCHOR_LEFT")
-    GameTooltip:AddLine(SL.Engine.sections[st.sec].title)
+    local tc = TYPE_COLOR[st.t] or DEFAULT_COLOR
+    GameTooltip:AddDoubleLine(STEP_KIND[st.t] or st.t, E.sections[st.sec].title, tc[1], tc[2], tc[3], 0.6, 0.6, 0.6)
     if st.q then
-        GameTooltip:AddLine(SL.Engine:QuestName(st.q) .. "  (level " .. SL.Engine:QuestLevel(st.q) .. ", id " .. st.q .. ")", 1, 1, 1)
+        local d = SL.Quests[st.q]
+        local ql = E:QuestLevel(st.q)
+        local diff = E:Difficulty(st.q)
+        local c = GetQuestDifficultyColor and GetQuestDifficultyColor(diff)
+        GameTooltip:AddDoubleLine(E:QuestName(st.q), "level " .. tostring(ql), c and c.r or 1, c and c.g or 0.82,
+            c and c.b or 0, 0.8, 0.8, 0.8)
+        if d and d[14] then
+            for line in d[14]:gmatch("[^\n]+") do GameTooltip:AddLine(line, 1, 1, 1, true) end
+        end
+        if diff > ql then
+            GameTooltip:AddLine("Its mobs are level " .. diff .. "+, tougher than the quest's level", 1, 0.5, 0.25, true)
+        end
+        -- live objectives from your quest log
+        local objs = P:InLog(st.q) and P:Objectives(st.q)
+        if objs and #objs > 0 then
+            for _, o in ipairs(objs) do
+                if o.finished then
+                    GameTooltip:AddLine("  " .. (o.text or ""), 0.4, 1, 0.4, true)
+                else
+                    GameTooltip:AddLine("  " .. (o.text or ""), 0.85, 0.85, 0.85, true)
+                end
+            end
+        end
+        if d and d[8] and d[8] > 0 then
+            local xp = math.floor(d[8] * (P:XPFactor(ql) or 1))
+            if xp > 0 then GameTooltip:AddLine("Reward: " .. xp .. " XP", 0.6, 0.6, 1) end
+        end
+    else
+        local _, text = E:StepText(st)
+        if text then GameTooltip:AddLine(text, 1, 1, 1, true) end
     end
-    if st.x then GameTooltip:AddLine(string.format("%.1f, %.1f", st.x, st.y), 0.7, 0.7, 0.7) end
-    GameTooltip:AddLine("Left-click: make this the current step", 0.5, 0.8, 1)
-    GameTooltip:AddLine("Right-click: skip this step", 0.5, 0.8, 1)
+    local s, why = E:Status(idx)
+    if why and (s == E.WAIT or s == E.SKIP) then
+        GameTooltip:AddLine((s == E.WAIT and "Waiting: " or "Skipped: ") .. why, 0.7, 0.7, 0.7, true)
+    end
+    if st.x then GameTooltip:AddLine(string.format("%.1f, %.1f", st.x, st.y), 0.6, 0.6, 0.6) end
+    GameTooltip:AddLine("Left-click: make this the current step   Right-click: skip it", 0.5, 0.8, 1, true)
     GameTooltip:Show()
 end
 

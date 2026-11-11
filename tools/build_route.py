@@ -753,6 +753,21 @@ def quest_info(qid):
         if o:
             mobs |= set(int(x) for x in (I.get(str(o[0]), {}).get("npcDrops") or []))
     info["mobs"] = mobs
+    # per mob: (average level, {map: spawn points}) - an item can drop from mobs of very different
+    # levels (Singing Crystal Shards: basilisks 31-44); the pin and the difficulty use the ones that suit
+    mob_spawns = {}
+    for nid in mobs:
+        e = N.get(str(nid))
+        if not e or e.get("friendly") == FCFG["letter"]:
+            continue
+        lo, hi = e.get("minLevel") or 0, e.get("maxLevel") or 0
+        sp = spawns_of("npc", nid)
+        if lo > 0 and sp:
+            mob_spawns[nid] = ((lo + hi) / 2.0, (lo, hi), e.get("name", "?"), sp)
+    info["mob_spawns"] = mob_spawns
+    # the easiest group of these mobs you can actually go to (3+ spawns): how hard the objective is
+    lv = [v[0] for v in mob_spawns.values() if sum(len(p) for p in v[3].values()) >= 3]
+    info["mob_level"] = min(lv) if lv else None
     if kills > MAX_EXPECTED_KILLS and not info.get("dungeon"):
         info["why"] = f"too many kills (~{kills:.0f})"
         return info
@@ -1053,14 +1068,42 @@ def dungeon_pickup_here(qid, si):
 MAX_ABOVE = 4   # never plan a quest's objectives more than this many levels below the quest (no reds)
 
 
+def difficulty(qid):
+    """how hard a quest's objectives are: its level, or the level of the easiest mobs that serve its
+    objectives when even those are higher (a level 35 quest whose mobs are all 41 is a level-41 fight)"""
+    q = qget(qid) or {}
+    lvl = q.get("level") or 0
+    ml = quest_info(qid).get("mob_level")
+    return max(lvl, int(ml)) if ml else lvl
+
+
 def eff_req(qid):
     """the level a quest is planned at: its required level, and for quests with objectives (mobs to
-    fight, areas to clear) no lower than quest level - MAX_ABOVE, so it is at most orange, never red"""
+    fight, areas to clear) no lower than its difficulty - MAX_ABOVE, so it is at most orange, never red"""
     q = qget(qid) or {}
     req = q.get("reqLevel") or 1
     if quest_info(qid).get("has_obj"):
-        req = max(req, (q.get("level") or 0) - MAX_ABOVE)
+        req = max(req, difficulty(qid) - MAX_ABOVE)
     return req
+
+
+def objective_point(qid, m, near, level):
+    """where to send you for a quest's objectives on map m: among the mobs that serve them, the ones
+    that suit your level (not grey, at most 2 above) - the easiest group above grey when none does"""
+    info = quest_info(qid)
+    ms = info.get("mob_spawns") or {}
+    cands = [(v[0], v[3][m]) for v in ms.values() if m in v[3] and v[3][m]]
+    if len(cands) >= 2 and level:
+        ok = [c for c in cands if not is_grey(int(level), int(c[0])) and c[0] <= level + 2]
+        if not ok:
+            above = [c for c in cands if not is_grey(int(level), int(c[0]))]
+            if above:
+                lo = min(c[0] for c in above)
+                ok = [c for c in above if c[0] <= lo + 1]
+        if ok:
+            pts = [p for _, ps in ok for p in ps]
+            return pick_point({m: pts}, m, near)
+    return pick_point(info["obj"], m, near)
 
 
 def segment_quests(seg, used, entry_level, si=None):
@@ -1309,12 +1352,12 @@ def main(mode="speed", keep=None, dry=False):
                         c.part = tuple(members)
                         nodes.append(c)
                 elif seg.map in info["obj"] and not stacked:
-                    c = Node("C", qid, pick_point(info["obj"], seg.map, a_pos), seg.map)
+                    c = Node("C", qid, objective_point(qid, seg.map, a_pos, level), seg.map)
                     nodes.append(c)
                 else:
                     # defer objective to a later segment on that map
                     tgt = None
-                    horizon = min(len(plan), si + 14)
+                    horizon = min(len(plan), si + CARRY_SEGMENTS)
                     if qid in DUNGEON_QUEST:
                         horizon = DUNGEON_QUEST[qid] + 1
                     for sj in range(si + 1, horizon):
@@ -1324,7 +1367,8 @@ def main(mode="speed", keep=None, dry=False):
                     if tgt is None:
                         ok = False
                     else:
-                        c = Node("C", qid, pick_point(info["obj"], plan[tgt].map, plan[tgt].start), plan[tgt].map)
+                        c = Node("C", qid, objective_point(qid, plan[tgt].map, plan[tgt].start,
+                                                          getattr(plan[tgt], "entry_level", None) or level), plan[tgt].map)
                         later.append((tgt, c))
             if seg.map in info["end"] and not later and not stacked:
                 t = Node("T", qid, pick_point(info["end"], seg.map, (c.pos if c else a_pos)), seg.map)
@@ -1332,7 +1376,7 @@ def main(mode="speed", keep=None, dry=False):
             else:
                 tgt = None
                 lo = max([x[0] for x in later], default=si + 1)
-                for sj in range(lo, len(plan) if qid in DUNGEON_QUEST else min(len(plan), si + 14)):
+                for sj in range(lo, len(plan) if qid in DUNGEON_QUEST else min(len(plan), si + CARRY_SEGMENTS)):
                     if plan[sj].map in info["end"] and seg.races <= plan[sj].races and not plan[sj].chain:
                         tgt = sj
                         break
@@ -1980,6 +2024,10 @@ def grind_quest(seg, cands, level, tgt, used, start, generic):
     return best
 
 
+# how many zone visits ahead a quest may be carried to its turn-in.  Measured: 30 or unlimited brings
+# back ~10 quests, Speed unchanged, Speed + Dungeons 5 h slower - the turn-in towns of the lost chains
+# are simply not on the route later.
+CARRY_SEGMENTS = 14
 NO_REACH = []         # (segment, qid, maps): quests dropped because the route never gets back to their turn-in
 SHARED_KILLS = {}     # qid -> kills charged to it after sharing mobs with other quests (this build pass)
 SHARED_EXTRA = 0.3    # mobs only some of a group's quests need: a third of their kills on top
@@ -2397,12 +2445,28 @@ def write_travel():
     (ROOT / "SpeedLevel" / "Data" / f"Travel_{FNAME}.lua").write_text("\n".join(out) + "\n", encoding="utf-8")
 
 
+def describe(qid):
+    """hover-panel text: the objective, then the mobs (with levels) that serve it"""
+    q = qget(qid) or {}
+    info = quest_info(qid)
+    txt = " ".join(t for t in (q.get("objText") or []) if t).strip()
+    ms = sorted((info.get("mob_spawns") or {}).values(), key=lambda v: v[0])
+    if ms:
+        cre, obj, items, rep, kc, sp = objectives(q)
+        what = "Drops from" if items and not cre else "Mobs"
+        mobs = ", ".join(f"{v[2]} ({v[1][0]}-{v[1][1]})" if v[1][0] != v[1][1] else f"{v[2]} ({v[1][0]})"
+                         for v in ms[:5])
+        txt += ("\n" if txt else "") + f"{what}: {mobs}" + (" ..." if len(ms) > 5 else "")
+    return txt[:400]
+
+
 def write_quests(allq):
     out_dir = ROOT / "SpeedLevel" / "Data"
     lines = ["-- GENERATED by tools/build_route.py from QuestieDB (Forever). Do not edit by hand.",
              "local _, SL = ...",
              "-- [id] = {name, level, reqLevel, raceMask, classMask, preAll, preAny, xp, exclusive,",
-             "--         breadcrumbFor (gone once taken/done), untilCompleted (gone once done), disabledBy (not while active)}",
+             "--         breadcrumbFor (gone once taken/done), untilCompleted (gone once done), disabledBy (not while active),",
+             "--         mobLevel (its mobs are tougher than the quest), description (objective + mobs, for the hover panel)}",
              "SL.Quests = SL.Quests or {}",
              "SL.QuestItems = SL.QuestItems or {}",
              "local add = {"]
@@ -2413,7 +2477,9 @@ def write_quests(allq):
         lines.append(f"[{qid}]={{{lua_str(q['name'])},{q.get('level') or 0},{q.get('reqLevel') or 0},"
                      f"{q.get('races') or 0},{q.get('classes') or 0},{arr(q.get('preGroup'))},{arr(q.get('preSingle'))},"
                      f"{quest_xp(qid)},{arr(q.get('exclusive'))},{arr(blockers(qid)['taken'])},"
-                     f"{arr(blockers(qid)['done'])},{arr(blockers(qid)['active'])}}},")
+                     f"{arr(blockers(qid)['done'])},{arr(blockers(qid)['active'])},"
+                     f"{difficulty(qid) if difficulty(qid) > (q.get('level') or 0) else 'nil'},"
+                     f"{lua_str(describe(qid)) if describe(qid) else 'nil'}}},")
     lines.append("}")
     lines.append("for k, v in pairs(add) do SL.Quests[k] = v end")
     # items a quest hands you or needs you to carry (the Kodo Kombobulator, torches, empty flasks...):

@@ -100,7 +100,7 @@ end
 function SIM.quest(q)
   local E = SpeedLevel.Engine
   local d = SpeedLevel.Quests[q]
-  return { level = E:QuestLevel(q), req = d and d[3] or 0, xp = d and d[8] or 0,
+  return { level = E:QuestLevel(q), diff = E:Difficulty(q), req = d and d[3] or 0, xp = d and d[8] or 0,
            factor = SpeedLevel.Player:XPFactor(E:QuestLevel(q)) }
 end
 function SIM.onames(q)
@@ -272,7 +272,7 @@ def run(char, mode):
 
         if q and t in ("A", "C"):
             qi = lua_table(L, L.eval(f"SIM.quest({q})"))
-            gap = qi["level"] - level_now
+            gap = qi.get("diff", qi["level"]) - level_now      # the mobs' level when they are tougher
             has_c = L.eval(f"SpeedLevel.Engine.questSteps[{q}].C ~= nil")
             if gap >= 5 and (t == "C" or has_c):
                 issues.append(f"red: {t} {q} {br.qget(q)['name']} (quest {qi['level']}) at level {level_now} in {title}")

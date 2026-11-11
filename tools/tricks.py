@@ -158,7 +158,7 @@ def node_time(n, level):
         t = 20.0 + kills * (14.0 + level * 0.25)
         # orange quests (3-4 levels above you): slower kills, more resting, real risk of dying -
         # so they only stay in the route when they pay off well
-        diff = (br.qget(n.qid).get("level") or 0) - level
+        diff = br.difficulty(n.qid) - level
         if diff >= 3:
             t *= 1.0 + ORANGE_PENALTY * (diff - 2)
         return t

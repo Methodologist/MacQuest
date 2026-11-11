@@ -95,6 +95,12 @@ local function tooltip(owner, info, clickable)
         SL.Engine.sections[st.sec].title, c[1], c[2], c[3], 0.6, 0.6, 0.6)
     local _, text, lines = SL.Engine:StepText(st)
     GameTooltip:AddLine(text, 1, 1, 1, true)
+    -- which mobs / drops, and how tough
+    local d = st.q and SL.Quests[st.q]
+    if d and d[14] then
+        local mobs = d[14]:match("\n(.+)$")
+        if mobs then GameTooltip:AddLine(mobs, 0.8, 0.8, 0.8, true) end
+    end
     local objs = st.q and SL.Player:InLog(st.q) and SL.Player:Objectives(st.q)
     if objs and #objs > 0 then
         for _, o in ipairs(objs) do
