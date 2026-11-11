@@ -649,6 +649,39 @@ def main():
     check(int(n_mini) > 0, f"line drawn on the minimap ({n_mini} dashes)")
     check(float(worst) <= 70.0, f"minimap line stays inside the minimap (furthest dash end {worst} px of 70)")
     check(float(bend) < 0.01, f"minimap line goes only to the current objective (one straight leg, bend {bend})")
+    # pin #1 and the minimap line follow the arrow (it may pick the 2nd step of a group, or a flight master)
+    fol = L.eval("""(function()
+        local SL = SpeedLevel
+        local up = SL.Engine:Upcoming(6)
+        local second
+        for k = 2, #up do
+          local m, x, y = SL.Engine:StepTarget(SL.Engine.steps[up[k]])
+          if m then second = up[k] break end
+        end
+        local st = SL.Engine.steps[second]
+        local m, x, y = SL.Engine:StepTarget(st)
+        local saved = SL.Arrow.target
+        SL.Arrow.target = { m = m, x = x, y = y, step = st }
+        local t1 = SL.MapPins:Targets(4)[1]
+        -- the line ends where the arrow points: move the arrow somewhere else entirely
+        local sx, sy = STATE.x, STATE.y
+        STATE.map, STATE.x, STATE.y = m, x / 100 - 0.03, y / 100
+        SL.Arrow.target = { m = m, x = x - 3, y = y - 3, label = "flight master" }   -- north-west of you
+        SL.MapPins.cachedTargets = SL.MapPins:Targets(4)
+        SL.MapPins:UpdateMinimap()
+        local lo = SL.MapPins.miniLines
+        local ex, ey = 0, 0
+        for i = 1, lo.used do
+          local e = lo.lines[i]._end
+          if e and e[2] then ex, ey = ex + e[2], ey + e[3] end
+        end
+        SL.Arrow.target = saved
+        STATE.x, STATE.y = sx, sy
+        return tostring(t1.idx == second) .. "," .. lo.used .. "," .. string.format("%.1f,%.1f", ex, ey)
+    end)()""")
+    f_first, f_used, f_ex, f_ey = fol.split(",")
+    check(f_first == "true", "pin #1 is the step the arrow is taking you to")
+    check(int(f_used) > 0 and float(f_ey) > 0, f"the minimap line goes where the arrow points ({fol})")
     # the real world-map path: data provider -> pins from the XML template -> route line
     wm = L.eval("""(function()
         local SL = SpeedLevel

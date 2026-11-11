@@ -74,7 +74,20 @@ end
 function MP:Targets(count)
     local out = {}
     local E = SL.Engine
-    for _, idx in ipairs(E:Upcoming(count + 6)) do
+    -- #1 is the step the arrow is taking you to (the nearest of the current group, say), so the
+    -- numbers, the line and the arrow always agree
+    local up = E:Upcoming(count + 6)
+    local at = SL.Arrow and SL.Arrow.target and SL.Arrow.target.step
+    if at and at.i then
+        for k, idx in ipairs(up) do
+            if idx == at.i and k > 1 then
+                table.remove(up, k)
+                table.insert(up, 1, idx)
+                break
+            end
+        end
+    end
+    for _, idx in ipairs(up) do
         local st = E.steps[idx]
         local m, x, y = E:StepTarget(st)
         if m and st.t ~= "USEHS" then
@@ -530,12 +543,25 @@ function MP:UpdateMinimap()
             p.info = nil
         end
     end
-    -- the line, clipped to the minimap's edge: only you -> your current objective (the world map
-    -- shows the whole route)
+    -- the line, clipped to the minimap's edge: only you -> where the arrow points (your current
+    -- objective, or the flight master / dock / corpse the arrow sends you to first); the world map
+    -- shows the whole route
     local lo = self.miniLines
     if not lo then return end
     lo:Reset()
     while #route > 2 do table.remove(route) end
+    local at = SL.Arrow and SL.Arrow.target
+    if lineOn and at and at.m and at.x then
+        local d, a = SL.Player:VectorTo(at.m, at.x, at.y)
+        if d and a then
+            local rel = a - facing
+            local rr = d / radiusYd
+            local isPin1 = targets[1] and at.step and targets[1].idx == at.step.i
+                and math.abs((targets[1].x or 0) - at.x) < 0.05 and math.abs((targets[1].y or 0) - at.y) < 0.05
+            route[2] = { x = -math.sin(rel) * rr * radiusPx, y = math.cos(rel) * rr * radiusPx, g = 0,
+                         trim = (isPin1 and rr <= 0.9) and 9 or 0 }
+        end
+    end
     if not lineOn or #route < 2 then return end
     local shape = GetMinimapShape and GetMinimapShape() or "ROUND"
     local square = shape == "SQUARE"

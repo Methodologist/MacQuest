@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.2.6
+
+- **Pins, line and arrow always agree.** Pin #1 is now the step the arrow is taking you to (the arrow
+  picks the nearest step of a group, which isn't always the first one listed), and the minimap line
+  goes exactly where the arrow points - including a flight master, dock or your corpse when the arrow
+  sends you there first.
+
 ## 1.2.5
 
 - **Objectives point at mobs that suit your level.** When several mobs give what a quest needs (the

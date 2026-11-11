@@ -1324,7 +1324,11 @@ function E:Tick()
     if self.reaim >= 3 then
         self.reaim = 0
         local had = self.advice and self.advice.label
+        local before = SL.Arrow.target and SL.Arrow.target.step
         SL.Arrow:SetTarget(self:CurrentTarget())
+        local after = SL.Arrow.target and SL.Arrow.target.step
+        -- the arrow switched to another step of the group: renumber the pins so #1 follows it
+        if before ~= after and SL.MapPins then SL.MapPins:Refresh() end
         if (self.advice and self.advice.label) ~= had then SL:RequestUpdate() end
     end
     SL.UI:RefreshDistance()
