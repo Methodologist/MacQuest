@@ -239,10 +239,10 @@ function S:Build()
     sectionLabel(f, "Route style", y)
     y = y - 18
     choiceRow(f, y, 76, {
-        { key = "speed", icon = "Interface\\Icons\\Ability_Rogue_Sprint", title = "Speed",
-          desc = "Fastest to 60. Cuts slow quests, uses death-skips.", tag = "Recommended" },
-        { key = "thorough", icon = "Interface\\Icons\\INV_Misc_Book_09", title = "Thorough",
-          desc = "Every worthwhile quest, no death-skips. A relaxed pace." },
+        { key = "thorough", icon = "Interface\\Icons\\Ability_Rogue_Sprint", title = "Thorough", tag = "Recommended",
+          desc = "Every worthwhile quest - the fastest way to 60." },
+        { key = "safe", icon = "Interface\\Icons\\INV_Shield_06", title = "Safe",
+          desc = "Never an orange fight: mobs at most a level above you." },
     }, self.style, function(k) S.style = k end)
     y = y - 76 - 18
 
@@ -254,6 +254,18 @@ function S:Build()
         { key = true, icon = "Interface\\Icons\\INV_Misc_Key_03", title = "Include dungeons",
           desc = "Quests picked up first; the arrow leads to each entrance." },
     }, self.dungeons, function(k) S.dungeons = k end)
+    y = y - 76 - 18
+
+    -- on top of either route: Skinning on the way and a gold tracker for the level 40 mount
+    self.gold = SL.char.goldMode and true or false
+    sectionLabel(f, "Mount gold", y)
+    y = y - 18
+    choiceRow(f, y, 76, {
+        { key = false, icon = "Interface\\Icons\\INV_Misc_Coin_02", title = "Just level",
+          desc = "No profession stops." },
+        { key = true, icon = "Interface\\Icons\\Ability_Mount_RidingHorse", title = "Mount gold mode",
+          desc = "Skinning on the way and a tracker for your mount gold at 40." },
+    }, self.gold, function(k) S.gold = k end)
     y = y - 76 - 18
 
     -- starting zones: only worth asking while you are still in them
@@ -278,6 +290,22 @@ function S:Build()
         note:SetText("Another race's start means travelling there yourself; quests only that race can take are skipped.")
         y = y - 26
     end
+
+    -- duo: playing together with a friend
+    self.duo = SL.char.duo and true or false
+    local duo = CreateFrame("CheckButton", nil, f, "UICheckButtonTemplate")
+    duo:SetPoint("TOPLEFT", PAD - 4, y + 2)
+    duo:SetChecked(self.duo)
+    duo:SetScript("OnClick", function(b) S.duo = b:GetChecked() and true or false end)
+    local dl = f:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+    dl:SetPoint("LEFT", duo, "RIGHT", 2, 0)
+    dl:SetText("Duo mode: levelling with a friend")
+    local dn = f:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
+    dn:SetPoint("TOPLEFT", PAD + 26, y - 22)
+    dn:SetWidth(WIDTH - 2 * PAD - 26)    -- a set width, so its height is known right away
+    dn:SetJustifyH("LEFT")
+    dn:SetText("Both of you: Mac Quest with duo mode on, and the same route style, dungeons and starting zone. You see each other's step and route quests are shared.")
+    y = y - 22 - math.max(12, dn:GetStringHeight() or 12) - 8
 
     -- footer: hint + start button
     y = y - 4
@@ -320,18 +348,25 @@ function S:Finish(apply)
     SL.char.setupDone = true
     if apply then
         local mode = self.style .. (self.dungeons and "_dungeons" or "")
-        if not (SL.Routes and SL.Routes[E:RouteKey(mode)]) then mode = "speed" end
+        if not (SL.Routes and SL.Routes[E:RouteKey(mode)]) then mode = "thorough" end
         local path = self.path ~= "auto" and self.path or nil
         local changed = mode ~= E:Mode() or path ~= SL.char.startPath or not SL.char.mode
         SL.char.mode = mode
         SL.char.startPath = path
+        if (self.duo and true or false) ~= (SL.char.duo and true or false) and SL.Duo then
+            SL.Duo:SetEnabled(self.duo)
+        end
+        if (self.gold and true or false) ~= (SL.char.goldMode and true or false) then
+            SL.char.goldMode = self.gold and true or false
+            E:Invalidate()
+        end
         if changed then
             SL.char.routeVersion = nil
             E:LoadRoute()
             E:Resync()
         end
-        SL:Print("route: |cffffd100" .. E.MODE_NAMES[mode] .. "|r, start: |cffffd100" .. E:PathName() ..
-            "|r. Good luck - /sl for help.")
+        SL:Print("route: |cffffd100" .. E.MODE_NAMES[mode] .. "|r" .. (SL.char.goldMode and " + mount gold mode" or "") ..
+            ", start: |cffffd100" .. E:PathName() .. "|r. Good luck - /sl for help.")
     end
     if self.frame then
         self.finishing = true

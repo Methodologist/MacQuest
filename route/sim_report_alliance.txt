@@ -1,84 +1,88 @@
-Human Warrior      speed              reached 60                  1317 steps   99.5 h (grind 43.5 h)  orange  51  issues 0
-Human Paladin      speed              reached 60                  1302 steps   99.7 h (grind 43.3 h)  orange  52  issues 0
-Dwarf Hunter       speed              reached 60                  1296 steps  100.2 h (grind 44.9 h)  orange  52  issues 0
-Gnome Warlock      speed              reached 60                  1324 steps  102.0 h (grind 43.7 h)  orange  52  issues 0
-NightElf Druid     speed              reached 60                  1378 steps   99.4 h (grind 41.8 h)  orange  58  issues 0
-Skyborne Hunter    speed              reached 60                  1246 steps  102.0 h (grind 46.1 h)  orange  61  issues 0
-Human Warrior      speed_dungeons     reached 60                  1384 steps   95.3 h (grind 28.1 h)  orange  52  issues 0
-Human Paladin      speed_dungeons     reached 60                  1372 steps   95.5 h (grind 28.0 h)  orange  50  issues 0
-Dwarf Hunter       speed_dungeons     reached 60                  1361 steps   96.5 h (grind 29.6 h)  orange  53  issues 0
-Gnome Warlock      speed_dungeons     reached 60                  1377 steps   97.7 h (grind 28.7 h)  orange  51  issues 0
-NightElf Druid     speed_dungeons     reached 60                  1445 steps   96.0 h (grind 26.7 h)  orange  54  issues 0
-Skyborne Hunter    speed_dungeons     reached 60                  1312 steps   98.7 h (grind 30.8 h)  orange  63  issues 0
-Human Warrior      thorough           reached 60                  1382 steps   96.7 h (grind 37.6 h)  orange  47  issues 0
-Human Paladin      thorough           reached 60                  1368 steps   96.7 h (grind 37.4 h)  orange  47  issues 0
-Dwarf Hunter       thorough           reached 60                  1364 steps   97.4 h (grind 38.7 h)  orange  47  issues 0
-Gnome Warlock      thorough           reached 60                  1376 steps   98.8 h (grind 38.3 h)  orange  48  issues 0
-NightElf Druid     thorough           reached 60                  1442 steps   96.8 h (grind 36.0 h)  orange  54  issues 0
-Skyborne Hunter    thorough           reached 60                  1314 steps   99.1 h (grind 40.0 h)  orange  56  issues 0
-Human Warrior      thorough_dungeons  reached 60                  1407 steps   96.4 h (grind 25.8 h)  orange  58  issues 0
-Human Paladin      thorough_dungeons  reached 60                  1393 steps   96.1 h (grind 25.5 h)  orange  57  issues 0
-Dwarf Hunter       thorough_dungeons  reached 60                  1384 steps   97.3 h (grind 26.9 h)  orange  59  issues 0
-Gnome Warlock      thorough_dungeons  reached 60                  1401 steps   98.9 h (grind 26.1 h)  orange  57  issues 0
-NightElf Druid     thorough_dungeons  reached 60                  1472 steps   97.3 h (grind 24.0 h)  orange  61  issues 0
-Skyborne Hunter    thorough_dungeons  reached 60                  1335 steps   99.5 h (grind 28.1 h)  orange  69  issues 0
+Human Warrior      thorough           reached 60                  1369 steps   97.5 h (grind 39.2 h)  orange  70  issues 0
+Human Paladin      thorough           reached 60                  1350 steps   97.6 h (grind 39.0 h)  orange  70  issues 0
+Dwarf Hunter       thorough           reached 60                  1346 steps   98.3 h (grind 40.2 h)  orange  70  issues 0
+Gnome Warlock      thorough           reached 60                  1355 steps   99.4 h (grind 39.9 h)  orange  70  issues 0
+NightElf Druid     thorough           reached 60                  1418 steps   97.9 h (grind 37.7 h)  orange  75  issues 0
+Skyborne Hunter    thorough           reached 60                  1324 steps   98.8 h (grind 40.4 h)  orange  72  issues 0
+Gnome Mage         thorough           reached 60                  1341 steps   96.4 h (grind 39.7 h)  orange  66  issues 0
+Human Warrior      thorough_dungeons  reached 60                  1414 steps   95.9 h (grind 25.3 h)  orange  60  issues 0
+Human Paladin      thorough_dungeons  reached 60                  1400 steps   95.9 h (grind 25.0 h)  orange  63  issues 0
+Dwarf Hunter       thorough_dungeons  reached 60                  1393 steps   97.0 h (grind 26.4 h)  orange  66  issues 0
+Gnome Warlock      thorough_dungeons  reached 60                  1401 steps   97.8 h (grind 26.3 h)  orange  63  issues 0
+NightElf Druid     thorough_dungeons  reached 60                  1472 steps   96.2 h (grind 24.1 h)  orange  65  issues 0
+Skyborne Hunter    thorough_dungeons  reached 60                  1371 steps   96.9 h (grind 26.5 h)  orange  65  issues 0
+Gnome Mage         thorough_dungeons  reached 60                  1399 steps   93.8 h (grind 25.4 h)  orange  55  issues 0
+Human Warrior      safe               reached 60                  1254 steps   98.8 h (grind 47.9 h)  orange   2  issues 0
+Human Paladin      safe               reached 60                  1236 steps   99.0 h (grind 47.7 h)  orange   2  issues 0
+Dwarf Hunter       safe               reached 60                  1221 steps  100.0 h (grind 49.4 h)  orange   2  issues 0
+Gnome Warlock      safe               reached 60                  1230 steps  100.9 h (grind 49.0 h)  orange   2  issues 0
+NightElf Druid     safe               reached 60                  1279 steps   99.6 h (grind 47.4 h)  orange   3  issues 0
+Skyborne Hunter    safe               reached 60                  1125 steps  100.8 h (grind 53.1 h)  orange   2  issues 0
+Gnome Mage         safe               reached 60                  1213 steps   98.3 h (grind 49.1 h)  orange   2  issues 0
+Human Warrior      safe_dungeons      reached 60                  1370 steps   95.4 h (grind 31.4 h)  orange   2  issues 0
+Human Paladin      safe_dungeons      reached 60                  1361 steps   95.3 h (grind 30.9 h)  orange   2  issues 0
+Dwarf Hunter       safe_dungeons      reached 60                  1326 steps   96.5 h (grind 33.2 h)  orange   2  issues 0
+Gnome Warlock      safe_dungeons      reached 60                  1340 steps   97.4 h (grind 32.8 h)  orange   2  issues 0
+NightElf Druid     safe_dungeons      reached 60                  1388 steps   96.4 h (grind 31.4 h)  orange   3  issues 0
+Skyborne Hunter    safe_dungeons      reached 60                  1239 steps   97.1 h (grind 36.7 h)  orange   2  issues 0
+Gnome Mage         safe_dungeons      reached 60                  1322 steps   94.7 h (grind 32.9 h)  orange   2  issues 0
 
 Pickups left behind waiting for a level (zone: count over all runs):
-    48  Desolace
-    36  Feralas
-    12  Ironforge (turn in Gnomeregan)
-    12  Stormwind (turn in City of Dalaran)
-    12  Un'Goro Crater
-    10  Redridge Mountains
-     8  Stormwind (Skyborne)
-     6  Felwood
-     6  Stranglethorn Vale
-     4  Dun Morogh
-     4  Stormwind (quests for The Deadmines)
-     3  Ironforge (quests for Gnomeregan)
+    63  Desolace
+    42  Feralas
+    25  Redridge Mountains
+    14  Ironforge (turn in Gnomeregan)
+     7  Stranglethorn Vale
+     7  Stormwind (turn in City of Dalaran)
+     7  Un'Goro Crater
+     7  Felwood
+     7  Ironforge - 40s
+     6  Dun Morogh
+     4  Stranglethorn Vale 2
      2  Darnassus
 
 Quests picked up but then dropped (turn-in skipped), by zone:
     10  Maraudon - turn-in: objectives skipped; objective: grey
-     6  Felwood - turn-in: objectives skipped; objective: grey
-     4  Wetlands - turn-in: objectives skipped; objective: grey
-     4  Tanaris - turn-in: objectives skipped; objective: grey
-     1  Stranglethorn Vale 2 - turn-in: objectives skipped; objective: grey
+     7  Felwood - turn-in: objectives skipped; objective: grey
+     6  Redridge Mountains 2 - turn-in: objectives skipped; objective: grey
+     2  Wetlands - turn-in: objectives skipped; objective: grey
 
 Travel between maps, as the guide advises it (average per run):
-  boat      3.40 h over  12.3 trips
-  walk      2.71 h over  25.0 trips
-  hearth    0.85 h over   5.7 trips
-  fly       0.67 h over   5.2 trips
-  unknown   0.01 h over   0.2 trips
-  spell     0.00 h over   0.2 trips
+  boat      3.36 h over  11.6 trips
+  walk      2.99 h over  23.6 trips
+  hearth    0.61 h over   4.5 trips
+  fly       0.55 h over   4.8 trips
+  spell     0.23 h over   2.7 trips
+  unknown   0.03 h over   0.4 trips
 
 Runs of 20+ minutes with no faster way (zone, from map -> to map, minutes: runs):
-  Warlock: Succubus                  1413 -> 1440   20 min: 4
-  Stormwind (Skyborne)               1416 -> 1453   29 min: 4
+  Stonetalon Mountains               1440 -> 1442   23 min: 14
+  Stonetalon Mountains               1440 -> 1442   26 min: 14
+  Silithus                           1444 -> 1451   21 min: 7
+  Stormwind (Skyborne)               1416 -> 1453   29 min: 2
 
 Level on arrival vs plan (avg difference, biggest first):
-  -2.39  Stormwind (Skyborne)
-  -2.39  Dalaran (Skyborne)
-  -1.10  Blackfathom Deeps
-  -1.09  Dun Morogh (turn in Gnomeregan)
-  -1.08  Stormwind (quests for Gnomeregan)
-  -1.08  Westfall
-  -1.07  Ironforge (quests for Gnomeregan)
-  -1.07  Ironforge (turn in Gnomeregan)
-  -1.07  Gnomeregan
-  -0.94  Stonetalon Mountains
-  -0.90  Duskwood
-  -0.90  Ashenvale
+  -1.56  Hunter: Taming the Beast (Skyborne)
+  -1.04  Dalaran (Skyborne)
+  -0.88  Stormwind (turn in The Deadmines)
+  -0.87  The Deadmines
+  -0.84  Darkshore
+  -0.82  Ironforge - 40s
+  -0.76  Stormwind City
+  -0.73  Stormwind (quests for City of Dalaran)
+  -0.73  Duskwood
+  -0.72  City of Dalaran
+  -0.72  Warrior: Defensive Stance (Human)
+  -0.71  Alterac Mountains (turn in City of Dalaran)
 
-Slowest zones (Speed, average hours):
-  10.59 h  Tanaris
-   9.17 h  Stranglethorn Vale
-   9.12 h  Azshara
-   7.64 h  Western Plaguelands
-   6.17 h  Eastern Plaguelands
-   5.84 h  Wetlands
-   4.68 h  Un'Goro Crater
-   4.02 h  Redridge Mountains
-   3.37 h  Silithus
-   3.30 h  Stranglethorn Vale 2
+Slowest zones (Thorough, average hours):
+  11.01 h  Tanaris
+   9.30 h  Stranglethorn Vale
+   8.54 h  Azshara
+   7.84 h  Western Plaguelands
+   6.55 h  Wetlands
+   5.32 h  Silithus
+   5.10 h  Un'Goro Crater
+   3.82 h  Redridge Mountains
+   3.27 h  Stranglethorn Vale 2
+   2.88 h  Eastern Plaguelands

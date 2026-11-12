@@ -38,6 +38,7 @@ SL.defaults = {
     sound = true,            -- soft sound when a step completes
     mapPins = true,          -- numbered pins for upcoming steps on the world map
     mapRoute = true,         -- dashed route line between those pins
+    mapAreas = true,         -- a soft blob where the current objectives' mobs / objects are
     terrainArrow = true,     -- steer the arrow around mountains / water using the terrain grid
     minimapPins = true,      -- ... and on the minimap
     minimapRoute = true,     -- line on the minimap from you to the current objective
@@ -45,6 +46,12 @@ SL.defaults = {
     telemetry = true,        -- record time per step for route tuning
     itemButton = true,       -- clickable button for the current quest's usable item
     autoFly = true,          -- on a "Fly to" step, pick the destination when the flight map opens
+    groupQuests = true,      -- hint at elite quests you could do with a group
+    profReminders = true,
+    markTargets = true,      -- arrow over the current quest mobs / NPCs' nameplates, tooltip line, target key
+    showQuestPlates = false, -- turn the game's nameplates on so those arrows show without targeting (opt-in)    -- remind you to train a profession's next tier once it unlocks
+    mountGoal = 100,         -- gold mode: gold to have for riding + the mount at 40
+    duoShare = true,         -- duo mode: offer route quests you accept to your partner
 }
 
 SL.charDefaults = {
@@ -54,10 +61,16 @@ SL.charDefaults = {
     flags = {},        -- [stepIndex] = true  (event-driven completions: hearth set, FP learned, trained, ...)
     knownTaxi = {},    -- ["mapID:x:y"] = true
     lastTrained = 0,
+    goldMode = false,  -- mount gold mode: skinning + a gold tracker towards the level 40 mount
+    duo = false,       -- duo mode: levelling with a partner (status shared over addon messages)
+    hasMount = false,  -- learned Apprentice Riding
+    moneyAt = {},      -- [level] = copper when you reached it (gold pace)
     initialized = false,
-    mode = "speed",    -- route mode: speed | dungeons | thorough
+    mode = "thorough", -- route mode: thorough | safe (+ _dungeons)
     notOffered = {},   -- [questID] = level at which its giver did not offer it
     waiting = {},      -- [stepIndex] = true: passed while waiting for a level, re-shown when ready
+    early = {},        -- [stepIndex] = true: done ahead of the route because you stood at its NPC
+    pinned = false,    -- stepIndex you went back to: shown until done or skipped again
 }
 
 local function copyDefaults(dst, src)
@@ -150,9 +163,11 @@ function SL:Update()
     SL.Player:Refresh()
     SL.Engine:Advance()
     SL.UI:Refresh()
+    if SL.Duo then SL.Duo:Push() end
     SL.Arrow:SetTarget(SL.Engine:CurrentTarget())
     if SL.db.telemetry then SL.Telemetry:OnCursor() end
     SL.MapPins:Refresh()
+    if SL.Highlight and SL.Highlight.button then SL.Highlight:Refresh() end
 end
 
 SL:On("ADDON_LOADED", function(_, name)
@@ -166,7 +181,7 @@ end)
 SL:On("PLAYER_LOGIN", function()
     SL.Player:Init()
     local faction = SL.Player.faction
-    if not (SL.Routes and SL.Routes[faction .. "_speed"]) then
+    if not (SL.Routes and SL.Routes[faction .. "_thorough"]) then
         SL:Print("no route for " .. tostring(faction) .. " characters - the guide is disabled on this character.")
         return
     end
@@ -181,6 +196,10 @@ SL:On("PLAYER_LOGIN", function()
     if not okPath then SL:Print("terrain pathing unavailable (" .. tostring(errPath) .. ")") end
     local okBtn, errBtn = pcall(SL.MinimapButton.Init, SL.MinimapButton)
     if not okBtn then SL:Print("minimap button unavailable (" .. tostring(errBtn) .. ")") end
+    local okHl, errHl = pcall(SL.Highlight.Init, SL.Highlight)
+    if not okHl then SL:Print("quest mob markers unavailable (" .. tostring(errHl) .. ")") end
+    local okDuo, errDuo = pcall(SL.Duo.Init, SL.Duo)
+    if not okDuo then SL:Print("duo mode unavailable (" .. tostring(errDuo) .. ")") end
     local okPins, errPins = pcall(SL.MapPins.Init, SL.MapPins)
     if not okPins then SL:Print("map pins unavailable (" .. tostring(errPins) .. ")") end
     -- the settings panel is optional: never let a missing UI template take the guide down
@@ -229,8 +248,9 @@ local function help()
     print("  /sl sections     list route sections")
     print("  /sl arrow        toggle the guide arrow")
     print("  /sl lock         lock / unlock the window")
-    print("  /sl mode <m>     route style: speed (fastest) or thorough (no cuts, no death-skips)")
+    print("  /sl mode <m>     route style: thorough (recommended) or safe (never an orange fight)")
     print("  /sl dungeons on|off  include dungeon runs (with their quests) in the route")
+    print("  /sl duo on|off   duo mode: level with a partner (see each other's step, share quests)")
     print("  /sl setup        open the setup window (route style, dungeons, starting zones)")
     print("  /sl start <race|auto>  follow another race's starting zones (e.g. /sl start nightelf)")
     print("  /sl list         scrollable list of the whole route (look ahead, jump, skip)")
@@ -281,12 +301,13 @@ SlashCmdList.SPEEDLEVEL = function(msg)
         SL.Options:Open()
     elseif cmd == "mode" then
         local a = (arg or ""):lower()
-        if a == "speed" or a == "thorough" then
+        if a == "speed" then a = "thorough" end      -- the old Speed style is Thorough now
+        if a == "thorough" or a == "safe" then
             SL.Engine:SetStyle(a)
         elseif a == "dungeons" then
             SL.Engine:SetDungeons(true)
         else
-            SL:Print("route: |cffffd100" .. SL.Engine.MODE_NAMES[SL.Engine:Mode()] .. "|r.  /sl mode speed | thorough,  /sl dungeons on | off")
+            SL:Print("route: |cffffd100" .. SL.Engine.MODE_NAMES[SL.Engine:Mode()] .. "|r.  /sl mode thorough | safe,  /sl dungeons on | off")
         end
     elseif cmd == "list" then
         SL.RouteList:Toggle()
@@ -303,6 +324,9 @@ SlashCmdList.SPEEDLEVEL = function(msg)
         else
             SL.Engine:SetPath(alias[a] or a)
         end
+    elseif cmd == "duo" then
+        local a = (arg or ""):lower()
+        SL.Duo:SetEnabled((a == "on") or (a ~= "off" and not SL.Duo:Enabled()))
     elseif cmd == "dungeons" then
         local a = (arg or ""):lower()
         local on = (a == "on") or (a ~= "off" and not SL.Engine:Dungeons())
@@ -320,6 +344,9 @@ SlashCmdList.SPEEDLEVEL = function(msg)
         SL.Telemetry:Report(arg)
     elseif cmd == "telemetry" then
         if arg == "clear" then SL.Telemetry:Clear() else SL.Telemetry:Summary() end
+    elseif cmd == "taxi" then
+        SL.taxiDebug = true
+        SL:Print("open a flight map: the guide will list what it reads from it")
     elseif cmd == "mapinfo" then
         -- what the world map's pin / line layer sees (open the map first)
         local prov = SL.MapPins and SL.MapPins.provider
@@ -331,6 +358,15 @@ SlashCmdList.SPEEDLEVEL = function(msg)
                 tostring(prov.mapID), prov.points and #prov.points or 0, o and "yes" or "no",
                 o and tostring(math.floor((o:GetWidth() or 0) + 0.5)) or "-", o and tostring(math.floor((o:GetHeight() or 0) + 0.5)) or "-",
                 o and tostring(o:GetFrameLevel()) or "-", o and o.used or 0, SL.db.mapRoute and "on" or "off"))
+            -- objective areas: what the current objective carries and how many glows are up
+            local E = SL.Engine
+            local cur = E.steps[E:Focus()]
+            local pts = cur and SL.MapPins.AreaPoints(cur) or {}
+            local shown = 0
+            for _, t in ipairs(prov.areas and prov.areas.tex or {}) do if t:IsShown() then shown = shown + 1 end end
+            SL:Print(string.format("objective areas %s: current step %s (%s), %d area points, %d glows shown",
+                SL.db.mapAreas == false and "off" or "on", cur and cur.t or "-", cur and cur.q and E:QuestName(cur.q) or "-",
+                #pts, shown))
             for where, e in pairs(SL.errors) do
                 if where:find("map") then print(("  %s x%d: %s"):format(where, e.n, e.msg)) end
             end

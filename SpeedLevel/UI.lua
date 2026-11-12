@@ -5,6 +5,8 @@ SL.UI = UI
 
 local WIDTH = 330
 local MAX_UPCOMING = 10
+local LIST_MAX = 80            -- the scrolling NEXT list: the rest of this zone, at most this many steps
+local LIST_W = WIDTH - 16 - 6  -- room on the right for the scroll thumb
 local MAX_OBJ = 6
 
 -- classic XP per level (Forever keeps the 1-60 curve)
@@ -172,7 +174,7 @@ end
 
 local STEP_KIND = {
     A = "Pick up", T = "Turn in", C = "Objective", GRIND = "Grind", DEATH = "Death-skip", FP = "Flight path",
-    FLY = "Flight", HEARTH = "Set hearth", USEHS = "Hearth", GOTO = "Travel", NOTE = "Note", TRAIN = "Train",
+    FLY = "Flight", HEARTH = "Set hearth", USEHS = "Hearth", GOTO = "Travel", NOTE = "Note", TRAIN = "Train", MOUNT = "Mount", PROF = "Profession",
     BOAT = "Boat / zeppelin", DUNGEON = "Dungeon",
 }
 
@@ -222,6 +224,11 @@ local function stepTooltip(owner, idx)
     end
     if st.x then GameTooltip:AddLine(string.format("%.1f, %.1f", st.x, st.y), 0.6, 0.6, 0.6) end
     GameTooltip:AddLine("Left-click: make this the current step   Right-click: skip it", 0.5, 0.8, 1, true)
+    if st.grp then
+        GameTooltip:AddLine("Elite: bring a group. Accept it and the guide takes you through it;", 1, 0.6, 0.2, true)
+        GameTooltip:AddLine("leave it and the route carries on without it.", 1, 0.6, 0.2, true)
+    end
+    if st.q then GameTooltip:AddLine("Shift-click: link the quest in chat (handy for finding a group)", 0.5, 0.8, 1, true) end
     GameTooltip:Show()
 end
 
@@ -230,7 +237,9 @@ UI.setIcon, UI.flatTexture, UI.TYPE_COLOR, UI.StepTooltip = setIcon, flatTexture
 
 local function onStepClick(self, button)
     if not self.stepIndex then return end
+    if button == "LeftButton" and SL.Engine:LinkToChat(self.stepIndex) then return end
     local st = SL.Engine.steps[self.stepIndex]
+    if st and st.grp and st.t == "A" and not SL.Player:InLog(st.q) then return end
     if button == "LeftButton" and st and st.t == "A" and SL.Player:InLog(st.q) and SL.Player:IsFailed(st.q) then
         SL.Engine:PromptAbandon(st.q)
         return
@@ -287,16 +296,61 @@ local function makeUpcomingRow(parent)
     row.hl:Hide()
     row.dot = flatTexture(row, "ARTWORK", 1, 1, 1, 0.8)
     row.dot:SetSize(3, 12)
-    row.dot:SetPoint("LEFT", 2, 0)
+    row.dot:SetPoint("TOPLEFT", 2, -2)
     row.icon = row:CreateTexture(nil, "ARTWORK")
     row.icon:SetSize(14, 14)
-    row.icon:SetPoint("LEFT", row.dot, "RIGHT", 6, 0)
+    row.icon:SetPoint("TOPLEFT", row.dot, "TOPRIGHT", 6, 1)
     row.text = row:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-    row.text:SetPoint("LEFT", row.icon, "RIGHT", 5, 0)
-    row.text:SetPoint("RIGHT", -4, 0)
+    row.text:SetPoint("TOPLEFT", row.icon, "TOPRIGHT", 5, -1)
     row.text:SetJustifyH("LEFT")
-    row.text:SetWordWrap(false)
+    row.text:SetWordWrap(true)
     return row
+end
+
+-- a row below the card: its text wraps instead of being cut off, and the row takes its height
+local function placeRow(row, y, alpha, x, w, reserve)
+    w = w or (WIDTH - 16)
+    row.text:SetWidth(w - 34 - (reserve or 0))
+    local h = math.max(16, math.ceil((row.text:GetStringHeight() or 12) + 4))
+    row:ClearAllPoints()
+    row:SetPoint("TOPLEFT", x or 8, y)
+    row:SetSize(w, h)
+    row:SetAlpha(alpha)
+    row:Show()
+    return y - h - 1
+end
+
+local function peerRow(f, i)
+    local r = f.peerRows[i]
+    if not r then
+        r = makeUpcomingRow(f)
+        r:SetScript("OnClick", function(self, button)
+            if button == "LeftButton" and self.join then SL.Engine:Jump(self.join) end
+        end)
+        r:SetScript("OnEnter", function(self)
+            self.hl:Show()
+            if not self.peer then return end
+            GameTooltip:SetOwner(self, "ANCHOR_LEFT")
+            GameTooltip:AddLine("Duo: " .. self.peer)
+            if self.join then
+                GameTooltip:AddLine("Click to jump to their step, so you both follow the same one.", 1, 1, 1, true)
+            end
+            GameTooltip:Show()
+        end)
+        f.peerRows[i] = r
+    end
+    return r
+end
+
+local function listRow(f, i)
+    local r = f.listRows[i]
+    if not r then
+        r = makeUpcomingRow(f.listChild)
+        r:EnableMouseWheel(true)
+        r:SetScript("OnMouseWheel", function(_, delta) SL.UI:ScrollList(delta) end)
+        f.listRows[i] = r
+    end
+    return r
 end
 
 -- ------------------------------------------------------------------ frame
@@ -310,9 +364,15 @@ function UI:Init()
     f:SetMovable(true)
     f:EnableMouse(true)
     f:RegisterForDrag("LeftButton")
-    f:SetScript("OnDragStart", function(self) if not SL.db.lockFrame then self:StartMoving() end end)
+    f:SetScript("OnDragStart", function(self)
+        if not SL.db.lockFrame then
+            UI:PlaceLFG(nil)
+            self:StartMoving()
+        end
+    end)
     f:SetScript("OnDragStop", function(self)
         self:StopMovingOrSizing()
+        SL:RequestUpdate()
         local p, _, rp, x, y = self:GetPoint()
         SL.db.framePos = { p, rp, x, y }
     end)
@@ -406,6 +466,17 @@ function UI:Init()
     f.rested:SetPoint("TOPLEFT", f.xpBar, "TOPLEFT")
     f.rested:SetHeight(5)
 
+    -- mount gold mode: gold towards riding + the mount (only while you cannot ride yet)
+    f.goldText = f:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+    f.goldText:SetPoint("TOPLEFT", 10, -71)
+    f.goldText:SetPoint("TOPRIGHT", -10, -71)
+    f.goldText:SetJustifyH("LEFT")
+    f.goldBar = makeBar(f, 4, 1.0, 0.78, 0.15)
+    f.goldBar:SetPoint("TOPLEFT", 10, -84)
+    f.goldBar:SetPoint("TOPRIGHT", -10, -84)
+    f.goldText:Hide()
+    f.goldBar:Hide()
+
     -- current step card
     local card = CreateFrame("Frame", nil, f)
     card:SetPoint("TOPLEFT", 8, -74)
@@ -439,6 +510,18 @@ function UI:Init()
     f.nextLabel:SetText("NEXT")
     f.rows = {}
     for i = 1, MAX_UPCOMING do f.rows[i] = makeUpcomingRow(f) end
+    -- the NEXT list scrolls (mouse wheel): every remaining step of this zone, a few rows visible
+    f.list = CreateFrame("ScrollFrame", nil, f)
+    f.listChild = CreateFrame("Frame", nil, f.list)
+    f.listChild:SetSize(LIST_W, 1)
+    f.list:SetScrollChild(f.listChild)
+    f.list:EnableMouseWheel(true)
+    f.list:SetScript("OnMouseWheel", function(_, delta) SL.UI:ScrollList(delta) end)
+    f.listThumb = flatTexture(f.list, "OVERLAY", 1, 1, 1, 0.25)
+    f.listThumb:SetWidth(3)
+    f.listThumb:Hide()
+    f.listRows = {}
+    f.peerRows = {}
 
     -- footer controls
     f.btnBack = iconButton(f, "Interface\\Buttons\\UI-SpellbookIcon-PrevPage-Up", "Previous step", function() SL.Engine:Back() end)
@@ -506,6 +589,7 @@ function UI:ApplyVisibility()
     local inInstance = IsInInstance and select(1, IsInInstance())
     if SL.db.hidden or (SL.db.hideInInstance and inInstance) then
         f:Hide()
+        self:PlaceLFG(nil)
     else
         f:Show()
     end
@@ -545,6 +629,147 @@ end
 
 -- ------------------------------------------------------------------ refresh
 
+-- the header stacks from the top: XP line, XP bar, then (gold mode) the gold line and its bar - each
+-- placed below the one above at the height its text really takes, so a line that wraps never runs
+-- under a bar.  Returns where the step card starts.
+-- ------------------------------------------------------------------ group finder eye
+-- Forever's Looking For Group window must only ever be opened by the game's own code: addon code
+-- that opens it (or calls into it) taints it, and its searches then fail until /reload. So the eye
+-- is a secure button that presses the game's Group Finder micro button. It lives on UIParent at
+-- the screen position of the group quest's line (anchoring it to the line would make the guide's
+-- rows protected) and is only moved, shown or hidden out of combat. Right-click writes an LFG
+-- message with the quest link in chat (you press Enter to send it).
+local function lfgShown()
+    local w = _G.LFGParentFrame or _G.PVEFrame
+    return w and w.IsVisible and w:IsVisible() or false
+end
+
+local function inCombat() return InCombatLockdown and InCombatLockdown() end
+
+function UI:LFGChat(q)
+    local E = SL.Engine
+    if not q then return end
+    local link = E:QuestLink(q) or ("[" .. E:QuestName(q) .. "]")
+    local zone = GetZoneText and GetZoneText() or ""
+    local msg = string.format("LFG %s (elite, level %d)%s", link, E:QuestLevel(q) or 0,
+        zone ~= "" and (" in " .. zone) or "")
+    local ch = GetChannelName and GetChannelName("LookingForGroup")
+    if type(ch) == "number" and ch > 0 then msg = "/" .. ch .. " " .. msg end
+    if ChatFrame_OpenChat then ChatFrame_OpenChat(msg) end
+end
+
+function UI:BuildLFG()
+    if self.lfg ~= nil then return self.lfg end
+    local micro = _G.LFGMicroButton or _G.LFDMicroButton
+    local name = micro and micro.GetName and micro:GetName()
+    if not name or inCombat() then
+        if not name then self.lfg = false end      -- no group finder in this client
+        return nil
+    end
+    local b = CreateFrame("Button", "MacQuestLFGButton", UIParent, "SecureActionButtonTemplate")
+    b.last, b.q = 0, false
+    b:SetSize(20, 20)
+    b:SetFrameStrata("HIGH")
+    b:RegisterForClicks("AnyUp", "AnyDown")
+    b:SetAttribute("type1", "macro")
+    b:SetAttribute("macrotext1", "/click " .. name)
+    b:SetAttribute("type2", "macquestchat")         -- not a game action: right-click only runs PostClick
+    b:SetNormalTexture("Interface\\LFGFrame\\LFG-Eye")
+    local nt = b:GetNormalTexture()
+    if nt and nt.SetTexCoord then nt:SetTexCoord(0, 0.125, 0, 0.25) end
+    b:SetHighlightTexture("Interface\\Buttons\\ButtonHilight-Square", "ADD")
+    -- the window already open: don't press the micro button again (it would close it)
+    b:SetScript("PreClick", function(self, button)
+        if button == "LeftButton" and not inCombat() then
+            self:SetAttribute("type1", lfgShown() and "macquestnone" or "macro")
+        end
+    end)
+    b:SetScript("PostClick", function(self, button)
+        local t = GetTime and GetTime() or 0
+        if button ~= "RightButton" or (self.last and t - self.last < 0.4) then return end
+        self.last = t
+        UI:LFGChat(self.q)
+    end)
+    b:SetScript("OnEnter", function(self)
+        GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+        GameTooltip:AddLine("Find a group: " .. (self.q and SL.Engine:QuestName(self.q) or "group quest"))
+        GameTooltip:AddLine("Click: open the Group Finder", 1, 1, 1)
+        GameTooltip:AddLine("Right-click: write an LFG message with the quest link in chat (Enter sends it)", 1, 1, 1, true)
+        GameTooltip:Show()
+    end)
+    b:SetScript("OnLeave", function() GameTooltip:Hide() end)
+    b:Hide()
+    SL:On("PLAYER_REGEN_DISABLED", function() b:Hide() end)   -- still allowed: lockdown starts after this
+    SL:On("PLAYER_REGEN_ENABLED", function() SL:RequestUpdate() end)
+    self.lfg = b
+    return b
+end
+
+-- the eye on the right end of `anchor` (a guide line), or hidden when anchor is nil
+function UI:PlaceLFG(anchor, q)
+    if inCombat() then return end
+    local b = self.lfg
+    if anchor and b == nil then b = self:BuildLFG() end
+    if not b then return end
+    local r, t = anchor and anchor.GetRight and anchor:GetRight(), anchor and anchor.GetTop and anchor:GetTop()
+    if not (anchor and r and t and anchor:IsVisible()) then
+        b:Hide()
+        return
+    end
+    local k = (anchor:GetEffectiveScale() or 1) / (b:GetEffectiveScale() or 1)
+    b:ClearAllPoints()
+    b:SetPoint("TOPRIGHT", UIParent, "BOTTOMLEFT", r * k, t * k + 1)
+    b.q = q
+    b:Show()
+end
+
+function UI:ScrollList(delta)
+    local f = self.frame
+    if not (f and f.list) then return end
+    local maxS = math.max(0, (f.listContentH or 0) - (f.listViewH or 0))
+    local s = math.min(maxS, math.max(0, (f.list:GetVerticalScroll() or 0) - delta * 34))
+    f.list:SetVerticalScroll(s)
+    self:UpdateListThumb()
+end
+
+function UI:UpdateListThumb()
+    local f = self.frame
+    local ch, vh = f.listContentH or 0, f.listViewH or 0
+    if ch <= vh + 1 or vh <= 0 then f.listThumb:Hide() return end
+    local sc = f.list:GetVerticalScroll() or 0
+    local th = math.max(10, vh * vh / ch)
+    local ty = (vh - th) * math.min(1, sc / (ch - vh))
+    f.listThumb:ClearAllPoints()
+    f.listThumb:SetPoint("TOPRIGHT", f.list, "TOPRIGHT", 0, -ty)
+    f.listThumb:SetHeight(th)
+    f.listThumb:Show()
+end
+
+function UI:LayoutHeader(showGold)
+    local f = self.frame
+    local y = -49
+    local hx = math.max(12, f.xpText:GetStringHeight() or 12)
+    y = y - hx - 2
+    f.xpBar:ClearAllPoints()
+    f.xpBar:SetPoint("TOPLEFT", 10, y)
+    f.xpBar:SetPoint("TOPRIGHT", -10, y)
+    y = y - 5
+    if showGold then
+        y = y - 3
+        f.goldText:ClearAllPoints()
+        f.goldText:SetPoint("TOPLEFT", 10, y)
+        f.goldText:SetPoint("TOPRIGHT", -10, y)
+        local hg = math.max(12, f.goldText:GetStringHeight() or 12)
+        y = y - hg - 2
+        f.goldBar:ClearAllPoints()
+        f.goldBar:SetPoint("TOPLEFT", 10, y)
+        f.goldBar:SetPoint("TOPRIGHT", -10, y)
+        y = y - 4
+    end
+    f.headerTop = y - 6
+    return f.headerTop
+end
+
 function UI:RefreshHeader()
     local f = self.frame
     local P = SL.Player
@@ -557,6 +782,9 @@ function UI:RefreshHeader()
     local t60 = self:TimeTo60(rate, sampleSeconds)
     if t60 and t60 > 0 then txt = txt .. string.format("  |cff888888(60 in ~%s)|r", fmtTime(t60)) end
     f.xpText:SetText(txt)
+    local hx = math.max(12, f.xpText:GetStringHeight() or 12)
+    if f.xpTextH and f.xpTextH ~= hx then SL:RequestUpdate() end
+    f.xpTextH = hx
     f.xpBar:SetValue(pct)
     local rested = GetXPExhaustion and GetXPExhaustion() or 0
     local w = f.xpBar:GetWidth()
@@ -611,7 +839,7 @@ function UI:Refresh()
         f.title:SetText(sec.title)
         local done, total = sectionProgress(cur.sec)
         local mode = SL.Engine:Mode()
-        local tag = mode ~= "speed" and ("|cff9a6bff" .. (SL.Engine.MODE_NAMES[mode] or mode) .. "|r  ") or ""
+        local tag = mode ~= "thorough" and ("|cff9a6bff" .. (SL.Engine.MODE_NAMES[mode] or mode) .. "|r  ") or ""
         f.secInfo:SetText(tag .. (total > 0 and string.format("%d/%d quests", done, total) or ""))
         f.secBar:SetValue(total > 0 and done / total or 0)
     end
@@ -632,7 +860,7 @@ function UI:Refresh()
             local _, text, lines = E:StepText(st)
             line.stepIndex = idx
             setIcon(line.icon, st.t)
-            line.text:SetWidth(inner - 24)
+            line.text:SetWidth(inner - 24 - (st.grp and 22 or 0))
             line.text:SetText(text)
             line.text:SetFontObject(li == 1 and "GameFontHighlight" or "GameFontHighlightSmall")
             local h = math.max(18, line.text:GetStringHeight() + 4)
@@ -698,16 +926,50 @@ function UI:Refresh()
         line.icon:SetTexture("Interface\\Icons\\Achievement_Level_60")
         line.text:SetText(SL.Player.level >= 60 and "Level 60 - congratulations!" or "No more steps for this character. Click the zone name to jump.")
         for k = 1, MAX_OBJ do line.obj[k].label:Hide() line.obj[k].bar:Hide() end
+        line.text:SetWidth(inner - 24)
+        line.text:SetFontObject("GameFontHighlight")
+        local h = math.max(20, math.ceil(line.text:GetStringHeight() + 4))
         line:ClearAllPoints()
         line:SetPoint("TOPLEFT", card, "TOPLEFT", 10, y)
-        line:SetSize(inner, 20)
+        line:SetSize(inner, h)
         line:Show()
-        y = y - 24
+        y = y - h - 4
     end
     local cardH = -y + 2
     card:SetHeight(cardH)
+    -- the gold bar pushes the card down while it shows
+    local have, goal, proj, honored = E:GoldPace()
+    local showGold = have and not compact
+    if showGold then
+        local pace = ""
+        if have >= goal then
+            pace = "  |cff40ff40ready - go buy it|r"
+        elseif proj then
+            pace = proj >= goal and "  |cff40ff40on pace for 40|r" or string.format("  |cffff9933~%dg short at 40|r", goal - proj)
+        end
+        local city = SL.Player:HomeCity()
+        local rep = ""
+        if honored then
+            rep = " |cff888888(Honored with " .. (city or "your city") .. " -10%)|r"
+        elseif city then
+            rep = string.format(" |cff888888(%dg at Honored with %s)|r",
+                math.floor((SL.db.mountGoal or 100) * 0.9 + 0.5), city)
+        end
+        f.goldText:SetText(string.format("|cffffd040Mount gold|r  %dg / %dg%s%s", have, goal, rep, pace))
+        f.goldBar:SetValue(math.min(1, have / math.max(1, goal)))
+        f.goldText:Show()
+        f.goldBar:Show()
+    else
+        f.goldText:Hide()
+        f.goldBar:Hide()
+    end
+    local top = self:LayoutHeader(showGold)
+    card:ClearAllPoints()
+    card:SetPoint("TOPLEFT", 8, top)
+    card:SetPoint("TOPRIGHT", -8, top)
 
     -- animations on step change / completion
+    local stepChanged = lastCursor ~= SL.char.cursor
     if lastCursor and SL.char.cursor ~= lastCursor then
         card.fade:Stop()
         card.fade:Play()
@@ -721,36 +983,102 @@ function UI:Refresh()
     lastCursor = SL.char.cursor
 
     -- upcoming
-    local total = -74 - cardH
+    local total = top - cardH
+    -- duo: your partner's step (click to join it)
+    local peerLines = (not compact and SL.Duo) and SL.Duo:Lines() or {}
+    if #peerLines > 0 then
+        local py = total - 4
+        for k, pl in ipairs(peerLines) do
+            local row = peerRow(f, k)
+            row.join, row.peer, row.stepIndex = pl.join, pl.name, nil
+            row.dot:SetColorTexture(0.4, 0.8, 1, 0.9)
+            row.icon:SetTexture("Interface\\Icons\\INV_Misc_GroupLooking")
+            row.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
+            row.text:SetText(pl.text)
+            py = placeRow(row, py, 1)
+        end
+        total = py
+    end
+    for k = #peerLines + 1, #f.peerRows do f.peerRows[k]:Hide() end
     local shown = 0
-    if not compact and (SL.db.stepsShown or 6) > 0 then
+    local nList = 0
+    local vis = compact and 0 or (SL.db.stepsShown or 6)
+    if vis > 0 then
+        -- the rest of this zone, scrollable; `vis` rows show at once. Past the zone's end a divider
+        -- names the next zone, and the next zone's steps only fill up a short list.
         local inGroup = {}
         for _, i in ipairs(group) do inGroup[i] = true end
-        local up = E:Upcoming(#group + (SL.db.stepsShown or 6))
-        local ry = total - 8
-        f.nextLabel:ClearAllPoints()
-        f.nextLabel:SetPoint("TOPLEFT", 12, ry)
-        ry = ry - 12
+        local up = E:Upcoming(#group + LIST_MAX + 1)
+        local curSec = SL.char.curSec
+        local secNow = curSec and E.sections[curSec]
+        local secLast = secNow and secNow.last or math.huge
+        local early = {}   -- pinned / urgent steps lead the list wherever they are
+        if SL.char.pinned then early[SL.char.pinned] = true end
+        for _, i in ipairs(E:Urgent()) do early[i] = true end
+        local ly, crossed, viewH = 0, false, nil
+        local function placed()
+            if nList == vis then viewH = -ly end
+        end
         for _, idx in ipairs(up) do
-            if not inGroup[idx] and shown < MAX_UPCOMING then
-                shown = shown + 1
-                local row = f.rows[shown]
+            if nList >= LIST_MAX then break end
+            if not inGroup[idx] then
                 local st = E.steps[idx]
+                if not crossed and not early[idx] and idx > secLast and st.sec ~= curSec then
+                    crossed = true
+                    local ns = E.sections[st.sec]
+                    nList = nList + 1
+                    local row = listRow(f, nList)
+                    row.stepIndex = nil
+                    row.dot:SetColorTexture(0.5, 0.5, 0.5, 0.4)
+                    row.icon:SetTexture("Interface\\Icons\\INV_Misc_Map_01")
+                    row.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
+                    row.text:SetText("|cff999999Then: " .. (ns and ns.title or "the next zone") .. "|r")
+                    ly = placeRow(row, ly, 0.9, 0, LIST_W)
+                    placed()
+                end
+                if crossed and nList >= vis then break end
+                nList = nList + 1
+                local row = listRow(f, nList)
                 local _, text = E:StepText(st)
                 row.stepIndex = idx
                 local c = TYPE_COLOR[st.t] or DEFAULT_COLOR
                 row.dot:SetColorTexture(c[1], c[2], c[3], 0.8)
                 setIcon(row.icon, st.t)
                 row.text:SetText(text)
-                row:ClearAllPoints()
-                row:SetPoint("TOPLEFT", 8, ry)
-                row:SetSize(WIDTH - 16, 16)
-                row:SetAlpha(1 - shown * 0.06)
-                row:Show()
-                ry = ry - 17
+                ly = placeRow(row, ly, 1 - math.min(nList, 6) * 0.05, 0, LIST_W)
+                placed()
             end
         end
+        local contentH = -ly
+        viewH = math.min(viewH or contentH, contentH)
+        f.listContentH, f.listViewH = contentH, viewH
+        local more = contentH > viewH + 1
+        local ry = total - 8
+        f.nextLabel:ClearAllPoints()
+        f.nextLabel:SetPoint("TOPLEFT", 12, ry)
+        f.nextLabel:SetText(more and string.format("NEXT  |cff666666(%d steps - scroll for more)|r", nList - (crossed and 1 or 0)) or "NEXT")
+        ry = ry - 12
+        if nList > 0 then
+            f.listChild:SetSize(LIST_W, math.max(1, contentH))
+            f.list:ClearAllPoints()
+            f.list:SetPoint("TOPLEFT", 8, ry)
+            f.list:SetSize(WIDTH - 16, viewH)
+            local sc = stepChanged and 0 or math.min(f.list:GetVerticalScroll() or 0, math.max(0, contentH - viewH))
+            f.list:SetVerticalScroll(sc)
+            f.list:Show()
+            self:UpdateListThumb()
+            ry = ry - viewH
+        else
+            f.list:Hide()
+        end
         total = ry
+    else
+        f.list:Hide()
+        f.listContentH, f.listViewH = 0, 0
+    end
+    for i = nList + 1, #f.listRows do
+        f.listRows[i]:Hide()
+        f.listRows[i].stepIndex = nil
     end
     -- pickups that unlock at a later level in this zone
     if not compact then
@@ -767,16 +1095,56 @@ function UI:Refresh()
             row.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
             row.text:SetText(string.format("|cff999999At level %d (%d XP): %s|r", hints[h].level,
                 SL.Player:XPToLevel(hints[h].level), E:QuestName(st.q)))
-            row:ClearAllPoints()
-            row:SetPoint("TOPLEFT", 8, hy)
-            row:SetSize(WIDTH - 16, 16)
-            row:SetAlpha(0.8)
-            row:Show()
-            hy = hy - 17
+            hy = placeRow(row, hy, 0.8)
             total = hy
         end
     end
-    f.nextLabel:SetShown(shown > 0)
+    -- a profession tier you have unlocked: train it (unless the route's own stop for it is up now)
+    if not compact then
+        local hy = total - 2
+        local focus = cur
+        for _, p in ipairs(E:ProfessionTiers()) do
+            if shown >= MAX_UPCOMING then break end
+            if not (focus and focus.t == "PROF" and focus.prof == p.prof) then
+                shown = shown + 1
+                local row = f.rows[shown]
+                row.stepIndex = nil
+                row.dot:SetColorTexture(0.9, 0.75, 0.2, 0.8)
+                row.icon:SetTexture("Interface\\Icons\\INV_Misc_Book_11")
+                row.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
+                local where = p.trainer and string.format(" - %s%s", p.trainer.name,
+                    p.d and string.format(" (%.1fk yd)", p.d / 1000) or "") or " - any " .. p.prof .. " trainer"
+                row.text:SetText(string.format("|cffffd040Train %s %s (%d/%d)%s|r", p.rank, p.prof, p.skill, p.cap, where))
+                hy = placeRow(row, hy, 0.95)
+                total = hy
+            end
+        end
+    end
+    -- elite quests at this hub, for whoever has a group (the first one gets the group finder eye)
+    local lfgAt, lfgQ
+    do
+        local st1 = group[1] and E.steps[group[1]]
+        if st1 and st1.grp and st1.q and not compact then lfgAt, lfgQ = card.lines[1], st1.q end
+    end
+    if not compact then
+        local hy = total - 2
+        for _, idx in ipairs(E:GroupHints()) do
+            if shown >= MAX_UPCOMING then break end
+            shown = shown + 1
+            local row = f.rows[shown]
+            local st = E.steps[idx]
+            row.stepIndex = idx
+            row.dot:SetColorTexture(1, 0.55, 0.15, 0.8)
+            row.icon:SetTexture("Interface\\Icons\\INV_Misc_GroupNeedMore")
+            row.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
+            row.text:SetText(string.format("|cffff9933Group quest: %s (elite, %d) - take it if you have a group|r",
+                E:QuestName(st.q), E:QuestLevel(st.q) or 0))
+            hy = placeRow(row, hy, 0.9, nil, nil, 22)
+            if not lfgAt then lfgAt, lfgQ = row, st.q end
+            total = hy
+        end
+    end
+    f.nextLabel:SetShown(nList > 0)
     for i = shown + 1, MAX_UPCOMING do
         f.rows[i]:Hide()
         f.rows[i].stepIndex = nil
@@ -784,13 +1152,14 @@ function UI:Refresh()
 
     -- footer hint
     local secT = cur and E.sections[cur.sec]
+    local hintText = ""
     if secT and secT.mins and secT.mins > 0 and not compact then
-        f.hint:SetText(string.format("zone ~%d min", secT.mins))
-    else
-        f.hint:SetText("")
+        hintText = string.format("zone ~%d min", secT.mins)
     end
+    f.hint:SetText(hintText)
     f.btnCompact.tex:SetTexture(compact and "Interface\\Buttons\\UI-PlusButton-Up" or "Interface\\Buttons\\UI-MinusButton-Up")
     f:SetHeight(-total + 30)
+    self:PlaceLFG(lfgAt, lfgQ)
     if SL.RouteList then SL.RouteList:Refresh() end
     if SL.QuestItem then SL.QuestItem:Refresh() end
 end

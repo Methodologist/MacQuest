@@ -1,0 +1,4 @@
+<Bindings>
+	<Binding name="CLICK SpeedLevelTargetButton:LeftButton" header="SPEEDLEVEL" category="ADDONS">
+	</Binding>
+</Bindings>

@@ -26,7 +26,7 @@ TIMERS = {}
 local function noop() end
 local mockMeta
 local function newMock()
-  local o = { _scripts = {}, _events = {}, _text = "", _shown = true }
+  local o = { _scripts = {}, _events = {}, _text = "", _shown = true, _attr = {}, slMark = false }
   return setmetatable(o, mockMeta)
 end
 local methods = {
@@ -34,6 +34,10 @@ local methods = {
   GetScript = function(self, k) return self._scripts[k] end,
   RegisterEvent = function(self, ev) self._events[ev] = true end,
   SetText = function(self, t) self._text = t end,
+  SetAttribute = function(self, k, v) self._attr[k] = v end,
+  GetAttribute = function(self, k) return self._attr[k] end,
+  SetValue = function(self, v) self._value = v end,
+  GetValue = function(self) return self._value or 0 end,
   GetText = function(self) return self._text end,
   GetStringHeight = function(self) return 12 end,
   GetPoint = function() return "CENTER", nil, "CENTER", 0, 0 end,
@@ -344,7 +348,7 @@ def main():
     c = current()
     print("  ", c)
     check("Northshire Valley" in c, "Human starts in Northshire Valley")
-    check(L.eval("SpeedLevel.Engine:RouteKey()") == "Alliance_speed", "Alliance characters load the Alliance route")
+    check(L.eval("SpeedLevel.Engine:RouteKey()") == "Alliance_thorough", "Alliance characters load the Alliance route")
     fm_names = L.eval("""(function()
         local t = {}
         for _, f in ipairs(SpeedLevel.Travel.fm) do t[f[5]] = true end
@@ -510,28 +514,19 @@ def main():
     vec2 = L.eval("(function() local d, a = SpeedLevel.Player:VectorTo(1411, 33.0, 69.0); return a end)()")
     check(abs(vec2 - 1.5708) < 0.01, f"west is +pi/2 ({vec2:.3f})")
 
-    print("\n== speedrun tricks: death-skip, hearth cooldown")
+    print("\n== speedrun tricks: hearth cooldown (no route uses death-skips any more)")
     res = L.eval("""(function()
         local SL = SpeedLevel
-        local d, h
+        local d, h = 0, nil
         for i, st in ipairs(SL.Engine.steps) do
-          if st.t == "DEATH" and not d then d = i end
+          if st.t == "DEATH" then d = d + 1 end
           local sec = SL.Engine.sections[st.sec]
           if st.t == "USEHS" and st.x and not h and (not sec.races or tContains(sec.races, "Orc")) then h = i end
         end
         return d .. "," .. h
     end)()""")
-    d_i, h_i = [int(x) for x in res.split(",")]
-    login(level=5, race=6, raceFile="Tauren", **{"class": 1}, map=1412)
-    L.execute(f"SpeedLevel.Engine:Jump({d_i})")
-    st = L.eval(f"(SpeedLevel.Engine:Status({d_i}))")
-    check(st == 3, f"death-skip active at level 5 (status {st})")
-    print("   ", current())
-    L.execute("FireEvent('PLAYER_DEAD'); DEAD = false; FireEvent('PLAYER_ALIVE'); RunTimers(); SpeedLevel:Update()")
-    check(L.eval(f"SpeedLevel.char.flags[{d_i}]") is True, "death-skip completes after dying and resurrecting")
-    L.execute(f"SpeedLevel.char.flags[{d_i}] = nil; STATE.level = 15; SpeedLevel.Player:Refresh(); SpeedLevel.Engine:Invalidate()")
-    st = L.eval(f"select(2, SpeedLevel.Engine:ComputeStatus({d_i}))")
-    check(st == "too high level for a death-skip", f"death-skip not offered at 15 ({st})")
+    n_d, h_i = [int(x) for x in res.split(",")]
+    check(n_d == 0, f"no death-skips in the main route ({n_d})")
     lvl_h = int(L.eval(f"math.floor(SpeedLevel.Engine.sections[SpeedLevel.Engine.steps[{h_i}].sec].entry + 0.5)"))
     login(level=max(1, lvl_h), race=2, raceFile="Orc", **{"class": 1})
     L.execute(f"SpeedLevel.Engine:Jump({h_i})")
@@ -774,6 +769,41 @@ def main():
     w_lines, w_pins, w_after, w_err = wm.split(",")
     check(int(w_pins) > 0 and int(w_lines) > 0, f"world map: pins and route line drawn ({w_pins} pins, {w_lines} dashes)")
     check(int(w_after) > 0, f"world map: route line still drawn when a pin fails ({w_after} dashes)")
+    # the current objective's area: a glow per spawn around it
+    ar = L.eval("""(function()
+        local SL, E = SpeedLevel, SpeedLevel.Engine
+        local prov = SL.MapPins.provider
+        for i, st in ipairs(E.steps) do
+          local d = SL.Quests[st.q or 0]
+          if st.t == "C" and st.ar and d and E:SectionApplies(E.sections[st.sec]) and SL.Player:RaceOK(d[4])
+             and SL.Player:ClassOK(d[5]) and (d[3] or 1) <= STATE.level then
+            local saveLog, saveCur = STATE.log, SL.char.cursor
+            STATE.log = { { id = st.q, complete = false } }
+            SL.Player:Refresh()
+            SL.char.cursor, SL.char.curSec = i, st.sec
+            STATE.map, STATE.x, STATE.y = st.m, st.x / 100, st.y / 100
+            E:Invalidate()
+            SL:Update()
+            prov:RefreshAllData()
+            -- the route line redraws twice a second while the map is open: the areas must stay
+            prov:DrawRoute()
+            local used = 0
+            for _, t in ipairs(prov.areas and prov.areas.tex or {}) do if t:IsShown() then used = used + 1 end end
+            local n = #SL.MapPins.AreaPoints(st)
+            SL.db.mapAreas = false
+            prov:RefreshAllData()
+            local off = prov.areas and prov.areas.used or 0
+            SL.db.mapAreas = true
+            STATE.log = saveLog
+            SL.Player:Refresh()
+            return used .. "," .. n .. "," .. off
+          end
+        end
+        return "none"
+    end)()""")
+    print("    objective area:", ar)
+    check(ar != "none" and int(ar.split(",")[0]) >= 3, f"world map: the current objective's area is drawn ({ar})")
+    check(ar != "none" and ar.split(",")[2] == "0", "and the option turns it off")
     close = L.eval("""(function()
         local SL = SpeedLevel
         local canvas = CreateFrame("Frame")
@@ -951,7 +981,7 @@ def main():
     print("\n== route modes + dungeon runs")
     login(level=20, race=2, raceFile="Orc", **{"class": 1})
     L.execute("SlashCmdList.SPEEDLEVEL('dungeons on')")
-    check(L.eval("SpeedLevel.Engine:Mode()") == "speed_dungeons", "/sl dungeons on switches to the dungeon route")
+    check(L.eval("SpeedLevel.Engine:Mode()") == "thorough_dungeons", "/sl dungeons on switches to the dungeon route")
     res = L.eval("""(function()
         local SL = SpeedLevel
         for i, st in ipairs(SL.Engine.steps) do
@@ -985,9 +1015,9 @@ def main():
     n_dun = L.eval("(function() local n = 0 for _, st in ipairs(SpeedLevel.Engine.steps) do if st.t == 'DUNGEON' then n = n + 1 end end return n end)()")
     check(n_dun == 0, f"dungeons off: no dungeon runs ({n_dun})")
     L.execute("SlashCmdList.SPEEDLEVEL('mode speed')")
-    check(L.eval("SpeedLevel.Engine:Mode()") == "speed", "back to speed mode")
+    check(L.eval("SpeedLevel.Engine:Mode()") == "thorough", "back to the main route")
     L.execute("SpeedLevel.char.mode = 'dungeons'")
-    check(L.eval("SpeedLevel.Engine:Mode()") == "speed_dungeons", "old 'dungeons' setting maps to speed + dungeons")
+    check(L.eval("SpeedLevel.Engine:Mode()") == "thorough_dungeons", "old 'dungeons' setting maps to thorough + dungeons")
     L.execute("SpeedLevel.char.mode = 'speed'")
 
     print("\n== minimap button")
@@ -1005,7 +1035,7 @@ def main():
     print("\n== first-start setup window")
     login(level=1, race=2, raceFile="Orc", **{"class": 1})
     check(L.eval("SpeedLevel.Setup.frame ~= nil"), "new character gets the setup window")
-    check(L.eval("SpeedLevel.Setup.style") == "speed" and L.eval("SpeedLevel.Setup.dungeons") is False
+    check(L.eval("SpeedLevel.Setup.style") == "thorough" and L.eval("SpeedLevel.Setup.dungeons") is False
           and L.eval("SpeedLevel.Setup.path") == "auto", "setup starts from Speed, solo, own starting zones")
     L.execute("SpeedLevel.Setup.style = 'thorough'; SpeedLevel.Setup.dungeons = true; SpeedLevel.Setup.path = 'Tauren'")
     L.execute("SpeedLevel.Setup:Finish(true)")
@@ -1152,7 +1182,8 @@ def main():
     res = L.eval("""(function()
         local RL, E = SpeedLevel.RouteList, SpeedLevel.Engine
         for _, row in ipairs(RL.frame.rows) do
-            if row.stepIndex and row.stepIndex > SpeedLevel.char.cursor + 3 and E:Status(row.stepIndex) == E.ACTIVE then
+            if row.stepIndex and row.stepIndex > SpeedLevel.char.cursor + 3 and E:Status(row.stepIndex) == E.ACTIVE
+               and E.steps[row.stepIndex].t == "A" then
                 local target = row.stepIndex
                 row._scripts.OnClick(row, "LeftButton")
                 return target .. "|" .. SpeedLevel.char.cursor
@@ -1211,6 +1242,29 @@ def main():
         return a and (a.kind .. "|" .. a.label) or "walk"
     end)()""")
     check(hs == "hearth|Hearth to Freewind Post", f"hearth when it is set near the target ({hs})")
+    # an unlearned flight master right by you: told, and the arrow goes there first
+    fpn = L.eval("""(function()
+        local SL, A = SpeedLevel, SpeedLevel.Advisor
+        local dev
+        for _, f in ipairs(A.FlightMasters()) do if f.npc == 3615 then dev = f end end
+        BIND = ''
+        SL.char.knownTaxi = {}
+        for _, f in ipairs(A.FlightMasters()) do SL.char.knownTaxi[f.key] = false end
+        STATE.map, STATE.x, STATE.y = dev.m, (dev.x + 0.6) / 100, dev.y / 100
+        SL.Engine.fpTold = nil
+        SL:Update()
+        local t = SL.Engine:CurrentTarget()
+        local l1 = t and t.label or ""
+        local hint = SL.Engine.fpHint and SL.Engine.fpHint.npc or 0
+        SL.char.knownTaxi[dev.key] = true
+        SL:Update()
+        local t2 = SL.Engine:CurrentTarget()
+        return l1 .. "@@" .. hint .. "@@" .. (t2 and t2.label or "")
+    end)()""")
+    fl1, fhint, fl2 = fpn.split("@@")
+    check(fl1.startswith("Flight path:") and fhint == "3615", f"next to an unlearned flight master: the arrow goes there ({fl1})")
+    check(not fl2.startswith("Flight path:"), f"learned: back to the route ({fl2})")
+    check(any("new flight path nearby" in str(m) for m in out), "and told in chat")
     L.execute("HS_CD = 1200")
     hs2 = L.eval("(function() local a = SpeedLevel.Advisor:Advise({ m = 1441, x = 46.0, y = 50.0 }) return a and a.kind or 'walk' end)()")
     check(hs2 == "walk", f"no hearth advice while it is on cooldown ({hs2})")
@@ -1291,6 +1345,106 @@ def main():
     t3 = L.eval("(function() local t = SpeedLevel.Engine:CurrentTarget() return t and tostring(t.corpse) end)()")
     check(t3 != "true", f"alive again: back to the route ({t3})")
 
+    print("\n== dead: spirit healer when it is faster than the corpse run")
+    def spirit_case(level, yards):
+        login(level=level, race=2, raceFile="Orc", **{"class": 1}, classFile="WARRIOR")
+        return L.eval("""(function()
+            local SL, E, A = SpeedLevel, SpeedLevel.Engine, SpeedLevel.Advisor
+            local up = E:Upcoming(1)[1]
+            local m, x, y = E:StepTarget(E.steps[up])
+            -- you released right next to your next step; the corpse lies YARDS yd away
+            local _, wx, wy = A:World(m, x, y)
+            local _, wx2, wy2 = A:World(m, x + 1, y)
+            local ydPerPct = math.sqrt((wx2 - wx) ^ 2 + (wy2 - wy) ^ 2)
+            STATE.map, STATE.x, STATE.y = m, x / 100, y / 100
+            STATE.ghost = true; DEAD = true
+            FireEvent("PLAYER_ALIVE")
+            CORPSE = { m = m, x = (x + YARDS / ydPerPct) / 100, y = y / 100 }
+            SL:Update()
+            local t = E:CurrentTarget()
+            local out = tostring(t and t.spirit) .. "@@" .. (t and t.label or "")
+            STATE.ghost = false; DEAD = false; CORPSE = nil
+            FireEvent("PLAYER_UNGHOST")
+            return out
+        end)()""".replace("YARDS", str(yards)))
+    sp8, lab8 = spirit_case(8, 600).split("@@")
+    check(sp8 == "true" and "no sickness" in lab8, f"level 8, corpse 600 yd off, next step here: spirit healer ({lab8})")
+    sp25, lab25 = spirit_case(25, 600).split("@@")
+    check(sp25 != "true", f"level 25 (10 min sickness), same spot: run back to the corpse ({lab25})")
+    spf, labf = spirit_case(25, 2500).split("@@")
+    check(spf == "true" and "10 min sickness" in labf, f"level 25, corpse 2500 yd off: the spirit healer is faster ({labf})")
+
+    print("\n== item-started quests: they appear once the item drops")
+    login(level=45, race=2, raceFile="Orc", **{"class": 1}, classFile="WARRIOR")
+    iq = L.eval("""(function()
+        local SL, E = SpeedLevel, SpeedLevel.Engine
+        for i, st in ipairs(E.steps) do
+          if st.t == "A" and st.item and E:SectionApplies(E.sections[st.sec]) then
+            local d = SL.Quests[st.q]
+            STATE.level = math.max(d and d[3] or 1, d and d[2] or 1)
+            SL.Player:Refresh()
+            SL.char.cursor = i + 1
+            E:Invalidate()
+            local _, before = E:ComputeStatus(i)
+            BAGS[st.item] = 1
+            FireEvent("BAG_UPDATE_DELAYED")
+            local now = E:Status(i) == E.ACTIVE
+            local surfaced = false
+            for _, j in ipairs(E:Upcoming(3)) do if j == i then surfaced = true end end
+            local _, text = E:StepText(st)
+            local btn = SL.QuestItem and SL.QuestItem.Pick and select(1, SL.QuestItem:Pick()) or nil
+            BAGS[st.item] = nil
+            return table.concat({ tostring(before), tostring(now), tostring(surfaced), text, tostring(btn == st.item),
+              E:QuestName(st.q) }, "@@")
+          end
+        end
+        return "none"
+    end)()""")
+    print("    item quest:", iq)
+    check(iq != "none", "the route has item-started quests")
+    if iq != "none":
+        before, now, surfaced, itext, btn, iname = iq.split("@@")
+        check(before.startswith("no ") and before.endswith("looted"), f"hidden until the item drops ({before})")
+        check(now == "true" and surfaced == "true", f"looted: the pickup comes up right away ({iname})")
+        check("Right-click" in itext, f"tells you to right-click the item ({itext})")
+        check(btn == "true", "the quest item button offers the item")
+    L.execute("SpeedLevel.char.waiting = {}")
+
+    print("\n== while you're here: a later pickup at the NPC next to you comes now")
+    login(level=36, race=2, raceFile="Orc", **{"class": 1}, classFile="WARRIOR")
+    hn = L.eval("""(function()
+        local SL, E = SpeedLevel, SpeedLevel.Engine
+        for si, sec in ipairs(E.sections) do
+          if sec.title == "Desolace" and E:SectionApplies(sec) then
+            SL.char.cursor, SL.char.curSec = sec.first, si
+            E:Invalidate()
+            -- a pickup well down this zone's list, available now
+            for i = sec.first + 8, sec.last do
+              local st = E.steps[i]
+              local d = SL.Quests[st.q]
+              if st.t == "A" and st.m and not st.item and not st.grp and E:Status(i) == E.ACTIVE
+                 and not (d and ((d[6] and #d[6] > 0) or (d[7] and #d[7] > 0))) then
+                local before = E:Upcoming(1)[1]
+                STATE.map, STATE.x, STATE.y = st.m, st.x / 100, st.y / 100
+                SL:Update()
+                local now = false
+                for _, j in ipairs(E:HereNow()) do if j == i then now = true end end
+                local first = E.steps[E:Upcoming(1)[1]]
+                local close = first and first.m and (SL.Player:VectorTo(first.m, first.x, first.y) or 999) <= 45
+                return table.concat({ tostring(before ~= i), tostring(now and close), E:QuestName(st.q) }, "@@")
+              end
+            end
+          end
+        end
+        return "none"
+    end)()""")
+    print("    here:", hn)
+    check(hn != "none", "found a later pickup to test with")
+    if hn != "none":
+        h_before, h_now, h_name = hn.split("@@")
+        check(h_before == "true", "away from its NPC it waits its turn")
+        check(h_now == "true", f"standing at its NPC it comes up now ({h_name})")
+
     print("\n== never red: quests 5+ levels above you wait")
     login(level=30, race=2, raceFile="Orc", **{"class": 1}, map=1443, x=0.5, y=0.5)
     res = L.eval("""(function()
@@ -1366,6 +1520,652 @@ def main():
     check(L.eval("TAKEN") is None, "unreachable destination: not taken")
     L.execute("TAXI_NODES = {}")
 
+    print("\n== reading the flight map: by name when positions don't line up")
+    login(level=35, race=2, raceFile="Orc", **{"class": 1}, classFile="WARRIOR", map=1413, x=0.52, y=0.30)
+    tx = L.eval("""(function()
+        local SL, E, A = SpeedLevel, SpeedLevel.Engine, SpeedLevel.Advisor
+        local function key(npc) for _, f in ipairs(A.FlightMasters()) do if f.npc == npc then return f.key end end end
+        local kt = function() return SL.char.knownTaxi end
+        -- nodes far from where our data puts them, but named the way the client names them
+        TAXI_NODES = {
+          { slotIndex = 1, name = "Crossroads, The Barrens", state = 0, position = CreateVector2D(0.9, 0.9) },
+          { slotIndex = 2, name = "Camp Taurajo, The Barrens", state = 1, position = CreateVector2D(0.91, 0.9) },
+          { slotIndex = 3, name = "Orgrimmar, Durotar", state = 1, position = CreateVector2D(0.92, 0.9) },
+        }
+        SL.char.knownTaxi, SL.char.taxiScanned = {}, {}
+        E:ScanTaxi()
+        local taurajo, crossroads, org = kt()[key(10378)], kt()[key(3615)], kt()[key(3310)]
+        -- a flight map we can't read at all: nothing recorded, nothing downgraded
+        TAXI_NODES = { { slotIndex = 1, name = "Somewhere Else", state = 1, position = CreateVector2D(0.5, 0.5) } }
+        E:ScanTaxi()
+        local still = kt()[key(10378)]
+        -- old broken record: everything unknown -> forgotten on login
+        SL.char.knownTaxi = {}
+        for _, f in ipairs(A.FlightMasters()) do SL.char.knownTaxi[f.key] = false end
+        E:RepairTaxi()
+        local repaired = next(SL.char.knownTaxi) == nil
+        -- landing next to a flight master after a flight: known
+        local fm
+        for _, f in ipairs(A.FlightMasters()) do if f.npc == 10378 then fm = f end end
+        STATE.map, STATE.x, STATE.y = fm.m, fm.x / 100, fm.y / 100
+        E:TaxiFlown()
+        local flown = kt()[fm.key]
+        TAXI_NODES = {}
+        return table.concat({ tostring(taurajo), tostring(crossroads), tostring(org), tostring(still), tostring(repaired), tostring(flown) }, "@@")
+    end)()""")
+    print("    taxi:", tx)
+    t_tau, t_cross, t_org, t_still, t_rep, t_flown = tx.split("@@")
+    check(t_tau == "true" and t_cross == "true" and t_org == "true", f"flight paths recognized by name ({tx})")
+    check(t_still == "true", "an unreadable flight map records nothing and never un-learns a flight path")
+    check(t_rep == "true", "an old all-unknown record is forgotten")
+    check(t_flown == "true", "landing at a flight master marks it known")
+
+    print("\n== arrow into the next zone: through a pass, not over the ridge")
+    login(level=36, race=2, raceFile="Orc", **{"class": 1}, classFile="WARRIOR", map=1413, x=0.445, y=0.591)
+    gz = L.eval("""(function()
+        local SL, PA = SpeedLevel, SpeedLevel.Pathing
+        SL.db.terrainArrow = true
+        PA.hiAim, PA.hiAimKey, PA.hiPath, PA.hiKey = nil, nil, nil, nil
+        local target = { m = 1445, x = 36.0, y = 31.0 }       -- Brackenwall Village, Dustwallow Marsh
+        local aim = PA:Steer(target)
+        if not aim then return "none" end
+        -- the crossing it aims for is one of the generated Barrens -> Dustwallow crossings
+        local gates = PA:Gates(1413, 1445)
+        return table.concat({ aim.m, string.format("%.1f,%.1f", aim.x, aim.y), tostring(aim.crossing or aim.detour),
+          #gates, string.format("%.0f", aim.remaining or 0), #(PA.poly or {}) }, "@@")
+    end)()""")
+    print("    crossing:", gz)
+    check(gz != "none", "a target in Dustwallow Marsh from the Barrens gets a terrain route")
+    if gz != "none":
+        g_m, g_xy, g_cross, g_n, g_rem, g_poly = gz.split("@@")
+        check(g_m == "1413", f"the arrow steers through the Barrens first ({g_xy})")
+        check(int(g_n) > 0 and int(g_poly) >= 2, "towards a real crossing into the next zone")
+        check(float(g_rem) > 0, f"with the distance via the crossing ({g_rem} yd)")
+    # from the Crossroads (mountains between it and the marsh): the route bends south to a crossing
+    gz2 = L.eval("""(function()
+        local SL, PA = SpeedLevel, SpeedLevel.Pathing
+        STATE.map, STATE.x, STATE.y = 1413, 0.52, 0.30
+        PA.hiAim, PA.hiAimKey, PA.hiPath, PA.hiKey, PA.hiLast = nil, nil, nil, nil, nil
+        local aim = PA:Steer({ m = 1445, x = 36.0, y = 31.0 })
+        if not aim then return "none" end
+        local pts = {}
+        for _, p in ipairs(PA.poly or {}) do pts[#pts + 1] = string.format("%.0f,%.0f", p[1] * 100, p[2] * 100) end
+        return string.format("%.0f", aim.remaining or 0) .. "@@" .. table.concat(pts, " ")
+    end)()""")
+    print("    from the Crossroads:", gz2)
+    # from Freewind Post (Thousand Needles): no crossing straight into Dustwallow - via the Barrens
+    gz3 = L.eval("""(function()
+        local SL, PA = SpeedLevel, SpeedLevel.Pathing
+        STATE.map, STATE.x, STATE.y = 1441, 0.78, 0.77
+        PA.hiAim, PA.hiAimKey, PA.hiPath, PA.hiKey, PA.hiLast = nil, nil, nil, nil, nil
+        local aim = PA:Steer({ m = 1445, x = 36.0, y = 31.0 })
+        if not aim then return "none" end
+        local pts = {}
+        for _, p in ipairs(PA.poly or {}) do pts[#pts + 1] = string.format("%.0f,%.0f", p[1] * 100, p[2] * 100) end
+        return tostring(aim.crossing) .. "@@" .. string.format("%.0f", aim.remaining or 0) .. "@@" .. table.concat(pts, " ")
+    end)()""")
+    print("    from the Shimmering Flats:", gz3)
+    check(gz3 != "none", f"Thousand Needles -> Dustwallow gets a terrain route ({gz3})")
+    # on top of Freewind Post's mesa: down by the lift
+    gz4 = L.eval("""(function()
+        local SL, PA = SpeedLevel, SpeedLevel.Pathing
+        STATE.map, STATE.x, STATE.y = 1441, 0.451, 0.491
+        PA.hiAim, PA.hiAimKey, PA.hiPath, PA.hiKey, PA.hiLast = nil, nil, nil, nil, nil
+        local aim = PA:Steer({ m = 1445, x = 36.0, y = 31.0 })
+        if not aim then return "none" end
+        local pts = {}
+        for _, p in ipairs(PA.poly or {}) do pts[#pts + 1] = string.format("%.0f,%.0f", p[1] * 100, p[2] * 100) end
+        return string.format("%.0f", aim.remaining or 0) .. "@@" .. table.concat(pts, " ")
+    end)()""")
+    print("    from Freewind Post:", gz4)
+    check(gz4 != "none" and len(gz4.split("@@")[1].split()) >= 4, f"on Freewind Post's mesa: down by the lift first ({gz4})")
+
+    print("\n== Safe route style")
+    login(level=1, race=2, raceFile="Orc", **{"class": 1}, classFile="WARRIOR")
+    sf = L.eval("""(function()
+        local SL, E = SpeedLevel, SpeedLevel.Engine
+        SlashCmdList.SPEEDLEVEL("mode safe")
+        local m1, n1 = E:Mode(), #E.steps
+        E:SetDungeons(true)
+        local m2 = E:Mode()
+        E:SetDungeons(false)
+        E:SetStyle("thorough")
+        return table.concat({ m1, n1, m2, E:Mode(), tostring(SL.Routes["Horde_safe"] ~= nil),
+          tostring(SL.Routes["Alliance_safe_dungeons"] ~= nil) }, "@@")
+    end)()""")
+    print("    safe:", sf)
+    s_m1, s_n1, s_m2, s_back, s_h, s_a = sf.split("@@")
+    check(s_m1 == "safe" and int(s_n1) > 500, f"/mq mode safe loads the Safe route ({s_n1} steps)")
+    check(s_m2 == "safe_dungeons", "with dungeons: Safe + Dungeons")
+    check(s_back == "thorough" and s_h == "true" and s_a == "true", "both factions have Safe routes; back to Thorough works")
+
+    print("\n== while you're here: objectives of a quest you carry")
+    login(level=36, race=2, raceFile="Orc", **{"class": 1}, classFile="WARRIOR")
+    ho = L.eval("""(function()
+        local SL, E = SpeedLevel, SpeedLevel.Engine
+        for si, sec in ipairs(E.sections) do
+          if sec.title == "Stranglethorn Vale" and E:SectionApplies(sec) then
+            SL.char.cursor, SL.char.curSec = sec.first, si
+            for i = sec.first + 10, sec.last do
+              local st = E.steps[i]
+              if st.t == "C" and st.m and not st.oname then
+                table.insert(STATE.log, { id = st.q, complete = false })
+                SL.Player:Refresh()
+                E:Invalidate()
+                STATE.map, STATE.x, STATE.y = st.m, st.x / 100, st.y / 100
+                SL:Update()
+                local up = E:Upcoming(1)[1]
+                STATE.log = {}
+                SL.Player:Refresh()
+                return tostring(up == i) .. "@@" .. E:QuestName(st.q)
+              end
+            end
+          end
+        end
+        return "none"
+    end)()""")
+    print("    carried objective:", ho)
+    check(ho.startswith("true"), f"standing at a carried quest's objectives: do them now ({ho})")
+
+    print("\n== arrow out of Booty Bay: the tunnel, not a swim along the coast")
+    login(level=36, race=2, raceFile="Orc", **{"class": 1}, classFile="WARRIOR", map=1434, x=0.27, y=0.773)
+    bb = L.eval("""(function()
+        local SL, PA = SpeedLevel, SpeedLevel.Pathing
+        SL.db.terrainArrow = true
+        PA.hiAim, PA.hiAimKey, PA.hiPath, PA.hiKey, PA.hiLast = nil, nil, nil, nil, nil
+        local aim = PA:Steer({ m = 1434, x = 35.7, y = 10.8 })      -- Nesingwary's camp
+        local path = PA.hiPath or {}
+        local hi = PA:Hi(1434)
+        local water = 0
+        for _, id in ipairs(path) do
+          local ci, r = math.floor((id - 1) / 4) + 1, (id - 1) % 4 + 1
+          local reg = hi.cells[ci] and hi.cells[ci][r]
+          if reg and reg.water then water = water + 1 end
+        end
+        local firstWater
+        for k, id in ipairs(path) do
+          local ci, r = math.floor((id - 1) / 4) + 1, (id - 1) % 4 + 1
+          local reg = hi.cells[ci] and hi.cells[ci][r]
+          if reg and reg.water and not firstWater then firstWater = string.format("%.0f,%.0f", ((ci - 1) % 96 + 0.5) / 96 * 100, (math.floor((ci - 1) / 96) + 0.5) / 96 * 100) end
+        end
+        -- the same trip without roads / walked cells (the terrain alone)
+        local saveC, saveW = PA.costs[1434], SL.db.walkData
+        PA.costs[1434], SL.db.walkData = false, nil
+        PA.hiAim, PA.hiAimKey, PA.hiPath, PA.hiKey, PA.hiLast = nil, nil, nil, nil, nil
+        PA:Steer({ m = 1434, x = 35.7, y = 10.8 })
+        local w2 = 0
+        for _, id in ipairs(PA.hiPath or {}) do
+          local ci, r = math.floor((id - 1) / 4) + 1, (id - 1) % 4 + 1
+          local reg = hi.cells[ci] and hi.cells[ci][r]
+          if reg and reg.water then w2 = w2 + 1 end
+        end
+        local function route(p)
+          local t = {}
+          for k = 1, #p, 6 do
+            local ci = math.floor((p[k] - 1) / 4) + 1
+            t[#t + 1] = string.format("%.0f,%.0f", ((ci - 1) % 96 + 0.5) / 96 * 100, (math.floor((ci - 1) / 96) + 0.5) / 96 * 100)
+          end
+          return table.concat(t, " ")
+        end
+        local oldRoute = route(PA.hiPath or {})
+        PA.costs[1434], SL.db.walkData = saveC, saveW
+        return string.format("%d@@%d@@%.0f@@%s@@%d", #path, water, aim and aim.remaining or 0, tostring(firstWater), w2)
+          .. "@@" .. route(path) .. "@@" .. oldRoute
+    end)()""")
+    print("    booty bay:", bb)
+    b_n, b_w, b_rem, b_first, b_old, b_route, b_oldroute = bb.split("@@")
+    print("    with roads:   ", b_route)
+    print("    terrain only: ", b_oldroute)
+    check(int(b_n) > 0 and int(b_w) <= int(b_old), f"roads and walked ground: no more water than the terrain alone ({b_w} vs {b_old} water cells)")
+
+    print("\n== marking the current quest mobs and NPCs")
+    login(level=1, race=2, raceFile="Orc", **{"class": 1}, classFile="WARRIOR", map=1411, x=0.43, y=0.69)
+    hl = L.eval("""(function()
+        local SL, E, HL = SpeedLevel, SpeedLevel.Engine, SpeedLevel.Highlight
+        -- a current kill objective: its quest in the log, stand at it
+        local ci
+        for i, st in ipairs(E.steps) do
+          local d = SL.Quests[st.q or 0]
+          if st.t == "C" and d and d[15] and E:SectionApplies(E.sections[st.sec])
+             and SL.Player:RaceOK(d[4]) and SL.Player:ClassOK(d[5]) and (d[3] or 1) <= 1 then ci = i break end
+        end
+        local st = E.steps[ci]
+        local mob = SL.Quests[st.q][15][1]
+        table.insert(STATE.log, { id = st.q, complete = false })
+        SL.Player:Refresh()
+        SL.char.cursor = ci
+        STATE.map, STATE.x, STATE.y = st.m, st.x / 100, st.y / 100
+        E:Invalidate()
+        -- nameplates: one of the objective's mobs, one other mob
+        local plates = { { namePlateUnitToken = "nameplate1" }, { namePlateUnitToken = "nameplate2" } }
+        C_NamePlate = { GetNamePlates = function() return plates end }
+        local oldName = UnitName
+        UnitName = function(u)
+          if u == "nameplate1" or u == "mouseover" then return mob end
+          if u == "nameplate2" then return "Somebody Else" end
+          return oldName(u)
+        end
+        SL:Update()
+        HL:Refresh()
+        local m1 = plates[1].slMark and plates[1].slMark:IsShown() or false
+        local m2 = plates[2].slMark and plates[2].slMark:IsShown() or false
+        -- tooltip line
+        local lines = {}
+        local tt = { GetUnit = function() return mob, "mouseover" end, AddLine = function(_, l) lines[#lines + 1] = l end, Show = function() end }
+        HL.OnTooltipUnit(tt)
+        local macro = HL.button:GetAttribute("macrotext") or ""
+        -- turned off: no arrows
+        SL.db.markTargets = false
+        HL:Refresh()
+        local off = plates[1].slMark:IsShown()
+        SL.db.markTargets = true
+        UnitName = oldName
+        C_NamePlate = nil
+        STATE.log = {}
+        SL.Player:Refresh()
+        return table.concat({ tostring(m1), tostring(m2), tostring(lines[1]), macro, tostring(off), mob, E:QuestName(st.q) }, "@@")
+    end)()""")
+    print("    marks:", hl)
+    h_m1, h_m2, h_tip, h_macro, h_off, h_mob, h_q = hl.split("@@")
+    check(h_m1 == "true" and h_m2 == "false", f"an arrow over the objective's mob ({h_mob}), none over others")
+    check(h_q in h_tip, f"its tooltip names the quest ({h_tip})")
+    check(f"/targetexact {h_mob}" in h_macro, f"the target key targets it ({h_macro!r})")
+    check(h_off == "false", "the option turns the arrows off")
+
+    print("\n== back: a pickup the guide parked (escort NPC away) comes back")
+    login(level=16, race=2, raceFile="Orc", **{"class": 1}, classFile="WARRIOR", map=1413, x=0.52, y=0.30)
+    bk = L.eval("""(function()
+        local SL, E = SpeedLevel, SpeedLevel.Engine
+        -- a pickup that applies to you, with the cursor a few steps past it in the same zone
+        local pi
+        for k, st in ipairs(E.steps) do
+          local d = SL.Quests[st.q or 0]
+          if st.t == "A" and d and E:SectionApplies(E.sections[st.sec]) and SL.Player:RaceOK(d[4]) and SL.Player:ClassOK(d[5])
+             and (d[3] or 1) <= 16 and (d[2] or 1) >= 13 and not (d[6] and #d[6] > 0) and not (d[7] and #d[7] > 0)
+             and not (d[10] and #d[10] > 0) and E.steps[k + 6] and E.steps[k + 6].sec == st.sec then pi = k break end
+        end
+        if pi then
+          SL.char.cursor, SL.char.curSec = pi + 6, E.steps[pi].sec
+          for k = pi + 1, pi + 5 do SL.char.manualDone[k] = true end
+        end
+        if not pi then return "none" end
+        SL.char.notOffered[E.steps[pi].q] = 16
+        E:Invalidate()
+        SL:Update()
+        local _, whyBefore = E:Status(pi)
+        -- back, step by step, until it is the current one (each press goes one step further back)
+        local reached
+        for k = 1, 40 do
+          E:Back()
+          if E:Focus() == pi then reached = k break end
+        end
+        local _, text, lines = E:StepText(E.steps[pi])
+        -- it stays put through refreshes
+        SL:Update(); SL:Update()
+        local stays = E:Focus() == pi
+        -- skipping it again lets the route carry on
+        E:SkipCurrent()
+        local released = E:Focus() ~= pi and not SL.char.pinned
+        return table.concat({ tostring(whyBefore), tostring(reached), tostring(stays), tostring(released),
+          tostring(SL.char.notOffered[E.steps[pi].q]), E:QuestName(E.steps[pi].q) }, "@@")
+    end)()""")
+    print("    back:", bk)
+    check(bk != "none", "found a parked pickup to go back to")
+    if bk != "none":
+        b_why, b_reached, b_stays, b_rel, b_no, b_name = bk.split("@@")
+        check(b_why == "not offered yet", f"the pickup was parked ({b_why})")
+        check(b_reached != "None", f"back reaches it ({b_name}, {b_reached} presses)")
+        check(b_stays == "true", "and it stays the current step through refreshes")
+        check(b_no == "nil", "going back to it gives the giver another chance")
+        check(b_rel == "true", "skipping it again lets the route carry on")
+
+    print("\n== travel advice walks the real terrain")
+    login(level=36, race=2, raceFile="Orc", **{"class": 1}, classFile="WARRIOR", map=1413, x=0.445, y=0.591)
+    ty = L.eval("""(function()
+        local PA, A = SpeedLevel.Pathing, SpeedLevel.Advisor
+        local y = PA:PathYards(1413, 44.5, 59.1, 1445, 36.0, 31.0)
+        local _, ax, ay = A:World(1413, 44.5, 59.1)
+        local _, bx, by = A:World(1445, 36.0, 31.0)
+        return string.format("%.0f@@%.0f", y or -1, math.sqrt((ax - bx) ^ 2 + (ay - by) ^ 2))
+    end)()""")
+    t_path, t_straight = (float(v) for v in ty.split("@@"))
+    print(f"    Camp Taurajo -> Brackenwall: {t_path:.0f} yd on foot, {t_straight:.0f} yd straight")
+    check(t_path > t_straight * 1.1, "walking distances follow the ground (passes, not straight over the hills)")
+
+    print("\n== quest mob nameplates: on further out, your settings back when off")
+    pl = L.eval("""(function()
+        local SL, HL = SpeedLevel, SpeedLevel.Highlight
+        CVARS = { nameplateShowEnemies = "0", nameplateShowAll = "0", nameplateShowFriendlyNPCs = "0", nameplateMaxDistance = "20" }
+        C_CVar = { GetCVar = function(k) return CVARS[k] end, SetCVar = function(k, v) CVARS[k] = tostring(v) end }
+        SL.db.savedPlateCVars = nil
+        SL.db.showQuestPlates = true
+        HL:ApplyPlates()
+        local on = CVARS.nameplateMaxDistance .. "," .. CVARS.nameplateShowAll .. "," .. CVARS.nameplateShowFriendlyNPCs
+        -- in combat it waits for combat to end
+        SL.db.showQuestPlates = false
+        COMBAT = true
+        HL:ApplyPlates()
+        local inCombat = CVARS.nameplateMaxDistance
+        COMBAT = false
+        FireEvent("PLAYER_REGEN_ENABLED")
+        local off = CVARS.nameplateMaxDistance .. "," .. CVARS.nameplateShowAll .. "," .. CVARS.nameplateShowFriendlyNPCs
+        C_CVar = nil
+        return on .. "@@" .. inCombat .. "@@" .. off
+    end)()""")
+    p_on, p_cmb, p_off = pl.split("@@")
+    check(p_on == "41,1,1", f"turned on: nameplates always, friendly NPCs too, 41 yd ({p_on})")
+    check(p_cmb == "41", "not changed in combat")
+    check(p_off == "20,0,0", f"turned off after combat: your own settings back ({p_off})")
+    ask = L.eval("""(function()
+        local SL, HL = SpeedLevel, SpeedLevel.Highlight
+        CVARS = { nameplateShowFriendlyNPCs = "0", nameplateShowAll = "0" }
+        C_CVar = { GetCVar = function(k) return CVARS[k] end, SetCVar = function(k, v) CVARS[k] = tostring(v) end }
+        SHOWN = nil
+        StaticPopupDialogs = {}
+        StaticPopup_Show = function(name) SHOWN = name end
+        SL.db.platePromptShown, SL.db.showQuestPlates = nil, false
+        HL:AskPlates()
+        local first = SHOWN
+        StaticPopupDialogs.SPEEDLEVEL_PLATES.OnAccept()
+        local on = tostring(SL.db.showQuestPlates) .. "," .. CVARS.nameplateShowFriendlyNPCs
+        SHOWN = nil
+        SL.db.showQuestPlates = false
+        HL:AskPlates()
+        local again = tostring(SHOWN)
+        C_CVar, StaticPopup_Show, StaticPopupDialogs = nil, nil, nil
+        return tostring(first) .. "@@" .. on .. "@@" .. again
+    end)()""")
+    a_first, a_on, a_again = ask.split("@@")
+    check(a_first == "SPEEDLEVEL_PLATES", "asks once whether to turn the nameplates on")
+    check(a_on == "true,1", f"yes: friendly NPC nameplates on ({a_on})")
+    check(a_again == "nil", "and never asks again")
+
+    print("\n== arrow across several zones: Grom'gol -> Duskwood -> Deadwind Pass -> Stonard")
+    login(level=38, race=2, raceFile="Orc", **{"class": 1}, classFile="WARRIOR", map=1434, x=0.325, y=0.294)
+    sto = L.eval("""(function()
+        local SL, PA = SpeedLevel, SpeedLevel.Pathing
+        SL.db.terrainArrow = true
+        PA.hiAim, PA.hiAimKey, PA.hiPath, PA.hiKey, PA.hiLast = nil, nil, nil, nil, nil
+        local target = { m = 1435, x = 46.0, y = 55.0 }        -- Stonard, Swamp of Sorrows
+        local A = SL.Advisor
+        local _, pwx, pwy = A:World(1434, 32.5, 29.4)
+        local _, twx, twy = A:World(1435, 46.0, 55.0)
+        local first = PA:ZoneChain(1434, pwx, pwy, 1435, twx, twy)
+        local aim = PA:Steer(target)
+        return tostring(first) .. "@@" .. tostring(aim and aim.m) .. "@@" .. string.format("%.0f", aim and aim.remaining or 0)
+    end)()""")
+    print("    Grom'gol -> Stonard:", sto)
+    s_first, s_m, s_rem = sto.split("@@")
+    check(s_first == "1431", f"the way to Stonard leaves Stranglethorn into Duskwood (first zone {s_first})")
+    check(s_m == "1434" and float(s_rem) > 0, f"and the arrow follows the ground there ({s_rem} yd to go)")
+
+    print("\n== marking the NPCs you have to talk to (flight masters, innkeepers, trainers)")
+    login(level=1, race=2, raceFile="Orc", **{"class": 1}, classFile="WARRIOR")
+    nm = L.eval("""(function()
+        local SL, E, HL = SpeedLevel, SpeedLevel.Engine, SpeedLevel.Highlight
+        local out = {}
+        for _, kind in ipairs({ "FP", "HEARTH", "FLY" }) do
+          for i, st in ipairs(E.steps) do
+            if st.t == kind and st.name and E:SectionApplies(E.sections[st.sec]) then
+              SL.char.knownTaxi = {}
+              E:Jump(i)
+              E:Invalidate()
+              -- a step the guide is really on now (some are done as soon as you are in the zone)
+              if E:CurrentGroup()[1] == i then
+                local w = HL:Wanted()
+                out[#out + 1] = kind .. "=" .. tostring(w[st.name] ~= nil) .. ":" .. tostring(w[st.name])
+                break
+              end
+            end
+          end
+        end
+        return table.concat(out, ",")
+    end)()""")
+    print("    npcs:", nm)
+    for part in nm.split(","):
+        kind, rest = part.split("=")
+        check(rest.startswith("true"), f"{kind} step: its NPC gets the arrow and a tooltip line ({rest})")
+
+    print("\n== a grind step suggests the quests you skipped instead")
+    login(level=1, race=2, raceFile="Orc", **{"class": 1}, classFile="WARRIOR")
+    sk = L.eval("""(function()
+        local SL, E = SpeedLevel, SpeedLevel.Engine
+        -- the first grind step that applies, and a pickup before it you could do at its level
+        for g, st in ipairs(E.steps) do
+          if st.t == "GRIND" and st.level and st.level > 8 and E:SectionApplies(E.sections[st.sec]) then
+            local lvl = math.floor(st.level) - 1
+            STATE.level, STATE.map, STATE.x, STATE.y = lvl, st.m or 1411, (st.x or 50) / 100, (st.y or 50) / 100
+            SL.Player:Refresh()
+            for j = g - 1, 1, -1 do
+              local a = E.steps[j]
+              local d = SL.Quests[a.q or 0]
+              if a.t == "A" and d and E:SectionApplies(E.sections[a.sec]) and SL.Player:RaceOK(d[4]) and SL.Player:ClassOK(d[5])
+                 and (d[3] or 1) <= lvl and not SL.Player:IsGrey(E:QuestLevel(a.q)) and not (d[6] and #d[6] > 0)
+                 and not (d[7] and #d[7] > 0) and a.m and SL.Advisor:World(a.m, 50, 50) == SL.Advisor:World(STATE.map, 50, 50) then
+                SL.char.manualSkip[j] = true
+                SL.char.cursor, SL.char.curSec = g, st.sec
+                E:Invalidate()
+                local _, _, lines = E:StepText(st)
+                local found = false
+                for _, l in ipairs(lines) do if l:find("Faster than grinding", 1, true) and l:find(E:QuestName(a.q), 1, true) then found = true end end
+                return tostring(found) .. "@@" .. E:QuestName(a.q)
+              end
+            end
+          end
+        end
+        return "none"
+    end)()""")
+    print("    skipped instead of grinding:", sk)
+    check(sk.startswith("true"), f"a grind step names a skipped quest you could do instead ({sk})")
+
+    print("\n== guide window: a wrapped line pushes everything below it down")
+    lay = L.eval("""(function()
+        local UI = SpeedLevel.UI
+        local f = UI.frame
+        local ys = {}
+        for _, k in ipairs({ "xpBar", "goldText", "goldBar" }) do
+          local w = f[k]
+          w.SetPoint = function(self, a, x, y) if a == "TOPLEFT" then ys[k] = y end end
+          w.ClearAllPoints = function() end
+        end
+        local oneG = f.goldText.GetStringHeight
+        f.goldText.GetStringHeight = function() return 12 end
+        local top1 = UI:LayoutHeader(true)
+        local bar1 = ys.goldBar
+        f.goldText.GetStringHeight = function() return 26 end      -- the gold line wraps to two lines
+        local top2 = UI:LayoutHeader(true)
+        local textTop, bar2 = ys.goldText, ys.goldBar
+        local topNoGold = UI:LayoutHeader(false)
+        f.goldText.GetStringHeight = oneG
+        return table.concat({ top1, bar1, top2, textTop, bar2, topNoGold }, ",")
+    end)()""")
+    t1, b1, t2, gt, b2, tng = (float(v) for v in lay.split(","))
+    print(f"    one line: bar {b1}, card {t1}; two lines: text {gt}, bar {b2}, card {t2}; no gold: card {tng}")
+    check(b2 <= gt - 26, f"the gold bar sits below both lines of the gold text ({b2} vs text at {gt})")
+    check(t2 < t1, "and the step card moves down with it")
+    check(tng > t1, "without the gold line the card starts higher")
+
+    print("\n== the NEXT list scrolls through the rest of the zone")
+    login(level=1, race=2, raceFile="Orc", **{"class": 1}, classFile="WARRIOR")
+    sc = L.eval("""(function()
+        local SL, E, UI = SpeedLevel, SpeedLevel.Engine, SpeedLevel.UI
+        local f = UI.frame
+        local pos = 0
+        f.list.GetVerticalScroll = function() return pos end
+        f.list.SetVerticalScroll = function(_, v) pos = v end
+        SL.db.stepsShown = 6
+        SL:Update()
+        UI:Refresh()
+        local curSec = SL.char.curSec
+        local listed, inZone, divider, after, divAt = 0, 0, 0, 0, 0
+        for i, row in ipairs(f.listRows) do
+          if row:IsShown() then
+            listed = listed + 1
+            if type(row.stepIndex) == "number" then   -- (the mock returns a function for unset fields)
+              if E.steps[row.stepIndex].sec == curSec then inZone = inZone + 1 elseif divider > 0 then after = after + 1 end
+            elseif (row.text:GetText() or ""):find("Then:", 1, true) then divider = divider + 1; divAt = i end
+          end
+        end
+        -- every remaining step of the zone outside the current card is listed
+        local group, inGroup = E:CurrentGroup(), {}
+        for _, i in ipairs(group) do inGroup[i] = true end
+        local want = 0
+        for _, i in ipairs(E:Upcoming(500)) do
+          if not inGroup[i] and E.steps[i].sec == curSec then want = want + 1 end
+        end
+        local viewH, contentH = f.listViewH, f.listContentH
+        UI:ScrollList(-1)
+        local p1 = pos
+        UI:ScrollList(-1000)
+        local pMax = pos
+        UI:ScrollList(1000)
+        local pTop = pos
+        return table.concat({ listed, inZone, want, divider, after, viewH, contentH, p1, pMax, pTop,
+          tostring(f.nextLabel:GetText()) }, "@@")
+    end)()""")
+    print("    list:", sc)
+    listed, in_zone, want, divider, after, view_h, content_h, p1, p_max, p_top, label = sc.split("@@")
+    listed, in_zone, want, divider, after = map(int, (listed, in_zone, want, divider, after))
+    view_h, content_h, p1, p_max, p_top = map(float, (view_h, content_h, p1, p_max, p_top))
+    check(listed > 6 and in_zone == min(want, 80), f"the list holds the zone's remaining steps, not just 6 ({in_zone} of {want})")
+    check(divider <= 1 and after == 0 or listed <= 6, "past the zone's end only a 'Then:' divider (the list is long enough already)")
+    check(view_h < content_h and abs(view_h - 6 * 17) < 1, f"6 rows visible, the rest scrolls ({view_h} of {content_h})")
+    check(p1 > 0 and abs(p_max - (content_h - view_h)) < 0.01 and p_top == 0, f"the wheel scrolls and stops at both ends ({p1}, {p_max}, {p_top})")
+    check("scroll for more" in label, f"the NEXT label says there is more ({label})")
+
+    print("\n== duo mode: partner status, joining their step, sharing quests")
+    login(level=1, race=2, raceFile="Orc", **{"class": 1}, classFile="WARRIOR")
+    duo = L.eval("""(function()
+        local SL, E, D = SpeedLevel, SpeedLevel.Engine, SpeedLevel.Duo
+        SENT, PUSHED = {}, nil
+        local saved = { C_ChatInfo, IsInGroup, IsInRaid, GetQuestLogIndexByID, SelectQuestLogEntry, GetQuestLogPushable, QuestLogPushQuest }
+        C_ChatInfo = { SendAddonMessage = function(pre, m, ch) table.insert(SENT, pre .. "|" .. ch .. "|" .. m) end,
+                       RegisterAddonMessagePrefix = function() end }
+        IsInGroup = function() return true end
+        IsInRaid = function() return false end
+        local function sent(pat)
+          for _, m in ipairs(SENT) do if m:find(pat, 1, true) then return true end end
+          return false
+        end
+        local r = {}
+        -- off: nothing is sent, nothing received counts
+        SL.char.duo = false
+        D:Push(true)
+        r.offSilent = #SENT == 0
+        D:SetEnabled(true)
+        SENT = {}
+        STATE.time = STATE.time + 60
+        D:Push(true)
+        local _, i = E:Current()
+        r.status = sent("MacQuest|PARTY|S~" .. D:Signature() .. "~1~" .. i .. "~")
+        r.log = sent("MacQuest|PARTY|L~")
+        -- a partner on the same route, a few steps ahead
+        local up = E:Upcoming(12)
+        local ahead = up[#up]
+        local msg = table.concat({ "S", D:Signature(), 2, ahead, E.steps[ahead].q or 0, "3/8", "Valley of Trials" }, "~")
+        FireEvent("CHAT_MSG_ADDON", "MacQuest", msg, "PARTY", "Partner-Realm")
+        local lines = D:Lines()
+        r.ahead = lines[1] and lines[1].text:find("Partner", 1, true) and lines[1].text:find("ahead", 1, true) and lines[1].join == D:JoinTarget(ahead)
+        SL:Update()
+        local row = SL.UI.frame.peerRows[1]
+        r.row = row and row:IsShown() and (row.text:GetText() or ""):find("Partner", 1, true) ~= nil
+        row._scripts.OnClick(row, "LeftButton")
+        local _, i2 = E:Current()
+        local target = D:JoinTarget(ahead)
+        local tq = E.steps[ahead].q
+        r.joined = target ~= nil and SL.char.cursor == target
+          and (target == ahead or (E.steps[target].t == "A" and E.steps[target].q == tq))
+        -- a partner on another route style
+        local key = SL.Player.faction .. "_safe"
+        FireEvent("CHAT_MSG_ADDON", "MacQuest", table.concat({ "S", SL.version .. "/" .. key, 2, 5, 0, "", "Durotar" }, "~"), "PARTY", "Other-Realm")
+        r.other = false
+        for _, l in ipairs(D:Lines()) do
+          if l.name == "Other" and l.text:find("Safe", 1, true) and not l.join then r.other = true end
+        end
+        -- you accept a route quest: it is offered; the partner wants it: it is shared
+        local q
+        for qq, qs in pairs(E.questSteps) do if qs.A and not E.steps[qs.A].grp then q = qq break end end
+        SENT = {}
+        FireEvent("QUEST_ACCEPTED", 1, q)
+        r.offered = sent("Q~" .. q)
+        GetQuestLogIndexByID = function(id) return id == q and 3 or 0 end
+        SelectQuestLogEntry = function(idx) SELECTED = idx end
+        GetQuestLogPushable = function() return SELECTED == 3 end
+        QuestLogPushQuest = function() PUSHED = q end
+        FireEvent("CHAT_MSG_ADDON", "MacQuest", "W~" .. q .. "~Tester", "PARTY", "Partner-Realm")
+        r.pushed = PUSHED == q
+        PUSHED = nil
+        FireEvent("CHAT_MSG_ADDON", "MacQuest", "W~" .. q .. "~Tester", "PARTY", "Partner-Realm")
+        r.once = PUSHED == nil
+        -- the partner offers a pickup still ahead of you: you ask for it
+        local want
+        for _, idx in ipairs(E:Upcoming(30)) do
+          local st = E.steps[idx]
+          if st.t == "A" and st.q and not SL.Player:InLog(st.q) and D:Wants(st.q) then want = st.q break end
+        end
+        SENT = {}
+        if want then FireEvent("CHAT_MSG_ADDON", "MacQuest", "Q~" .. want, "PARTY", "Partner-Realm") end
+        r.asks = want ~= nil and sent("W~" .. want .. "~Partner")
+        -- out of the group: the partner line goes away
+        IsInGroup = function() return false end
+        FireEvent("GROUP_ROSTER_UPDATE")
+        r.gone = #D:Lines() == 0
+        C_ChatInfo, IsInGroup, IsInRaid, GetQuestLogIndexByID, SelectQuestLogEntry, GetQuestLogPushable, QuestLogPushQuest = unpack(saved)
+        SL.char.duo = false
+        local out = {}
+        for _, k in ipairs({ "offSilent", "status", "log", "ahead", "row", "joined", "other", "offered", "pushed", "once", "asks", "gone" }) do
+          out[#out + 1] = k .. "=" .. tostring(r[k] and true or false)
+        end
+        return table.concat(out, " ")
+    end)()""")
+    print("    duo:", duo)
+    for k, msg in [("offSilent", "duo mode off: nothing sent"),
+                   ("status", "duo mode on: your route and step are sent to the party"),
+                   ("log", "and your quest log"),
+                   ("ahead", "a partner on the same route shows as ahead, with their step"),
+                   ("row", "their line shows in the guide window"),
+                   ("joined", "clicking it jumps to their step"),
+                   ("other", "a partner on another route style is told to pick the same one"),
+                   ("offered", "a route quest you accept is offered to the party"),
+                   ("pushed", "and shared when the partner asks for it"),
+                   ("once", "only once"),
+                   ("asks", "a quest your partner offers that you still need is asked for"),
+                   ("gone", "leaving the group clears the partner line")]:
+        check(f"{k}=true" in duo, msg)
+
+    print("\n== group finder eye on group quests")
+    lfg = L.eval("""(function()
+        local SL, E, UI = SpeedLevel, SpeedLevel.Engine, SpeedLevel.UI
+        local micro = CreateFrame("Button", "LFGMicroButton", UIParent)
+        micro.GetName = function() return "LFGMicroButton" end
+        UI.lfg = nil
+        local row = CreateFrame("Frame", nil, UIParent)
+        row.GetRight = function() return 400 end
+        row.GetTop = function() return 300 end
+        row.IsVisible = function() return true end
+        row.GetEffectiveScale = function() return 1 end
+        local q
+        for qq, qs in pairs(E.questSteps) do if qs.A then q = qq break end end
+        UI:PlaceLFG(row, q)
+        local b = UI.lfg
+        local ok = b and b:IsShown() and b:GetAttribute("type1") == "macro" and b:GetAttribute("macrotext1") == "/click LFGMicroButton"
+        local chat
+        local oldOpen, oldCh = ChatFrame_OpenChat, GetChannelName
+        ChatFrame_OpenChat = function(t) chat = t end
+        GetChannelName = function(n) return n == "LookingForGroup" and 4 or 0 end
+        b._scripts.PostClick(b, "RightButton")
+        ChatFrame_OpenChat, GetChannelName = oldOpen, oldCh
+        UI:PlaceLFG(nil)
+        local hidden = not b:IsShown()
+        _G.LFGMicroButton = nil
+        return tostring(ok) .. "@@" .. tostring(chat) .. "@@" .. tostring(hidden) .. "@@" .. E:QuestName(q)
+    end)()""")
+    print("    lfg:", lfg)
+    ok_b, chat, hidden, qname = lfg.split("@@")
+    check(ok_b == "true", "the eye is a secure button that presses the game's Group Finder button")
+    check(chat.startswith("/4 LFG ") and qname in chat, f"right-click writes an LFG message for the LookingForGroup channel ({chat})")
+    check(hidden == "true", "it hides when there is no group quest line")
+
     print("\n== time to 60")
     login(level=4, race=2, raceFile="Orc", **{"class": 1}, xp=600, xpMax=2100)
     secs = L.eval("(function() local t = SpeedLevel.UI:TimeTo60(5000, 3600); return t end)()")
@@ -1431,6 +2231,258 @@ def main():
     txt = L.eval("(function() local _, _, l = SpeedLevel.Engine:StepText(SpeedLevel.Engine.steps[" + str(ti) + "]); return table.concat(l, ' ') end)()")
     check("6:40 left" in txt, f"shows time left ({txt})")
     L.execute("STATE.timers = nil")
+
+    print("\n== class training: your trainer, every new even level")
+    login(level=4, race=2, raceFile="Orc", **{"class": 1}, classFile="WARRIOR", map=1411, x=0.43, y=0.69)
+    tr = L.eval("""(function()
+        local SL, E = SpeedLevel, SpeedLevel.Engine
+        local mine, other
+        for i, st in ipairs(E.steps) do
+          if st.t == "TRAIN" and st.cls then
+            if st.cls == "WARRIOR" and not mine and E:SectionApplies(E.sections[st.sec]) then mine = i end
+            if st.cls ~= "WARRIOR" and not other then other = i end
+          end
+        end
+        if not mine or not other then return "none" end
+        SL.char.lastTrained = 2
+        E:Invalidate()
+        local _, wo = E:ComputeStatus(other)
+        local s = E:ComputeStatus(mine)
+        SL.char.lastTrained = 4
+        local _, wn = E:ComputeStatus(mine)
+        SL.Player.level = 5
+        local _, w5 = E:ComputeStatus(mine)
+        SL.Player.level = 4
+        SL.char.lastTrained = 0
+        local st = E.steps[mine]
+        return table.concat({ tostring(wo), tostring(s == E.ACTIVE), tostring(wn), tostring(w5),
+          tostring(st.m ~= nil and st.npc ~= nil) }, "|")
+    end)()""")
+    print("    training:", tr)
+    wo, due, wn, w5, pin = tr.split("|")
+    check(wo == "other class", f"another class's trainer stop is skipped ({wo})")
+    check(due == "true", "a new even level since you last trained: go train")
+    check(wn == "nothing new to train" and w5 == "nothing new to train", f"trained at 4: nothing at 4 or 5 ({wn}, {w5})")
+    check(pin == "true", "the stop is pinned on your class trainer")
+
+    print("\n== mage teleports")
+    login(level=20, race=8, raceFile="Troll", **{"class": 8}, classFile="MAGE", map=1413, x=0.52, y=0.30)
+    tp = L.eval("""(function()
+        local A = SpeedLevel.Advisor
+        local adv = A:Advise({ m = 1454, x = 50, y = 50 })
+        local out = { adv and adv.kind or "none", adv and adv.line or "" }
+        SpeedLevel.Player.level = 19
+        local adv2 = A:Advise({ m = 1454, x = 50, y = 50 })
+        out[#out + 1] = adv2 and adv2.kind or "none"
+        SpeedLevel.Player.level = 20
+        return table.concat(out, "@@")
+    end)()""")
+    kind, line, kind19 = tp.split("@@")
+    check(kind == "spell" and "Teleport: Orgrimmar" in line, f"a level 20 mage teleports to Orgrimmar ({kind}: {line})")
+    check("Rune of Teleportation" in line, "says you need a Rune of Teleportation when you have none")
+    check(kind19 != "spell", f"not before the spell is learned ({kind19})")
+    L.execute("SpeedLevel.Advisor.pendingPort = nil; SpeedLevel.Advisor:PortCast(3567); STATE.map = 1454; STATE.x = 0.47; STATE.y = 0.62; FireEvent('PLAYER_ENTERING_WORLD')")
+    land = L.eval("(function() local l = SpeedLevel.db.portLand and SpeedLevel.db.portLand[3567] return l and (l[1] .. ':' .. l[2]) or 'nil' end)()")
+    check(land == "1454:47", f"remembers where the teleport landed ({land})")
+
+    print("\n== shift-click links a quest in chat")
+    login(level=1, race=2, raceFile="Orc", **{"class": 1}, classFile="WARRIOR")
+    L.execute("LINKED = nil; function ChatEdit_InsertLink(l) LINKED = l return true end")
+    lk = L.eval("""(function()
+        local SL, E = SpeedLevel, SpeedLevel.Engine
+        SlashCmdList.SPEEDLEVEL('list')
+        local RL = SL.RouteList
+        for _, row in ipairs(RL.frame.rows) do
+          local st = row.stepIndex and E.steps[row.stepIndex]
+          if st and st.q and row.stepIndex > SL.char.cursor + 2 then
+            local before = SL.char.cursor
+            STATE.shift = true
+            row._scripts.OnClick(row, "LeftButton")
+            STATE.shift = false
+            return tostring(LINKED) .. "~" .. st.q .. "~" .. tostring(SL.char.cursor == before)
+          end
+        end
+        return "none"
+    end)()""")
+    link, lq, stay = lk.split("~")
+    check(f"|Hquest:{lq}:" in link and "|h[" in link, f"shift-click puts a quest link in chat ({link})")
+    check(stay == "true", "and does not jump the guide to that step")
+    L.execute("ChatEdit_InsertLink = nil; LINKED = nil; SpeedLevel.RouteList:Toggle(false)")
+
+    print("\n== group (elite) quests: a hint, guided once accepted")
+    login(level=10, race=2, raceFile="Orc", **{"class": 1}, classFile="WARRIOR")
+    gq = L.eval("""(function()
+        local SL, E = SpeedLevel, SpeedLevel.Engine
+        for i, st in ipairs(E.steps) do
+          if st.grp and st.t == "A" and E:SectionApplies(E.sections[st.sec]) then
+            local d = SL.Quests[st.q]
+            STATE.level = math.max(d and d[3] or 1, (d and d[2] or 1))
+            STATE.map, STATE.x, STATE.y = st.m, st.x / 100, st.y / 100
+            SL.Player:Refresh()
+            SL.char.cursor = i
+            E:Invalidate()
+            local _, why = E:ComputeStatus(i)
+            if why == "group quest" then
+              local hints = E:GroupHints()
+              local hinted = false
+              for _, h in ipairs(hints) do if h == i then hinted = true end end
+              SL.db.groupQuests = false
+              E:Invalidate()
+              local _, off = E:ComputeStatus(i)
+              local none = #E:GroupHints() == 0
+              SL.db.groupQuests = true
+              table.insert(STATE.log, { id = st.q, complete = false })
+              SL.Player:Refresh()
+              E:Invalidate()
+              local c = E.questSteps[st.q].C
+              local cs = c and E:Status(c)
+              STATE.log = {}
+              SL.Player:Refresh()
+              return table.concat({ tostring(hinted), tostring(off), tostring(none),
+                tostring(cs == E.ACTIVE), E:QuestName(st.q) }, "|")
+            end
+          end
+        end
+        return "none"
+    end)()""")
+    print("    group:", gq)
+    check(gq != "none", "a group quest is offered at a hub")
+    if gq != "none":
+        hinted, off, none, cact, gname = gq.split("|")
+        check(hinted == "true", f"standing at its giver: shown as a group-quest hint ({gname})")
+        check(off == "group quests are off" and none == "true", "the option turns the hints off")
+        check(cact == "true", "accepted: its objective is guided like any quest")
+
+    print("\n== the level 40 mount")
+    login(level=40, race=2, raceFile="Orc", **{"class": 1}, classFile="WARRIOR")
+    mt = L.eval("""(function()
+        local SL, E = SpeedLevel, SpeedLevel.Engine
+        local mine, other
+        for i, st in ipairs(E.steps) do
+          if st.t == "MOUNT" then
+            if st.race == "Orc" and not mine then mine = i elseif st.race ~= "Orc" and not other then other = i end
+          end
+        end
+        if not mine then return "none" end
+        E:Invalidate()
+        local s = E:ComputeStatus(mine)
+        local _, wo = E:ComputeStatus(other)
+        local _, _, lines = E:StepText(E.steps[mine])
+        SL.char.hasMount = true
+        local _, wd = E:ComputeStatus(mine)
+        SL.char.hasMount = false
+        return table.concat({ tostring(s == E.ACTIVE), tostring(wo), tostring(wd), E.steps[mine].name or "" }, "|")
+    end)()""")
+    print("    mount:", mt)
+    m_act, m_other, m_done, m_name = mt.split("|")
+    check(m_act == "true", f"at 40: go learn riding ({m_name})")
+    check(m_other == "other race", "other races' riding stops are skipped")
+    check(m_done == "you can ride", "done once you can ride")
+
+    print("\n== mount gold mode: skinning stops and the gold tracker")
+    login(level=1, race=2, raceFile="Orc", **{"class": 1}, classFile="WARRIOR", map=1411, x=0.43, y=0.69)
+    L.execute("""SKILLS = {}
+        function GetNumSkillLines() return #SKILLS end
+        function GetSkillLineInfo(i) local s = SKILLS[i] return s[1], false, false, s[2], 0, 0, s[3] end
+        MONEY = 0
+        function GetMoney() return MONEY end""")
+    gm = L.eval("""(function()
+        local SL, E = SpeedLevel, SpeedLevel.Engine
+        local appr, jour
+        for i, st in ipairs(E.steps) do
+          if st.t == "PROF" and E:SectionApplies(E.sections[st.sec]) then
+            if st.rank == "Apprentice" and not appr then appr = i end
+            if st.rank == "Journeyman" and not jour then jour = i end
+          end
+        end
+        if not appr or not jour then return "none" end
+        E:Invalidate()
+        local _, off = E:ComputeStatus(appr)
+        SL.char.goldMode = true
+        E:Invalidate()
+        local on = E:ComputeStatus(appr) == E.ACTIVE
+        SKILLS = { { "Skinning", 1, 75 } }
+        E:Invalidate()
+        local _, learned = E:ComputeStatus(appr)
+        SL.Player.level = 12
+        SKILLS = { { "Skinning", 30, 75 } }
+        E:Invalidate()
+        -- a Journeyman stop in a zone that is still open for this character
+        local low
+        for i, st in ipairs(E.steps) do
+          if st.t == "PROF" and st.rank == "Journeyman" and E:SectionApplies(E.sections[st.sec]) then
+            local _, w = E:ComputeStatus(i)
+            if w ~= "section skipped" and w ~= "moved on" then low = w break end
+          end
+        end
+        -- pace: 5g at level 14, 17g now at 20 -> 2g a level -> ~57g by 40 of 100g
+        STATE.level, STATE.xp = 20, 0
+        SL.Player:Refresh()
+        SL.char.moneyAt[14] = 50000
+        MONEY = 170000
+        local have, goal, proj = E:GoldPace()
+        SL:Update()
+        local gt = SL.UI.frame.goldText
+        local hint = (gt:IsShown() and gt:GetText() or "") .. "#" .. string.format("%.2f", SL.UI.frame.goldBar:GetValue())
+        -- Honored with Orgrimmar: 90g
+        function GetFactionInfoByID(id) if id == 76 then return "Orgrimmar", "", 6 end end
+        local _, goalH = E:GoldPace()
+        GetFactionInfoByID = nil
+        -- newer clients only have C_Reputation.GetFactionDataByID
+        C_Reputation = { GetFactionDataByID = function(id) if id == 76 then return { reaction = 6 } end end }
+        local _, goalN = E:GoldPace()
+        C_Reputation = nil
+        -- and the reputation list as a last resort
+        function GetNumFactions() return 2 end
+        function GetFactionInfo(i) if i == 2 then return "Orgrimmar", "", 7, 0, 0, 0, false, false, false, false, false, false, false, 76 end return "Horde", "", 5 end
+        local _, goalL = E:GoldPace()
+        GetNumFactions, GetFactionInfo = nil, nil
+        hint = hint .. "#" .. goalH .. "#" .. goalN .. "#" .. goalL
+        SL.char.goldMode = false
+        SKILLS = {}
+        return table.concat({ tostring(off), tostring(on), tostring(learned), tostring(low),
+          string.format("%d,%d,%d", have, goal, proj or -1), hint }, "@@")
+    end)()""")
+    print("    gold:", gm)
+    g_off, g_on, g_learned, g_low, g_pace, g_hint = gm.split("@@")
+    check(g_off == "gold mode is off", "skinning stops are skipped unless gold mode is on")
+    check(g_on == "true", "gold mode on: learn Skinning at the first trainer")
+    check(g_learned == "already learned", "skipped once you have that rank")
+    check(g_low == "skill 30 of 50 needed", f"next rank waits for your skill ({g_low})")
+    check(g_pace == "17,100,57", f"gold pace from your own gold per level ({g_pace})")
+    check("17g / 100g" in g_hint and "short" in g_hint, f"the guide window shows a mount gold bar ({g_hint})")
+    check("#0.17#" in g_hint, f"the bar is 17% full ({g_hint})")
+    check(g_hint.endswith("#90#90#90"), f"Honored with your capital (any reputation API): the goal drops to 90g ({g_hint})")
+    # profession tiers: Mining 125/150 at level 20 -> Expert unlocked, the nearest Mining trainer named
+    tiers = L.eval("""(function()
+        local SL, E = SpeedLevel, SpeedLevel.Engine
+        STATE.level, STATE.map, STATE.x, STATE.y = 20, 1454, 0.5, 0.5
+        SL.Player:Refresh()
+        SKILLS = { { "Mining", 125, 150 }, { "Herbalism", 100, 150 } }
+        local t = E:ProfessionTiers()
+        SKILLS = { { "Mining", 125, 150 } }
+        STATE.level = 19
+        SL.Player:Refresh()
+        local t19 = E:ProfessionTiers()
+        STATE.level = 20
+        SL.Player:Refresh()
+        SL:Update()
+        local shown = false
+        for _, row in ipairs(SL.UI.frame.rows) do
+          if row:IsShown() and row.text:GetText() and row.text:GetText():find("Train Expert Mining", 1, true) then shown = true end
+        end
+        SKILLS = {}
+        local p = t[1]
+        return table.concat({ #t, p and p.prof or "", p and p.rank or "", p and p.trainer and p.trainer.name or "none",
+          #t19, tostring(shown) }, "@@")
+    end)()""")
+    print("    tiers:", tiers)
+    n_t, t_prof, t_rank, t_name, n19, t_shown = tiers.split("@@")
+    check(n_t == "1" and t_prof == "Mining" and t_rank == "Expert", f"Expert Mining unlocked at 125 skill, level 20 ({tiers})")
+    check(t_name != "none", f"names the nearest Mining trainer ({t_name})")
+    check(n19 == "0", "not before the level it needs")
+    check(t_shown == "true", "the guide window reminds you to train it")
+    L.execute("GetNumSkillLines = nil; GetSkillLineInfo = nil; GetMoney = nil; MONEY = nil")
 
     print("\n== slash commands")
     L.execute("SlashCmdList.SPEEDLEVEL('sections')")

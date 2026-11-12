@@ -1,0 +1,75 @@
+Orc Warrior        thorough           reached 60                  1341 steps  103.2 h (grind 36.5 h)  orange  49  issues 0
+Troll Shaman       thorough           reached 60                  1369 steps  103.6 h (grind 35.5 h)  orange  41  issues 0
+Tauren Druid       thorough           reached 60                  1346 steps  102.7 h (grind 35.9 h)  orange  35  issues 0
+Undead Warlock     thorough           reached 60                  1474 steps  100.4 h (grind 32.3 h)  orange  37  issues 0
+Skyborne Hunter    thorough           reached 60                  1232 steps  105.8 h (grind 43.4 h)  orange  46  issues 0
+Orc Rogue          thorough           reached 60                  1335 steps  103.4 h (grind 37.0 h)  orange  47  issues 0
+Undead Mage        thorough           reached 60                  1466 steps   99.4 h (grind 32.5 h)  orange  36  issues 0
+Orc Warrior        thorough_dungeons  reached 60                  1411 steps  103.2 h (grind 25.4 h)  orange  37  issues 0
+Troll Shaman       thorough_dungeons  reached 60                  1440 steps  103.9 h (grind 24.5 h)  orange  36  issues 0
+Tauren Druid       thorough_dungeons  reached 60                  1423 steps  103.1 h (grind 24.4 h)  orange  32  issues 0
+Undead Warlock     thorough_dungeons  reached 60                  1532 steps  101.2 h (grind 22.7 h)  orange  32  issues 0
+Skyborne Hunter    thorough_dungeons  reached 60                  1327 steps  105.9 h (grind 30.0 h)  orange  42  issues 0
+Orc Rogue          thorough_dungeons  reached 60                  1411 steps  103.2 h (grind 25.3 h)  orange  36  issues 0
+Undead Mage        thorough_dungeons  reached 60                  1535 steps   99.4 h (grind 22.3 h)  orange  32  issues 0
+
+Pickups left behind waiting for a level (zone: count over all runs):
+    56  Desolace
+    21  Feralas
+    14  Undercity (turn in Scarlet Monastery)
+    14  Tanaris
+     7  Orgrimmar - 20s
+     7  Thousand Needles
+     7  The Barrens (turn in Razorfen Kraul)
+     7  Undercity (turn in City of Dalaran)
+     4  Ashenvale
+     4  Silverpine Forest
+     2  The Barrens - Crossroads
+     2  The Barrens - Camp Taurajo
+     2  Undercity
+     1  Stonetalon Mountains
+     1  The Barrens - Wrap up
+
+Quests picked up but then dropped (turn-in skipped), by zone:
+     5  Hillsbrad Foothills - turn-in: objectives skipped; objective: grey
+     5  Stonetalon Mountains - turn-in: objectives skipped; objective: grey
+     5  Ashenvale - turn-in: objectives skipped; objective: grey
+     4  Winterspring - turn-in: objectives skipped; objective: grey
+     4  The Barrens - Crossroads - turn-in: objectives skipped; objective: grey
+     4  Thunder Bluff (quests for Wailing Caverns) - turn-in: objectives skipped; objective: grey
+     3  Thousand Needles - turn-in: objectives skipped; objective: grey
+     1  Arathi Highlands - turn-in: objectives skipped; objective: grey
+
+Travel between maps, as the guide advises it (average per run):
+  walk      2.24 h over  26.6 trips
+  boat      1.77 h over   9.2 trips
+  hearth    0.84 h over   7.2 trips
+  fly       0.53 h over   5.1 trips
+  spell     0.19 h over   3.0 trips
+  unknown   0.03 h over   0.4 trips
+
+Level on arrival vs plan (avg difference, biggest first):
+  -3.18  Mulgore (Skyborne)
+  +2.39  The Barrens - Crossroads
+  -1.42  Silverpine Forest (turn in Shadowfang Keep)
+  -1.42  Ruins of Lordaeron
+  -1.42  Shadowfang Keep
+  -1.39  Desolace (turn in Maraudon)
+  -1.39  Maraudon
+  -1.36  Alterac Mountains
+  -1.35  City of Dalaran
+  -1.34  Undercity (turn in City of Dalaran)
+  -1.22  Thunder Bluff
+  -1.08  The Barrens (turn in Razorfen Kraul)
+
+Slowest zones (Thorough, average hours):
+   9.82 h  Eastern Plaguelands
+   9.55 h  Stranglethorn Vale
+   9.17 h  Tanaris
+   7.30 h  Winterspring
+   6.19 h  Arathi Highlands
+   5.01 h  Swamp of Sorrows
+   4.22 h  Felwood
+   4.14 h  Stranglethorn Vale 2
+   3.81 h  Thousand Needles
+   3.42 h  The Barrens - Camp Taurajo

@@ -138,7 +138,7 @@ def score(plan_text):
             f.write(plan_text)
         _br.PLAN_FILE = Path(path)
         with contextlib.redirect_stdout(io.StringIO()):
-            plan, _ = _br.main("speed", dry=True)
+            plan, _ = _br.main("thorough", dry=True)
         hours = [sum(getattr(sg, "minutes", 0) for sg in plan if r in sg.races) / 60 for r in RACES]
         return sum(hours) / len(hours)
     except Exception as e:      # an order the generator cannot route: never chosen

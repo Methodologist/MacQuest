@@ -33,8 +33,11 @@ end
 
 local function walkSpeed()
     local lvl = SL.Player.level or 1
-    return RUN * (lvl >= MOUNT_LEVEL and MOUNT_MULT or 1)
+    return RUN * ((lvl >= MOUNT_LEVEL and SL.Player:HasMount()) and MOUNT_MULT or 1)
 end
+
+TA.WalkSpeed = walkSpeed
+TA.Dist = dist
 
 local function taxiKey(m, x, y)
     return string.format("%d:%.0f:%.0f", m or 0, x or 0, y or 0)
@@ -50,51 +53,73 @@ local function flightMasters()
     local druid = SL.Player.classFile == "DRUID"
     for _, f in ipairs(SL.Travel and SL.Travel.fm or {}) do
         local c, wx, wy = TA:World(f[1], f[2], f[3])
-        if c and (not f[6] or druid) then
+        if c and (f[6] ~= true or druid) then
             fms[#fms + 1] = { m = f[1], x = f[2], y = f[3], npc = f[4], name = f[5], c = c, wx = wx, wy = wy,
-                key = taxiKey(f[1], f[2], f[3]), druidOnly = f[6] or nil }
+                key = taxiKey(f[1], f[2], f[3]), druidOnly = (f[6] == true) or nil, place = f[7] }
         end
     end
     return fms
 end
 TA.FlightMasters = flightMasters
 
--- flight paths the route has taken you past (FP / FLY steps before the cursor in your sections)
-function TA:Passed(npc)
-    local E = SL.Engine
-    local cur = SL.char.cursor or 1
-    local noScan = next(SL.char.knownTaxi or {}) == nil
-    if self.passedFor ~= E.steps or self.passedCur ~= cur or self.passedScan ~= noScan then
-        self.passedScan = noScan
-        local p = {}
-        for i = 1, math.min(cur - 1, #E.steps) do
-            local st = E.steps[i]
-            -- only steps you actually did (talked to the flight master / took the flight) - unless no
-            -- flight map has been opened on this character yet (fresh install): then trust the route
-            if (st.t == "FP" or st.t == "FLY") and st.npc
-                and (SL.char.flags[i] or SL.char.manualDone[i] or noScan)
-                and E:SectionApplies(E.sections[st.sec]) then
-                p[st.npc] = true
-            end
+-- has a flight map been opened on this continent (so every flight path there is on record)?
+function TA:Scanned(c)
+    if c == nil then return false end
+    if SL.char.taxiScanned and SL.char.taxiScanned[c] then return true end
+    -- only a flight map says "not learned": any such record means it was opened here (also covers
+    -- characters from before this was tracked)
+    local kt = SL.char.knownTaxi or {}
+    for _, f in ipairs(flightMasters()) do
+        if f.c == c and kt[f.key] == false then
+            SL.char.taxiScanned = SL.char.taxiScanned or {}
+            SL.char.taxiScanned[c] = true
+            return true
         end
-        self.passed, self.passedFor, self.passedCur = p, E.steps, cur
     end
-    return self.passed[npc] == true
+    return false
 end
 
--- known: what a flight map showed (true / false), else whether the route took you past it
+-- flight paths the route has taken you past (FP / FLY steps before the cursor in your sections).
+-- trustRoute: count every such step, done or not - for a continent whose flight map you have not
+-- opened yet (fresh install, flight paths learned before): the route is the best guess there.
+function TA:Passed(npc, trustRoute)
+    local E = SL.Engine
+    local cur = SL.char.cursor or 1
+    if (self.passedFor ~= E.steps or self.passedCur ~= cur) and not self.passedBuilding then
+        self.passedBuilding = true
+        local strict, loose = {}, {}
+        for i = 1, math.min(cur - 1, #E.steps) do
+            local st = E.steps[i]
+            if (st.t == "FP" or st.t == "FLY") and st.npc and E:SectionApplies(E.sections[st.sec]) then
+                if SL.char.flags[i] or SL.char.manualDone[i] then
+                    strict[st.npc], loose[st.npc] = true, true
+                elseif st.t == "FP" and not SL.char.manualSkip[i] and E:Status(i) ~= E.SKIP then
+                    -- a flight path step you were taken past (not one in a zone you skipped)
+                    loose[st.npc] = true
+                end
+            end
+        end
+        self.passedStrict, self.passedLoose, self.passedFor, self.passedCur = strict, loose, E.steps, cur
+        self.passedBuilding = nil
+    end
+    return ((trustRoute and self.passedLoose or self.passedStrict) or {})[npc] == true
+end
+
+-- known: what a flight map showed (true / false) - it lists every flight path you have, however you
+-- learned it - else whether the route took you past it
 function TA:Known(fm)
     if fm.druidOnly then return true end        -- the druids' own flight master: talking to it is enough
     local v = SL.char.knownTaxi[fm.key]
     if v ~= nil then return v end
-    return self:Passed(fm.npc)
+    return self:Passed(fm.npc, not self:Scanned(fm.c))
 end
 
 function TA:KnownNpc(npc)
     if not npc then return false end
     if not self.byNpc then
+        local list = flightMasters()     -- may reset byNpc while it rebuilds, so build after it
         self.byNpc = {}
-        for _, f in ipairs(flightMasters()) do self.byNpc[f.npc] = f end
+        for _, f in ipairs(list) do self.byNpc[f.npc] = f end
     end
     local f = self.byNpc[npc]
     if not f then return true end          -- not in the data: don't block the step
@@ -124,6 +149,13 @@ end
 function TA:WantedDestination()
     local E = SL.Engine
     local st = E:CurrentIs("FLY")
+    if not st then
+        -- a pickup / turn-in right here may come first ("while you're here"): the flight planned next
+        for _, i in ipairs(E:Upcoming(5)) do
+            local s2 = E.steps[i]
+            if s2 and s2.t == "FLY" and s2.fto then st = s2 break end
+        end
+    end
     local npc = st and st.fto
     if not npc and E.advice and E.advice.kind == "fly" then npc = E.advice.to.npc end
     if not npc and E.advice and E.advice.kind == "boat" and E.advice.first then npc = E.advice.first.to.npc end
@@ -185,17 +217,19 @@ end
 
 -- a flight master within a few steps that you have not learned (or, before you have opened any
 -- flight map, one the route has not taken you past): learning it costs seconds, saves minutes later
-local NEAR_FP = 120
+local NEAR_FP = 250
 function TA:NearbyNewFlightPath()
     local pm, px, py = SL.Player:Position()
     if not pm then return nil end
     local pc, wx, wy = self:World(pm, px, py)
     if not pc then return nil end
-    local noScan = next(SL.char.knownTaxi or {}) == nil
     for _, f in ipairs(flightMasters()) do
         if f.c == pc and dist(wx, wy, f.wx, f.wy) < NEAR_FP then
             local v = SL.char.knownTaxi[f.key]
-            if v == false or (v == nil and noScan and not self:Passed(f.npc)) then return f end
+            if v == false or (v == nil and not self:Scanned(f.c) and not self:Passed(f.npc, true)) then
+                f.d = dist(wx, wy, f.wx, f.wy)
+                return f
+            end
         end
     end
     return nil
@@ -221,32 +255,119 @@ end
 TA.Transports = transports
 
 local RIDE = 170          -- waiting at the dock + the ride itself, seconds
+local SCAN_HINT_WALK = 300  -- a walk this long on an unscanned continent: suggest opening a flight map
 local MOONGLADE = 1450
 local MG_LAND = { 44, 45 }  -- where Teleport: Moonglade lands (Nighthaven), map coordinates
 
--- quickest way between two world points on one continent: walking, or a known flight
+-- walking seconds between two map points: over the real terrain when the arrow's terrain data knows
+-- the way (mountains, cliffs, zone crossings), else a straight line with the usual detour
+local function walkSecs(am, ax, ay, awx, awy, bm, bx, by, bwx, bwy, spd)
+    local PA = SL.Pathing
+    if am and bm and PA and PA.PathYards and SL.db.terrainArrow ~= false then
+        local y = PA:PathYards(am, ax, ay, bm, bx, by)
+        if y then return y / spd end
+    end
+    return dist(awx, awy, bwx, bwy) * WALK_DETOUR / spd
+end
+TA.WalkSecs = walkSecs
+
+-- quickest way between two world points on one continent: walking, or a known flight - from any
+-- flight master, in this zone or the next.  Options are short-listed in straight lines, then the
+-- best few are measured over the terrain (the walk to the flight master, from where you land, and
+-- the whole way on foot).  a / b may carry their map point: { m, x, y }.
 -- -> seconds, flight ({from = fm, to = fm}) or nil
-local function legTime(c, ax, ay, bx, by, known, spd)
-    local best = dist(ax, ay, bx, by) * WALK_DETOUR / spd
-    local how
+local TERRAIN_CANDS = 3
+local function legTime(c, ax, ay, bx, by, known, spd, a, b)
+    local straight = dist(ax, ay, bx, by) * WALK_DETOUR / spd
+    local opts = {}
     for _, f in ipairs(known) do
         if f.c == c then
             local tA = dist(ax, ay, f.wx, f.wy) * WALK_DETOUR / spd
-            if tA + FLY_OVERHEAD < best then
+            if tA + FLY_OVERHEAD < straight * 1.5 then
                 for _, g in ipairs(known) do
                     if g ~= f and g.c == c then
-                        local t = tA + FLY_OVERHEAD + dist(f.wx, f.wy, g.wx, g.wy) * FLY_DETOUR / FLY_SPEED
-                            + dist(g.wx, g.wy, bx, by) * WALK_DETOUR / spd
-                        if t < best then best, how = t, { from = f, to = g } end
+                        local fly = dist(f.wx, f.wy, g.wx, g.wy) * FLY_DETOUR / FLY_SPEED
+                        local t = tA + FLY_OVERHEAD + fly + dist(g.wx, g.wy, bx, by) * WALK_DETOUR / spd
+                        opts[#opts + 1] = { t = t, fly = fly, from = f, to = g }
                     end
                 end
             end
         end
     end
+    table.sort(opts, function(p, q) return p.t < q.t end)
+    if not (a and b and a.m and b.m) then
+        local o = opts[1]
+        if o and o.t < straight then return o.t, { from = o.from, to = o.to } end
+        return straight, nil
+    end
+    local walk = walkSecs(a.m, a.x, a.y, ax, ay, b.m, b.x, b.y, bx, by, spd)
+    local best, how = walk, nil
+    for k = 1, math.min(TERRAIN_CANDS, #opts) do
+        local o = opts[k]
+        local t = walkSecs(a.m, a.x, a.y, ax, ay, o.from.m, o.from.x, o.from.y, o.from.wx, o.from.wy, spd)
+            + FLY_OVERHEAD + o.fly
+            + walkSecs(o.to.m, o.to.x, o.to.y, o.to.wx, o.to.wy, b.m, b.x, b.y, bx, by, spd)
+        if t < best then best, how = t, { from = o.from, to = o.to } end
+    end
     return best, how
 end
 
 local function mins(sec) return math.max(1, math.floor(sec / 60 + 0.5)) end
+
+-- Mage teleports: {spellID, city map, x, y, level, city name}.  Where a teleport lands is learned the
+-- first time you cast it (SL.db.portLand); until then the city's flight master stands in.
+local PORT_CAST = 10 + 15          -- cast + loading screen
+local RUNE = 17031                 -- Rune of Teleportation
+function TA:Ports()
+    local out = {}
+    if SL.Player.classFile ~= "MAGE" then return out end
+    local lvl = SL.Player.level or 1
+    for _, p in ipairs(SL.Travel and SL.Travel.ports or {}) do
+        local known = lvl >= p[5]
+        if IsSpellKnown then known = SL.Clean(IsSpellKnown(p[1])) and true or false end
+        if known then
+            local land = SL.db and SL.db.portLand and SL.db.portLand[p[1]]
+            local m, x, y = p[2], p[3], p[4]
+            if land then m, x, y = land[1], land[2], land[3] end
+            local c, wx, wy = self:World(m, x, y)
+            if c then out[#out + 1] = { spell = p[1], m = m, x = x, y = y, c = c, wx = wx, wy = wy, city = p[6] } end
+        end
+    end
+    return out
+end
+
+-- the quickest teleport towards a world point: {spell, city, t = seconds incl. the way on} or nil
+function TA:BestPort(tc, twx, twy, known, spd, target)
+    local best
+    for _, p in ipairs(self:Ports()) do
+        if p.c == tc then
+            local t = PORT_CAST + legTime(tc, p.wx, p.wy, twx, twy, known, spd, p, target)
+            if not best or t < best.t then
+                best = p
+                best.t = t
+            end
+        end
+    end
+    return best
+end
+
+-- remember where a teleport put you
+function TA:PortCast(spellID)
+    for _, p in ipairs(SL.Travel and SL.Travel.ports or {}) do
+        if p[1] == spellID then self.pendingPort = { spell = spellID, at = GetTime and GetTime() or 0 } end
+    end
+end
+function TA:PortArrived()
+    local pp = self.pendingPort
+    if not pp then return end
+    self.pendingPort = nil
+    if GetTime and GetTime() - pp.at > 90 then return end
+    local m, x, y = SL.Player:Position()
+    if m and SL.db then
+        SL.db.portLand = SL.db.portLand or {}
+        SL.db.portLand[pp.spell] = { m, math.floor(x * 10 + 0.5) / 10, math.floor(y * 10 + 0.5) / 10 }
+    end
+end
 
 -- best way to (m, x, y): nil (just walk) or a plan for the guide window and arrow
 --   { kind = "fly",    from = fm, to = fm }                         fly first
@@ -265,7 +386,11 @@ function TA:Advise(target)
     if not pc or not tc then return nil end
     local spd = walkSpeed()
     local sameCont = pc == tc
+    local here, there = { m = pm, x = px, y = py }, { m = target.m, x = target.x, y = target.y }
     local walk = sameCont and dist(pwx, pwy, twx, twy) * WALK_DETOUR / spd or math.huge
+    if sameCont and walk < MIN_SAVE then return nil end
+    -- on foot over the real terrain (a short straight line can be a long way round a ridge)
+    if sameCont then walk = walkSecs(pm, px, py, pwx, pwy, target.m, target.x, target.y, twx, twy, spd) end
     if sameCont and walk < MIN_SAVE * 2 then return nil end
 
     local known = {}
@@ -284,16 +409,20 @@ function TA:Advise(target)
         end
     end
 
+    -- Mages: a city teleport (no cooldown, one Rune of Teleportation) and on from the city
+    local port = self:BestPort(tc, twx, twy, known, spd, there)
+    if port and port.t < bestT then best, bestT = { kind = "spell", port = port }, port.t end
+
     -- flights on this continent
     if sameCont then
-        local t, how = legTime(pc, pwx, pwy, twx, twy, known, spd)
+        local t, how = legTime(pc, pwx, pwy, twx, twy, known, spd, here, there)
         if how and t < bestT then best, bestT = { kind = "fly", from = how.from, to = how.to }, t end
     end
     -- zeppelins / boats (to another continent, or across this one: Undercity - Grom'gol)
     for _, b in ipairs(transports()) do
         if b.from.c == pc and b.to.c == tc then
-            local t1, how1 = legTime(pc, pwx, pwy, b.from.wx, b.from.wy, known, spd)
-            local t2 = legTime(tc, b.to.wx, b.to.wy, twx, twy, known, spd)
+            local t1, how1 = legTime(pc, pwx, pwy, b.from.wx, b.from.wy, known, spd, here, b.from)
+            local t2 = legTime(tc, b.to.wx, b.to.wy, twx, twy, known, spd, b.to, there)
             local t = t1 + RIDE + t2
             if t < bestT then best, bestT = { kind = "boat", boat = b, first = how1 }, t end
         end
@@ -303,7 +432,7 @@ function TA:Advise(target)
     if not hearthPlanned() then
         local inn = self:BoundInn()
         if inn and inn.c == tc then
-            local t = HEARTH_TIME + legTime(tc, inn.wx, inn.wy, twx, twy, known, spd)
+            local t = HEARTH_TIME + legTime(tc, inn.wx, inn.wy, twx, twy, known, spd, inn, there)
             local cd = SL.Engine:HearthCooldown()
             if cd <= 0 then
                 if t < bestT then best, bestT = { kind = "hearth", inn = inn }, t end
@@ -316,6 +445,10 @@ function TA:Advise(target)
 
     if not best then
         if hearthHint then return { kind = "wait", line = hearthHint } end
+        if sameCont and walk >= SCAN_HINT_WALK and not self:Scanned(pc) then
+            return { kind = "wait", line = string.format("|cff66ccff~%d min on foot. Have flight paths here the guide didn't ask "
+                .. "for? Open any flight map once (talk to a flight master) and it will use them.|r", mins(walk)) }
+        end
         if not sameCont then
             -- another continent and no known way there: say so instead of a straight-line distance
             local info = C_Map and C_Map.GetMapInfo and C_Map.GetMapInfo(target.m)
@@ -331,7 +464,13 @@ function TA:Advise(target)
     end
     best.saves, best.eta = saves, bestT
     local gain = saves and string.format("saves ~%d min", mins(saves)) or string.format("~%d min trip", mins(bestT))
-    if best.kind == "fly" then
+    if best.kind == "spell" then
+        local p = best.port
+        best.label = "Teleport: " .. p.city
+        local rune = GetItemCount and GetItemCount(RUNE) or nil
+        best.line = string.format("|cffe6c070Faster: cast Teleport: %s (%s)%s|r", p.city, gain,
+            (rune == 0) and " - you need a Rune of Teleportation (reagent vendor)" or "")
+    elseif best.kind == "fly" then
         best.label = "Fly to " .. self:NodeName(best.to)
         best.line = string.format("|cffe6c070Faster by air: fly from %s to %s (%s)|r",
             best.from.name, self:NodeName(best.to), gain)

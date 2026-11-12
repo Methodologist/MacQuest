@@ -24,15 +24,19 @@ E.questSteps = {}   -- [questID] = { A = idx, C = idx, T = idx }
 
 local memo, memoWhy = {}, {}
 local secMemo = {}
+local ownA = {}           -- [stepIndex] = index of the pickup it belongs to, or false
 
 -- ------------------------------------------------------------------ init
 
 -- a route mode = style (speed | thorough) + optional dungeon runs
-E.STYLES = { "speed", "thorough" }
-E.MODES = { "speed", "speed_dungeons", "thorough", "thorough_dungeons" }
-E.MODE_NAMES = { speed = "Speed", thorough = "Thorough", speed_dungeons = "Speed + Dungeons",
-    thorough_dungeons = "Thorough + Dungeons" }
-E.STYLE_NAMES = { speed = "Speed", thorough = "Thorough" }
+E.STYLES = { "thorough", "safe" }
+E.MODES = { "thorough", "thorough_dungeons", "safe", "safe_dungeons" }
+E.MODE_NAMES = { thorough = "Thorough",
+    thorough_dungeons = "Thorough + Dungeons", safe = "Safe", safe_dungeons = "Safe + Dungeons" }
+E.STYLE_NAMES = { thorough = "Thorough", safe = "Safe" }
+-- the old Speed style (it cut quests that its XP-per-hour estimate thought slower than grinding)
+-- turned out slower than keeping them: its characters follow Thorough now
+local RENAMED = { speed = "thorough", speed_dungeons = "thorough_dungeons", dungeons = "thorough_dungeons" }
 
 -- routes are stored per faction: SL.Routes["Horde_speed"], SL.Routes["Alliance_thorough"], ...
 function E:RouteKey(mode)
@@ -40,9 +44,12 @@ function E:RouteKey(mode)
 end
 
 function E:Mode()
-    local m = SL.char.mode or "speed"
-    if m == "dungeons" then m = "speed_dungeons" end          -- older setting
-    if not (SL.Routes and SL.Routes[self:RouteKey(m)]) then m = "speed" end
+    local m = SL.char.mode or "thorough"
+    if RENAMED[m] then
+        m = RENAMED[m]
+        SL.char.mode = m
+    end
+    if not (SL.Routes and SL.Routes[self:RouteKey(m)]) then m = "thorough" end
     return m
 end
 
@@ -58,6 +65,7 @@ function E:SetDungeons(on)
 end
 
 function E:Init()
+    self:RepairTaxi()
     self:LoadRoute()
     self:RegisterEvents()
     C_Timer.NewTicker(1, SL:Guard("engine tick", function() E:Tick() end))
@@ -65,7 +73,7 @@ end
 
 -- switch route mode for this character and re-detect your place in it
 function E:SetMode(mode)
-    if mode == "dungeons" then mode = "speed_dungeons" end
+    mode = RENAMED[mode] or mode
     if not (SL.Routes and SL.Routes[self:RouteKey(mode)]) then
         SL:Print("unknown mode '" .. tostring(mode) .. "' - use speed or thorough, and /sl dungeons on|off.")
         return
@@ -82,8 +90,9 @@ function E:SetMode(mode)
 end
 
 function E:LoadRoute()
+    for k in pairs(ownA) do ownA[k] = nil end
     local mode = self:Mode()
-    local route = SL.Routes and (SL.Routes[self:RouteKey(mode)] or SL.Routes[self:RouteKey("speed")]) or {}
+    local route = SL.Routes and (SL.Routes[self:RouteKey(mode)] or SL.Routes[self:RouteKey("thorough")]) or {}
     local steps, sections, qs = {}, {}, {}
     for si, sec in ipairs(route) do
         local s = {
@@ -122,12 +131,16 @@ function E:LoadRoute()
         SL.char.routeVersion = version
         SL.char.manualSkip, SL.char.manualDone, SL.char.flags = {}, {}, {}
         SL.char.waiting = {}
+        SL.char.early = {}
+        SL.char.pinned = false
         SL.char.cursor = 1
         SL.char.curSec = nil
     end
     if SL.char.cursor < 1 or SL.char.cursor > #steps + 1 then SL.char.cursor = 1 end
     self:Invalidate()
 end
+
+function E:ResetOwn() for k in pairs(ownA) do ownA[k] = nil end end
 
 function E:Invalidate()
     wipe(memo)
@@ -228,6 +241,25 @@ function E:QuestName(q)
     return log and log.title or ("quest " .. tostring(q))
 end
 
+-- a clickable quest link ("|Hquest:id:level|h[name]|h"), as the quest log makes them
+function E:QuestLink(q)
+    local name = self:QuestName(q)
+    if not q or not name then return nil end
+    return string.format("|cffffff00|Hquest:%d:%d|h[%s]|h|r", q, self:QuestLevel(q) or 0, name)
+end
+
+-- shift-click: put the step's quest into the chat box (opening it if needed); true if it did
+function E:LinkToChat(i)
+    local st = self.steps[i]
+    if not (st and st.q and IsShiftKeyDown and SL.Clean(IsShiftKeyDown())) then return false end
+    local link = self:QuestLink(st.q)
+    if not link then return false end
+    if not (ChatEdit_InsertLink and ChatEdit_InsertLink(link)) and ChatFrame_OpenChat then
+        ChatFrame_OpenChat(link)
+    end
+    return true
+end
+
 function E:QuestLevel(q)
     local log = SL.Player.log[q]
     if log and log.level and log.level > 0 then return log.level end
@@ -239,8 +271,10 @@ local function inSectionDoneAfter(i)
     -- any quest step later in the same section already DONE?  (=> player has moved past i)
     local st = E.steps[i]
     local sec = E.sections[st.sec]
+    local early = SL.char.early or {}
     for _, j in ipairs(sec.questSteps) do
-        if j > i and E:Status(j) == DONE then return true end
+        -- a step done early because you stood at its NPC ("while you're here") is no sign of that
+        if j > i and not early[j] and E:Status(j) == DONE then return true end
     end
     return false
 end
@@ -265,7 +299,7 @@ local function leadInDone(i)
         -- you have started here: a quest picked up in this zone is in your log (quests from earlier
         -- zones that are only turned in here do not count)
         local sj = E.steps[j]
-        if j > i and sj.t == "A" and sj.q and SL.Player:InLog(sj.q) then return true end
+        if j > i and sj.t == "A" and sj.q and SL.Player:InLog(sj.q) and not (SL.char.early and SL.char.early[j]) then return true end
     end
     -- nothing left for you here - except a flight path, which is always worth learning
     if not open and st.t ~= "FP" then return true end
@@ -297,6 +331,24 @@ end
 local function pending(idx)
     return idx and idx >= SL.char.cursor and E:Status(idx) ~= SKIP
 end
+
+-- the pickup a quest step belongs to: the nearest pickup of that quest before it in a section that is
+-- yours (a quest can appear twice - one race carries it in from its own start, everyone else picks it
+-- up on the spot - and the guide must not mix the two up).  False when none applies to you.
+local function ownPickup(i, q)
+    local v = ownA[i]
+    if v ~= nil then return v or nil end
+    v = false
+    for j = i - 1, 1, -1 do
+        local st = E.steps[j]
+        if st.q == q and st.t == "A" then
+            if E:SectionApplies(E.sections[st.sec]) then v = j break end
+        end
+    end
+    ownA[i] = v
+    return v or nil
+end
+E.OwnPickup = function(_, i, q) return ownPickup(i, q) end
 
 local function prereqOK(qid, idx)
     local d = questData(qid)
@@ -335,7 +387,20 @@ function E:Status(i)
     return s, memoWhy[i]
 end
 
+-- group (elite) quests: the pickup never holds up the route - it is a hint until you accept the
+-- quest; then its objective and turn-in are guided like any other
 function E:ComputeStatus(i)
+    local st = self.steps[i]
+    local s, why = self:ComputeStatusRaw(i)
+    if st and st.grp and st.t == "A" and s == ACTIVE then
+        if SL.db.groupQuests == false then return SKIP, "group quests are off" end
+        return SKIP, "group quest"
+    end
+    if why == nil then return s end
+    return s, why
+end
+
+function E:ComputeStatusRaw(i)
     local st = self.steps[i]
     if not st then return SKIP end
     local char, db, P = SL.char, SL.db, SL.Player
@@ -363,6 +428,10 @@ function E:ComputeStatus(i)
         end
         if t == "A" then
             if inLog then return DONE, "in quest log" end
+            -- started by a dropped item: nothing to do until it is in your bags
+            if st.item and (GetItemCount and GetItemCount(st.item) or 0) == 0 then
+                return SKIP, "no " .. (st.npc or "item") .. " looted"
+            end
             if db.skipGrey and P:IsGrey(level) then return SKIP, "grey" end
             if db.skipReducedXP and P:XPFactor(level) < 1 then return SKIP, "reduced XP" end
             if d and d[9] then
@@ -407,8 +476,9 @@ function E:ComputeStatus(i)
         elseif t == "C" then
             if not inLog then
                 if char.failedQuests and char.failedQuests[q] then return WAIT, "redo the failed quest" end
-                if qs.A and self:Status(qs.A) == WAIT then return WAIT, "waiting for the pickup" end
-                if qs.A and pending(qs.A) then return ACTIVE, "pending" end
+                local oa = ownPickup(i, q)
+                if oa and self:Status(oa) == WAIT then return WAIT, "waiting for the pickup" end
+                if oa and pending(oa) then return ACTIVE, "pending" end
                 return SKIP, "not accepted"
             end
             if P:IsQuestReady(q) then return DONE, "objectives complete" end
@@ -434,8 +504,9 @@ function E:ComputeStatus(i)
         else -- T
             if not inLog then
                 if char.failedQuests and char.failedQuests[q] then return WAIT, "redo the failed quest" end
-                if qs.A and self:Status(qs.A) == WAIT then return WAIT, "waiting for the pickup" end
-                if qs.A and pending(qs.A) then return ACTIVE, "pending" end
+                local oa = ownPickup(i, q)
+                if oa and self:Status(oa) == WAIT then return WAIT, "waiting for the pickup" end
+                if oa and pending(oa) then return ACTIVE, "pending" end
                 return SKIP, "not accepted"
             end
             if P:IsQuestReady(q) then return ACTIVE end
@@ -451,6 +522,14 @@ function E:ComputeStatus(i)
 
     -- non-quest steps
     if char.flags[i] then return DONE end
+    if t == "MOUNT" then
+        -- the mount is worth the trip at once: it stays up until you can ride (or skip it)
+        if st.race and st.race ~= P.raceName then return SKIP, "other race" end
+        if P:HasMount() then return DONE, "you can ride" end
+        -- still below 40 when you get here: it waits and comes back (in any zone) the moment you ding
+        if P.level < 40 then return WAIT, "riding comes at 40" end
+        return ACTIVE
+    end
     if t == "DUNGEON" then
         if inSectionDoneAfter(i) then return DONE, "run in progress" end
         if IsInInstance and SL.Clean(select(1, IsInInstance())) then return DONE, "inside" end
@@ -503,8 +582,16 @@ function E:ComputeStatus(i)
     if t == "BOAT" then
         local m = P:Position()
         if m and st.to and P:ZoneMap(m) == st.to then return DONE end
+    elseif t == "PROF" then
+        if not char.goldMode then return SKIP, "gold mode is off" end
+        local rank, maxRank = P:Skill(st.prof or "Skinning")
+        if maxRank >= (st.cap or 0) then return DONE, "already learned" end
+        if P.level < (st.level or 0) then return SKIP, "requires level " .. (st.level or 0) end
+        if rank < (st.skill or 0) then return SKIP, string.format("skill %d of %d needed", rank, st.skill or 0) end
     elseif t == "TRAIN" then
-        if P.level < (char.lastTrained or 0) + 2 then return SKIP, "nothing new to train" end
+        if st.cls and st.cls ~= P.classFile then return SKIP, "other class" end
+        -- new class spells come every even level
+        if P.level - P.level % 2 <= (char.lastTrained or 0) then return SKIP, "nothing new to train" end
     elseif t == "FP" then
         if self:TaxiKnown(st) then return DONE, "flight path known" end
     end
@@ -608,6 +695,9 @@ function E:Advance()
         else
             local s = self:Status(i)
             if s == ACTIVE then break end
+            if i == char.pinned then
+                if s == DONE or char.manualSkip[i] then char.pinned = nil else break end
+            end
             if s == WAIT then char.waiting[i] = true end
             i = i + 1
             char.cursor = i
@@ -635,7 +725,7 @@ function E:Advance()
     for idx in pairs(char.waiting) do
         local st = self.steps[idx]
         local s = st and self:Status(idx)
-        local keep = st and st.q and char.failedQuests[st.q]
+        local keep = st and ((st.q and char.failedQuests[st.q]) or st.t == "MOUNT" or st.item)
         if not st or (st.sec ~= char.curSec and not keep) or s == DONE or s == SKIP then
             char.waiting[idx] = nil
         elseif s == ACTIVE then
@@ -664,6 +754,116 @@ function E:Surfaced()
     end
     table.sort(out)
     return out
+end
+
+-- group quests you could pick up right here (giver within reach): { stepIndex, ... }
+function E:GroupHints()
+    local out = {}
+    if SL.db.groupQuests == false then return out end
+    local cur = SL.char.cursor or 1
+    for i = math.max(1, cur - 8), math.min(#self.steps, cur + 20) do
+        local st = self.steps[i]
+        if st.grp and st.t == "A" and st.m and self:SectionApplies(self.sections[st.sec]) then
+            local s, why = self:Status(i)
+            if s == SKIP and why == "group quest" then
+                local d = SL.Player:VectorTo(st.m, st.x, st.y)
+                if d and d < 150 then out[#out + 1] = i end
+            end
+        end
+    end
+    return out
+end
+
+-- professions: the next tier, once your skill and level unlock it (classic requirements)
+local PROF_TIERS = {   -- at max rank cap: next rank, skill needed, level needed
+    [75] = { "Journeyman", 50, 10 }, [150] = { "Expert", 125, 20 }, [225] = { "Artisan", 200, 35 },
+}
+local PRIMARY = { "Alchemy", "Blacksmithing", "Enchanting", "Engineering", "Herbalism", "Leatherworking",
+    "Mining", "Skinning", "Tailoring" }
+E.PROF_TIERS = PROF_TIERS
+
+-- { {prof=, rank=, skill=, cap=, trainer = {m, x, y, name} or nil, d = yards}, ... }
+function E:ProfessionTiers()
+    local out = {}
+    if SL.db.profReminders == false then return out end
+    local P = SL.Player
+    local A = SL.Advisor
+    local pm, px, py = P:Position()
+    local pc, wx, wy
+    if pm and A then pc, wx, wy = A:World(pm, px, py) end
+    for _, prof in ipairs(PRIMARY) do
+        local rank, cap = P:Skill(prof)
+        local nxt = cap > 0 and PROF_TIERS[cap]
+        if nxt and rank >= nxt[2] and (P.level or 1) >= nxt[3] then
+            local best, bd
+            for _, t in ipairs(SL.Travel and SL.Travel.prof or {}) do
+                if t[1] == prof and not t[6] and pc then
+                    local c, tx, ty = A:World(t[2], t[3], t[4])
+                    if c == pc then
+                        local d = math.sqrt((tx - wx) ^ 2 + (ty - wy) ^ 2)
+                        if not bd or d < bd then best, bd = t, d end
+                    end
+                end
+            end
+            out[#out + 1] = { prof = prof, rank = nxt[1], skill = rank, cap = cap,
+                trainer = best and { m = best[2], x = best[3], y = best[4], name = best[5] } or nil, d = bd }
+        end
+    end
+    return out
+end
+
+-- pickups behind you that you skipped (or passed) and could still do now: not done, not grey, for
+-- your race / class, level reached, on this continent - most XP first.  { {i=, q=, xp=}, ... }
+function E:SkippedWorthDoing(limit)
+    local out = {}
+    local P, A = SL.Player, SL.Advisor
+    local pm = P:Position()
+    local pc = pm and A and A:World(pm, 50, 50)
+    local seen = {}
+    for j = (SL.char.cursor or 1) - 1, 1, -1 do
+        local st = self.steps[j]
+        if st.t == "A" and st.q and not seen[st.q] and not st.grp and not st.item then
+            seen[st.q] = true
+            local d = questData(st.q)
+            if d and not P:IsCompleted(st.q) and not P:InLog(st.q) and P:RaceOK(d[4]) and P:ClassOK(d[5])
+                and (d[3] or 1) <= P.level and not P:IsGrey(self:QuestLevel(st.q))
+                and self:Difficulty(st.q) < P.level + 3
+                and self:SectionApplies(self.sections[st.sec]) and prereqOK(st.q, j) then
+                local c = st.m and A and A:World(st.m, st.x or 50, st.y or 50)
+                if c and c == pc then
+                    out[#out + 1] = { i = j, q = st.q, xp = math.floor((d[8] or 0) * P:XPFactor(self:QuestLevel(st.q))) }
+                end
+            end
+        end
+    end
+    table.sort(out, function(a, b) return a.xp > b.xp end)
+    while #out > (limit or 3) do table.remove(out) end
+    return out
+end
+
+-- gold mode: progress towards the mount -> have, goal (gold), projected gold at 40 (or nil)
+function E:GoldPace()
+    if not (SL.char.goldMode and GetMoney) then return nil end
+    local P = SL.Player
+    if P:HasMount() then return nil end
+    local have = GetMoney() / 10000
+    -- Honored with your race's capital: 10% off riding and the mount
+    local honored = P:HomeHonored()
+    local goal = math.floor((SL.db.mountGoal or 100) * (honored and 0.9 or 1) + 0.5)
+    local proj
+    local now = P.levelFrac or P.level
+    if now < 40 then
+        -- your own pace over the last levels: gold per level since then
+        local from
+        for l = math.max(2, P.level - 6), P.level do
+            if SL.char.moneyAt[l] then from = l break end
+        end
+        if from and now - from >= 1 then
+            local rate = (have - SL.char.moneyAt[from] / 10000) / (now - from)
+            proj = have + math.max(0, rate) * (40 - now)
+        end
+    end
+    return have, goal, proj, honored
 end
 
 -- pickups still waiting for a level: { {idx=, level=}, ... }
@@ -707,9 +907,87 @@ function E:Urgent()
     return out
 end
 
+-- while you're here: route pickups (available now) and turn-ins (ready) later in this zone whose
+-- NPC is right next to you - never leave town and get sent back for them.  Not a breadcrumb's
+-- target before the breadcrumb, nor a turn-in that would end a quest still to be picked up.
+local HERE_YARDS = 45
+local HERE_OBJECTIVE_YARDS = 120     -- standing among a carried quest's mobs / objects: do it now
+function E:HereNow()
+    local out = {}
+    local P = SL.Player
+    local sec = self.sections[SL.char.curSec]
+    if not sec then return out end
+    local cur = SL.char.cursor or 1
+    for i = cur + 1, math.min(sec.last or #self.steps, cur + 150) do
+        local st = self.steps[i]
+        if st.t == "C" and st.q and st.m and P:InLog(st.q) and not P:IsQuestReady(st.q) then
+            -- a quest you carry whose objectives are right here: no need to come back for them
+            local d = P:VectorTo(st.m, st.x, st.y)
+            if d and d <= HERE_OBJECTIVE_YARDS and self:Status(i) == ACTIVE then
+                out[#out + 1] = i
+                SL.char.early = SL.char.early or {}
+                SL.char.early[i] = true
+            end
+        elseif (st.t == "A" or st.t == "T") and st.q and st.m and not st.grp and not st.item then
+            local d = P:VectorTo(st.m, st.x, st.y)
+            if d and d <= HERE_YARDS and self:Status(i) == ACTIVE then
+                local ok = true
+                if st.t == "T" then
+                    ok = P:InLog(st.q) and P:IsQuestReady(st.q)
+                else
+                    -- prerequisites actually done (not just planned earlier in the route)
+                    local d = questData(st.q)
+                    ok = not P:LogFull()
+                    for _, p in ipairs((d and d[6]) or {}) do
+                        if not P:IsCompleted(p) then ok = false end
+                    end
+                    if ok and d and d[7] and #d[7] > 0 then
+                        local any = false
+                        for _, p in ipairs(d[7]) do if P:IsCompleted(p) then any = true end end
+                        ok = any
+                    end
+                end
+                if ok then
+                    for j = cur, sec.last or #self.steps do
+                        local o = self.steps[j]
+                        local od = o.q and o.q ~= st.q and questData(o.q)
+                        if od and (o.t == "A" or o.t == "T") then
+                            local s2 = self:Status(j)
+                            if s2 ~= DONE and s2 ~= SKIP then
+                                -- its breadcrumb still to do / a quest only available until this one is done
+                                if st.t == "A" then
+                                    for _, x in ipairs(od[10] or {}) do if x == st.q then ok = false end end
+                                elseif o.t == "A" then
+                                    for _, x in ipairs(od[11] or {}) do if x == st.q then ok = false end end
+                                end
+                            end
+                        end
+                        if not ok then break end
+                    end
+                end
+                if ok then
+                    out[#out + 1] = i
+                    SL.char.early = SL.char.early or {}
+                    SL.char.early[i] = true
+                end
+            end
+        end
+    end
+    return out
+end
+
 function E:Upcoming(count)
     local out = {}
     local seen = {}
+    local pin = SL.char.pinned
+    if pin and self.steps[pin] then
+        if self:Status(pin) == DONE or SL.char.manualSkip[pin] then
+            SL.char.pinned = nil
+        else
+            out[1] = pin
+            seen[pin] = true
+        end
+    end
     for _, idx in ipairs(self:Urgent()) do
         if #out < count then
             out[#out + 1] = idx
@@ -720,6 +998,10 @@ function E:Upcoming(count)
         if seen[idx] then
             -- already listed as urgent
         elseif #out < count then out[#out + 1] = idx end
+        seen[idx] = true
+    end
+    for _, idx in ipairs(self:HereNow()) do
+        if not seen[idx] and #out < count then out[#out + 1] = idx end
         seen[idx] = true
     end
     local function push(i)
@@ -775,26 +1057,31 @@ function E:SkipCurrent()
     local i = self:Focus()
     if self.steps[i] then
         SL.char.manualSkip[i] = true
+        if SL.char.pinned == i then SL.char.pinned = nil end
     end
     SL:Update()
 end
 
+-- back: the step before the one shown, even one the guide had skipped or parked (an escort NPC that
+-- was away, a pickup it thought was not offered).  It stays the current step until you do it or skip
+-- it again (right-click / skip), and a parked pickup gets another chance.
 function E:Back()
     local char = SL.char
-    for j = char.cursor - 1, 1, -1 do
-        local sec = self.sections[self.steps[j].sec]
+    local from = char.pinned or char.cursor
+    for j = from - 1, 1, -1 do
+        local st = self.steps[j]
+        local sec = self.sections[st.sec]
         if self:SectionApplies(sec) then
-            if char.manualSkip[j] or char.manualDone[j] then
-                char.manualSkip[j], char.manualDone[j] = nil, nil
-                char.cursor, char.curSec = j, self.steps[j].sec
-                SL.Telemetry:Discard()
-                SL:Update()
-                return
-            end
+            local wasSkipped = char.manualSkip[j] or char.manualDone[j]
+            char.manualSkip[j], char.manualDone[j] = nil, nil
+            if st.q and char.notOffered then char.notOffered[st.q] = nil end
             self:Invalidate()
-            local s = self:Status(j)
-            if s == ACTIVE then
-                char.cursor, char.curSec = j, self.steps[j].sec
+            local s, why = self:Status(j)
+            -- stop where it matters: what you skipped / finished yourself, what the guide parked or is
+            -- waiting on, what is still open - not grey quests and other automatic skips
+            if wasSkipped or s == ACTIVE or s == WAIT or (s == SKIP and why == "not offered") then
+                char.cursor, char.curSec = j, st.sec
+                char.pinned = j
                 SL.Telemetry:Discard()
                 SL:Update()
                 return
@@ -806,6 +1093,7 @@ end
 
 function E:Jump(n)
     if not self.steps[n] then return end
+    SL.char.pinned = false
     SL.char.manualSkip[n], SL.char.manualDone[n] = nil, nil
     SL.char.cursor = n
     SL.char.curSec = self.steps[n].sec
@@ -816,6 +1104,7 @@ end
 function E:JumpSection(k)
     local sec = self.sections[k]
     if not sec then return end
+    SL.char.pinned = false
     SL.char.cursor = sec.first
     SL.char.curSec = k
     SL.Telemetry:Discard()
@@ -826,6 +1115,8 @@ function E:Resync()
     SL.char.cursor = 1
     SL.char.curSec = nil
     SL.char.waiting = {}
+    SL.char.early = {}
+    SL.char.pinned = false
     SL.Player:LoadCompleted()
     SL.Telemetry:Discard()
     SL:Update()
@@ -915,14 +1206,59 @@ function E:CorpseTarget()
     end
 end
 
+-- dead and released: is the spirit healer faster than the corpse run?  Resurrection sickness
+-- (none to level 10, level-10 minutes to 19, 10 minutes from 20) only costs part of its length -
+-- you can still travel and turn in - so half of it counts.
+function E:SickMinutes(level)
+    level = level or SL.Player.level or 1
+    if level <= 10 then return 0 end
+    return math.min(10, level - 10)
+end
+
+function E:SpiritAdvice(cm, cx, cy)
+    local A, P = SL.Advisor, SL.Player
+    local g = SL.char.ghostAt
+    if not (A and g and A.World) then return nil end
+    local up = self:Upcoming(1)[1]
+    local st = up and self.steps[up]
+    local tm, tx, ty
+    if st then tm, tx, ty = self:StepTarget(st) end
+    if not tm then return nil end
+    local pm, px, py = P:Position()
+    local c1, hx, hy = A:World(pm, px, py)
+    local c2, gx, gy = A:World(g[1], g[2], g[3])
+    local c3, kx, ky = A:World(cm, cx, cy)
+    local c4, nx, ny = A:World(tm, tx, ty)
+    if not (c1 and c2 and c3 and c4) or c1 ~= c2 or c1 ~= c3 or c1 ~= c4 then return nil end
+    local run, ride = 7.0, A.WalkSpeed()
+    local D = A.Dist
+    local corpse = D(hx, hy, kx, ky) * 1.3 / run + D(kx, ky, nx, ny) * 1.3 / ride
+    local spirit = D(hx, hy, gx, gy) * 1.3 / run + 15 + D(gx, gy, nx, ny) * 1.3 / ride
+    local sick = self:SickMinutes()
+    local save = corpse - spirit - sick * 60 * 0.5
+    if save < 60 then return nil end
+    return { m = g[1], x = g[2], y = g[3], save = save, sick = sick }
+end
+
 -- the location the arrow should point at, plus a label
+local FP_DETOUR_YARDS = 150    -- an unlearned flight master this close: the arrow goes there first
+
 function E:CurrentTarget()
     -- dead: getting back to your corpse comes first
     local cm, cx, cy = self:CorpseTarget()
     if cm then
         self.advice = nil
+        local sp = self:SpiritAdvice(cm, cx, cy)
+        self.spirit = sp
+        if sp then
+            return { m = sp.m, x = sp.x, y = sp.y, corpse = true, spirit = true,
+                label = string.format("|cff80c0ffSpirit Healer|r - resurrect here (saves ~%d min%s)",
+                    math.max(1, math.floor(sp.save / 60 + 0.5)),
+                    sp.sick > 0 and string.format(", %d min sickness", sp.sick) or ", no sickness") }
+        end
         return { m = cm, x = cx, y = cy, label = "|cffff6060Your corpse|r - run back to it", corpse = true }
     end
+    self.spirit = nil
     local group = self:CurrentGroup()
     if #group == 0 then return nil end
     local first = self.steps[group[1]]
@@ -952,6 +1288,19 @@ function E:CurrentTarget()
     end
     -- a flight path you have not learned, right here: always worth the few seconds
     self.fpHint = SL.Advisor and SL.Advisor:NearbyNewFlightPath() or nil
+    local fp = self.fpHint
+    if fp then
+        self.fpTold = self.fpTold or {}
+        if not self.fpTold[fp.npc] then
+            self.fpTold[fp.npc] = true
+            SL:Print(string.format("new flight path nearby: |cffffd100%s|r (~%d yd) - grab it, it saves time later",
+                fp.name, fp.d or 0))
+        end
+        -- close by: the arrow takes you there first (a few seconds now, minutes saved later)
+        if (fp.d or 999) <= FP_DETOUR_YARDS and not (first.t == "FP" and first.npc == fp.npc) then
+            return { m = fp.m, x = fp.x, y = fp.y, step = first, label = "Flight path: " .. fp.name, via = "fp" }
+        end
+    end
     -- faster by flight path or hearthstone?
     self.advice = nil
     if best and first.t ~= "FLY" and SL.Advisor then
@@ -990,6 +1339,8 @@ local ICONS = {
     FLY = "Interface\\Icons\\Ability_Hunter_EagleEye",
     BOAT = "Interface\\Icons\\INV_Misc_Map_01",
     TRAIN = "Interface\\Icons\\INV_Misc_Book_09",
+    MOUNT = "Interface\\Icons\\Ability_Mount_RidingHorse",
+    PROF = "Interface\\Icons\\INV_Misc_Pelt_Wolf_01",
     GRIND = "Interface\\Icons\\INV_Sword_04",
     DUNGEON = "Interface\\Icons\\INV_Misc_Key_03",
     DEATH = "Interface\\Icons\\Spell_Shadow_DeathScream",
@@ -1019,6 +1370,11 @@ function E:StepText(st)
         text = "|cffff4040Failed:|r " .. qcolor(st.q)
         lines[#lines + 1] = "|cffccccccAbandon it (click this step), then pick it up again from |cffffffff"
             .. (st.npc or "the quest giver") .. "|r"
+        return ICONS[t], text, lines
+    end
+    if t == "A" and st.item then
+        text = "Right-click |cffffffff" .. (st.npc or "the item") .. "|r in your bags to start " .. qcolor(st.q)
+        lines[#lines + 1] = "|cffccccccIt dropped - the quest is worth doing on the way|r"
         return ICONS[t], text, lines
     end
     if t == "A" then
@@ -1081,6 +1437,17 @@ function E:StepText(st)
         local pct = math.floor((lvl - whole) * 100 + 0.5)
         text = "Grind to level " .. whole .. (pct > 0 and (" (" .. pct .. "%)") or "")
         if st.text and st.text ~= "" then lines[#lines + 1] = "|cffcccccc" .. st.text .. "|r" end
+        if SL.char.goldMode and SL.Player:Skill("Skinning") > 0 then
+            lines[#lines + 1] = "|cffe6c070Gold mode: skin the beasts you kill|r"
+        end
+        -- behind the route: quests you skipped earlier are faster XP than grinding
+        local skipped = self:SkippedWorthDoing(3)
+        if #skipped > 0 then
+            local names = {}
+            for _, e in ipairs(skipped) do names[#names + 1] = string.format("%s (%d XP)", self:QuestName(e.q), e.xp) end
+            lines[#lines + 1] = "|cffe6c070Faster than grinding - quests you skipped are still open: " .. table.concat(names, ", ")
+                .. ". Use back or the route list to go do them.|r"
+        end
         -- remaining XP and a kill estimate (same-level mob XP, classic formula)
         local need = 0
         local l, xp = P.level, P.xp
@@ -1109,6 +1476,22 @@ function E:StepText(st)
         if SL.Player.level >= 10 then
             lines[#lines + 1] = "|cffff8040You may get resurrection sickness - skip this if you would rather not|r"
         end
+    elseif t == "MOUNT" then
+        text = st.text or "Learn riding and buy your mount"
+        local g = GetMoney and math.floor(GetMoney() / 10000) or nil
+        if g then
+            lines[#lines + 1] = string.format("|cffccccccYou have %dg - riding + mount cost about %dg (the trainer shows the price)|r",
+                g, SL.db.mountGoal or 100)
+        end
+        lines[#lines + 1] = "|cff888888Right-click to skip it if you cannot afford it yet|r"
+    elseif t == "PROF" then
+        text = st.text or "Learn Skinning"
+        local rank, maxRank = SL.Player:Skill(st.prof or "Skinning")
+        if maxRank > 0 then lines[#lines + 1] = string.format("|cffcccccc%s %d/%d|r", st.prof or "Skinning", rank, maxRank) end
+    elseif t == "TRAIN" then
+        text = st.text or "Train new spells"
+        lines[#lines + 1] = string.format("|cffccccccNew spells at level %d - last trained at %d|r",
+            SL.Player.level - SL.Player.level % 2, SL.char.lastTrained or 0)
     elseif t == "USEHS" then
         text = st.text or "Use your hearthstone"
         local bound = self:BindLocation()
@@ -1121,8 +1504,16 @@ function E:StepText(st)
     if self.advice and self.advice.step == st.i and self.advice.line then
         table.insert(lines, 1, self.advice.line)
     end
+    if st.i and st.i == SL.char.pinned then
+        local s, why = self:Status(st.i)
+        if s ~= ACTIVE then
+            table.insert(lines, 1, "|cffff8040You went back to this one; the guide had passed it ("
+                .. tostring(why or "skipped") .. "). Right-click to skip it again.|r")
+        end
+    end
     if self.fpHint and st.i == self:Focus() and not (st.t == "FP" and st.npc == self.fpHint.npc) then
-        table.insert(lines, 1, "|cffe6c070New flight path right here: talk to " .. self.fpHint.name .. " to learn it|r")
+        table.insert(lines, 1, string.format("|cffe6c070New flight path %d yd away: talk to %s to learn it|r",
+            self.fpHint.d or 0, self.fpHint.name))
     end
     return ICONS[t], text, lines
 end
@@ -1153,10 +1544,28 @@ local function taxiKey(m, x, y)
 end
 
 function E:TaxiKnown(st)
-    return st.m and SL.char.knownTaxi[taxiKey(st.m, st.x, st.y)] == true
+    if not st.m then return false end
+    if SL.char.knownTaxi[taxiKey(st.m, st.x, st.y)] == true then return true end
+    local A = SL.Advisor
+    if st.npc and A then
+        if not A.byNpc then A:KnownNpc(st.npc) end
+        local f = A.byNpc and A.byNpc[st.npc]
+        if f and SL.char.knownTaxi[f.key] == true then return true end
+    end
+    return false
 end
 
 -- record which of the route's flight masters you already know (any flight map works)
+local function normName(s)
+    s = (s or ""):lower():gsub("^%s+", ""):gsub("%s+$", "")
+    s = s:gsub("^the ", ""):gsub("[%p]", "")
+    return s
+end
+
+-- the flight map lists the flight paths you know: record each of the route's flight masters as
+-- known / not known.  Nodes are matched by position, else by name ("Camp Taurajo, The Barrens").
+-- A scan that matches nothing (a client whose flight map we can't read) records nothing, and a
+-- flight path once known is never marked unknown again.
 function E:ScanTaxi()
     if not (C_TaxiMap and C_TaxiMap.GetAllTaxiNodes and GetTaxiMapID) then return end
     local taxiMap = GetTaxiMapID()
@@ -1165,40 +1574,101 @@ function E:ScanTaxi()
     if not ok or not nodes then return end
     local reach = Enum.FlightPathState and Enum.FlightPathState.Unreachable or 2
     SL.db.taxiNames = SL.db.taxiNames or {}
+    local info = {}
+    for _, node in ipairs(nodes) do
+        local town, zone = (node.name or ""):match("^([^,]+),%s*(.+)$")
+        info[#info + 1] = { node = node, town = normName(town or node.name), zone = normName(zone or "") }
+    end
+    local results, onMap, matchedC, used = {}, {}, {}, {}
+    local matched = 0
+    local dump = SL.taxiDebug and {} or nil
     for _, fm in ipairs(SL.Advisor and SL.Advisor.FlightMasters() or {}) do
+        local found, inRect
         local ok2, left, right, top, bottom = pcall(C_Map.GetMapRectOnMap, fm.m, taxiMap)
         if ok2 and left then
             local px = left + (right - left) * fm.x / 100
             local py = top + (bottom - top) * fm.y / 100
-            local found = false
-            for _, node in ipairs(nodes) do
-                local nx, ny = node.position:GetXY()
-                if math.abs(nx - px) < 0.012 and math.abs(ny - py) < 0.012 then
-                    if node.name then SL.db.taxiNames[fm.npc] = node.name end
-                    SL.char.knownTaxi[fm.key] = node.state ~= reach
-                    found = true
-                end
-            end
-            -- on this continent's flight map but not listed: you have not learned it yet
-            if not found and px >= 0 and px <= 1 and py >= 0 and py <= 1 and SL.char.knownTaxi[fm.key] == nil then
-                SL.char.knownTaxi[fm.key] = false
+            inRect = px >= 0 and px <= 1 and py >= 0 and py <= 1
+            for _, ni in ipairs(info) do
+                local nx, ny = ni.node.position:GetXY()
+                if math.abs(nx - px) < 0.012 and math.abs(ny - py) < 0.012 then found = ni break end
             end
         end
-    end
-    for _, st in ipairs(self.steps) do
-        if st.t == "FP" and st.m then
-            local ok2, left, right, top, bottom = pcall(C_Map.GetMapRectOnMap, st.m, taxiMap)
-            if ok2 and left then
-                local px = left + (right - left) * st.x / 100
-                local py = top + (bottom - top) * st.y / 100
-                for _, node in ipairs(nodes) do
-                    local nx, ny = node.position:GetXY()
-                    if math.abs(nx - px) < 0.012 and math.abs(ny - py) < 0.012 and node.state ~= reach then
-                        SL.char.knownTaxi[taxiKey(st.m, st.x, st.y)] = true
+        if not found and fm.place and fm.place ~= "" then
+            local p = normName(fm.place)
+            local mi = C_Map.GetMapInfo and C_Map.GetMapInfo(fm.m)
+            local zname = normName(mi and mi.name or "")
+            -- by town; the zone only settles a tie ("Orgrimmar, Durotar" sits on the Orgrimmar map)
+            local cands = {}
+            for _, ni in ipairs(info) do
+                if not used[ni] and ni.town ~= "" and (ni.town:find(p, 1, true) or p:find(ni.town, 1, true)) then
+                    cands[#cands + 1] = ni
+                end
+            end
+            if #cands == 1 then
+                found = cands[1]
+            else
+                for _, ni in ipairs(cands) do
+                    if ni.zone ~= "" and zname ~= "" and (ni.zone:find(zname, 1, true) or zname:find(ni.zone, 1, true)) then
+                        found = ni break
                     end
                 end
             end
         end
+        if found then
+            used[found] = true
+            matched = matched + 1
+            results[fm.key] = found.node.state ~= reach
+            matchedC[fm.c] = true
+            if found.node.name then SL.db.taxiNames[fm.npc] = found.node.name end
+        elseif inRect then
+            onMap[#onMap + 1] = fm
+        end
+        if dump then dump[#dump + 1] = string.format("%s (%s): %s", fm.name, fm.place or "?",
+            found and ((found.node.name or "?") .. (found.node.state ~= reach and " - known" or " - not known")) or "no node") end
+    end
+    if dump then
+        SL:Print(string.format("flight map %d: %d nodes, %d of the guide's flight masters matched", taxiMap, #nodes, matched))
+        for _, ni in ipairs(info) do SL:Print("  node: " .. tostring(ni.node.name) .. " state " .. tostring(ni.node.state)) end
+        for _, l in ipairs(dump) do SL:Print("  " .. l) end
+        SL.taxiDebug = nil
+    end
+    if matched == 0 then return end           -- couldn't read this flight map: keep what we had
+    for key, v in pairs(results) do
+        if v or SL.char.knownTaxi[key] ~= true then SL.char.knownTaxi[key] = v end
+    end
+    -- on this continent's flight map, every node matched to someone, and this one listed nowhere:
+    -- not learned yet (an unmatched node left over means we can't tell - leave it unknown)
+    local leftover = false
+    for _, ni in ipairs(info) do if not used[ni] then leftover = true end end
+    for _, fm in ipairs(onMap) do
+        if matchedC[fm.c] and not leftover and SL.char.knownTaxi[fm.key] == nil then SL.char.knownTaxi[fm.key] = false end
+    end
+    SL.char.taxiScanned = SL.char.taxiScanned or {}
+    for c in pairs(matchedC) do SL.char.taxiScanned[c] = true end
+end
+
+-- before 1.3.0 a flight map the guide could not read marked every flight path as unknown: forget
+-- such a record (all unknown, none known) so the route and the next flight map decide again
+function E:RepairTaxi()
+    local kt = SL.char.knownTaxi or {}
+    local t, f = 0, 0
+    for _, v in pairs(kt) do if v == true then t = t + 1 elseif v == false then f = f + 1 end end
+    if t == 0 and f >= 5 then
+        SL.char.knownTaxi = {}
+        SL.char.taxiScanned = {}
+    end
+end
+
+-- you flew: both ends are flight paths you have
+function E:TaxiFlown()
+    local A = SL.Advisor
+    if not A then return end
+    local m, x, y = SL.Player:Position()
+    if not m then return end
+    local c, wx, wy = A:World(m, x, y)
+    for _, fm in ipairs(A.FlightMasters()) do
+        if fm.c == c and A.Dist(wx, wy, fm.wx, fm.wy) < 120 then SL.char.knownTaxi[fm.key] = true end
     end
 end
 
@@ -1228,6 +1698,21 @@ function E:RegisterEvents()
         SL:RequestUpdate()
     end)
     SL:On("TRAINER_SHOW", function()
+        -- a profession trainer (skinning, first aid...) is not your class trainer
+        if IsTradeskillTrainer and SL.Clean(IsTradeskillTrainer()) then
+            -- a profession trainer: a gold-mode skinning stop, or the riding instructor
+            local st = E:CurrentIs("PROF") or E:CurrentIs("MOUNT")
+            if st then E:Flag(st.i) end
+            if st and st.t == "MOUNT" then SL.char.hasMount = true end
+            return
+        end
+        local mt = E:CurrentIs("MOUNT")
+        if mt then
+            -- riding instructors are not profession trainers on every client
+            E:Flag(mt.i)
+            SL.char.hasMount = true
+            return
+        end
         SL.char.lastTrained = UnitLevel("player")
         local st = E:CurrentIs("TRAIN")
         if st then E:Flag(st.i) end
@@ -1241,6 +1726,13 @@ function E:RegisterEvents()
         SL:RequestUpdate()
     end)
     local function alive()
+        -- released: you stand at the graveyard, next to the spirit healer
+        if UnitIsGhost and SL.Clean(UnitIsGhost("player")) then
+            local m, x, y = SL.Player:Position()
+            if m then SL.char.ghostAt = { m, x, y } end
+        elseif not UnitIsDeadOrGhost("player") then
+            SL.char.ghostAt = nil
+        end
         local i = SL.char.deathStep
         if i and not UnitIsDeadOrGhost("player") then
             SL.char.deathStep = nil
@@ -1248,10 +1740,34 @@ function E:RegisterEvents()
         end
         SL:RequestUpdate()
     end
+    SL:On("PLAYER_ENTERING_WORLD", function()
+        if SL.Advisor and SL.Advisor.PortArrived then SL.Advisor:PortArrived() end
+    end)
+    -- looted an item that starts a route quest: its pickup comes up (wherever you are)
+    SL:On("BAG_UPDATE_DELAYED", function()
+        local changed = false
+        for i, st in ipairs(E.steps) do
+            if st.item and st.t == "A" and not SL.char.waiting[i] and (GetItemCount and GetItemCount(st.item) or 0) > 0
+               and not SL.Player:IsCompleted(st.q) and not SL.Player:InLog(st.q) then
+                SL.char.waiting[i] = true
+                changed = true
+                SL:Print("|cffffd100" .. (st.npc or "an item") .. "|r starts a quest worth doing: " .. E:QuestName(st.q))
+            end
+        end
+        if changed then E:Invalidate() SL:RequestUpdate() end
+    end)
+    -- reputation changed (Honored: the mount gold goal drops to 90g)
+    SL:On("UPDATE_FACTION", function() SL:RequestUpdate() end)
+    -- gold pace: how much you had at each level
+    SL:On("PLAYER_LEVEL_UP", function(_, level)
+        level = SL.Clean(level)
+        if level and GetMoney then SL.char.moneyAt[level] = GetMoney() end
+    end)
     SL:On("PLAYER_UNGHOST", alive)
     SL:On("PLAYER_ALIVE", alive)
     SL:On("UNIT_SPELLCAST_SUCCEEDED", function(_, unit, _, spellID)
         spellID = SL.Clean(spellID)
+        if unit == "player" and spellID and SL.Advisor and SL.Advisor.PortCast then SL.Advisor:PortCast(spellID) end
         if unit ~= "player" or not spellID or not HEARTHSTONE_SPELLS[spellID] then return end
         local st = E:CurrentIs("USEHS")
         if st then E:Flag(st.i) end
@@ -1303,6 +1819,10 @@ end
 
 function E:Tick()
     if not SL.ready then return end
+    -- taking off / landing: both flight masters are yours
+    local onTaxi = SL.Clean(UnitOnTaxi and UnitOnTaxi("player")) and true or false
+    if onTaxi ~= (self.wasOnTaxi or false) then self:TaxiFlown() end
+    self.wasOnTaxi = onTaxi
     local st = self.steps[SL.char.cursor]
     if not st then return end
     local t = st.t

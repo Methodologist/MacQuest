@@ -2,7 +2,7 @@
 ## Title: SpeedLevel
 ## Notes: Step-by-step 1-60 speed-leveling guide for WoW Forever (Horde and Alliance). Guide arrow, auto accept/turn-in, skips quests you have done or that are grey for your level.
 ## Author: Methodologist
-## Version: 1.2.8
+## Version: 1.8.0
 ## Category: Quests
 ## X-License: GPL-3.0
 ## X-Website: https://github.com/Methodologist/MacQuest
@@ -18,14 +18,14 @@ Data\Quests_Horde.lua
 Data\Quests_Alliance.lua
 Data\Travel_Horde.lua
 Data\Travel_Alliance.lua
-Data\Route_Horde_speed.lua
-Data\Route_Horde_speed_dungeons.lua
 Data\Route_Horde_thorough.lua
 Data\Route_Horde_thorough_dungeons.lua
-Data\Route_Alliance_speed.lua
-Data\Route_Alliance_speed_dungeons.lua
+Data\Route_Horde_safe.lua
+Data\Route_Horde_safe_dungeons.lua
 Data\Route_Alliance_thorough.lua
 Data\Route_Alliance_thorough_dungeons.lua
+Data\Route_Alliance_safe.lua
+Data\Route_Alliance_safe_dungeons.lua
 Data\Terrain.lua
 Data\TerrainHi.lua
 Player.lua
@@ -42,5 +42,7 @@ MinimapButton.lua
 UI.lua
 RouteList.lua
 QuestItem.lua
+Highlight.lua
+Duo.lua
 Options.lua
 Setup.lua

@@ -17,6 +17,7 @@ quests whose extra travel is not worth their XP).
 Usage: python tools/build_route.py
 """
 import json
+import os
 import math
 import re
 import shlex
@@ -26,6 +27,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import tricks  # noqa: E402
+import walkgraph  # noqa: E402
 import telemetry  # noqa: E402
 import terrain  # noqa: E402
 
@@ -56,6 +58,12 @@ FACTIONS = {
         "cities": {1454: ("Orgrimmar", "Doras"), 1456: ("Thunder Bluff", "Tal"), 1458: ("Undercity", "Michael Garrett")},
         # flight masters this faction can never use (druid-only / other faction's in Moonglade)
         "fm_exclude": {11798, 11800},
+        # Mage city teleports: (spellID, city map, level learned).  They land in the city; until the
+        # addon has seen where, the city's flight master stands in for the spot.
+        "ports": [(3567, 1454, 20), (3563, 1458, 20), (3566, 1456, 30)],
+        # race -> (riding instructor, mount vendor) QuestieDB ids
+        "mounts": {"Orc": (4752, 3362), "Troll": (7953, 7952), "Tauren": (3690, 3685), "Undead": (4773, 4731),
+                   "Skyborne": (265756, None)},
         # zeppelins / boats: (kind, (map, x, y, place), (map, x, y, place)) - both directions run.
         # Zeppelin masters' spots from QuestieDB (Frezza, Zapetta, Snurk Bucksquick, Nez'raz,
         # Hin Denburg, Squibby Overspeck); the Booty Bay - Ratchet boat is neutral.
@@ -73,6 +81,9 @@ FACTIONS = {
         "cities": {1453: ("Stormwind", "Dungar Longdrink"), 1455: ("Ironforge", "Gryth Thurden"),
                    1457: ("Darnassus", "Innkeeper Saelienne")},
         "fm_exclude": {11798, 11800},
+        "ports": [(3561, 1453, 20), (3562, 1455, 20), (3565, 1457, 30)],
+        "mounts": {"Human": (4732, 384), "Dwarf": (4772, 1261), "Gnome": (7954, 7955), "NightElf": (4753, 4730),
+                   "Skyborne": (265756, None)},
         "transports": [
             ("boat", (1437, 4.6, 57.2, "Menethil Harbor"), (1439, 32.4, 43.8, "Auberdine")),
             ("boat", (1437, 5.0, 63.5, "Menethil Harbor"), (1445, 71.6, 56.4, "Theramore")),
@@ -143,11 +154,31 @@ XP_TO_LEVEL = [0, 400, 900, 1400, 2100, 2800, 3600, 4500, 5400, 6500, 7600, 8800
                95800, 101000, 106300, 111800, 117500, 123200, 129100, 135100, 141200, 147500, 153900,
                160400, 167100, 173900, 180800, 187900, 195000, 202300, 209800]
 
-MODES = ("speed", "speed_dungeons", "thorough", "thorough_dungeons")
+# (the old "speed" style cut quests its XP/hour estimate rated below grinding: measured slower than
+# keeping them, so it is gone - Thorough is the main route)
+MODES = ("thorough", "thorough_dungeons", "safe", "safe_dungeons")
 
 
 def has_dungeons(mode):
     return mode.endswith("dungeons")
+
+
+SAFE_ABOVE = int(__import__("os").environ.get("SL_SAFE_ABOVE", "1"))    # Safe: quest mobs at most this many levels above you (1: never orange)
+SAFE_WANT = int(__import__("os").environ.get("SL_SAFE_WANT", "-1"))     # Safe: arrive a level under a zone's typical quest
+SAFE_CMAX = float(__import__("os").environ.get("SL_SAFE_CMAX", "1.5"))  # Safe: most levels of catch-up grinding at once
+SAFE_ZONE_GRIND = float(__import__("os").environ.get("SL_SAFE_ZGRIND", "1.5"))   # Safe: grinding inside a zone to unlock its last quests
+ZONE_GRIND = 1.5
+# (measured: never above you cost ~4 h more and grinds of up to 4 levels at once; this costs ~1 h)
+
+
+def relaxed(mode):
+    """Thorough and Safe: no quests cut for speed, no death-skips"""
+    return mode.startswith(("thorough", "safe"))
+
+
+def safe_mode(mode):
+    """Safe: a quest's mobs are at most a level above you - never an orange fight"""
+    return mode.startswith("safe")
 MODE = "speed"            # set per build pass by main()
 DUNGEON_AREAS = {}        # areaId -> dungeon segment map (dungeons mode)
 DUNGEON_MAPS = set()
@@ -545,6 +576,28 @@ def split_stops(split, m, start):
     return stops
 
 
+TASK_TEXT = re.compile(r"\b(bring|return (?:a|an|the|\d)|collect|obtain|retrieve|kill|slay|gather|recover|acquire|"
+                       r"destroy|defeat|find (?:a|an|the|\d))\b", re.I)
+
+
+_DUNGEON_ZONES = None
+
+
+def dungeon_zone_areas():
+    """area IDs of instances: the plans' dungeon runs plus every area whose map is not open world"""
+    global _DUNGEON_ZONES
+    if _DUNGEON_ZONES is None:
+        rects = zone_rects()
+        out = {a for a, um in A2U.items() if um and um in rects and rects[um][0] not in (0, 1, 2991)}
+        for f in (ROOT / "route").glob("*.plan"):
+            for line in f.read_text(encoding="utf-8").splitlines():
+                m = re.match(r"\s+dungeon\s+([\d ]+)", line)
+                if m:
+                    out |= {int(x) for x in m.group(1).split()}
+        _DUNGEON_ZONES = out
+    return _DUNGEON_ZONES
+
+
 def quest_info(qid):
     """Locations + filters for one quest (map-independent)."""
     key = (MODE, qid)
@@ -558,6 +611,11 @@ def quest_info(qid):
         return info
     if (q.get("special") or 0) & 1:
         info["why"] = "repeatable"
+        return info
+    if not has_dungeons(MODE) and (q.get("zone") or 0) in dungeon_zone_areas():
+        # filed under a dungeon (Blackfathom Deeps, Wailing Caverns, ...): its quests and breadcrumbs
+        # only belong in a route with dungeons opted into
+        info["why"] = "dungeon quest"
         return info
     if q.get("reqSkill"):
         info["why"] = "profession"
@@ -585,7 +643,7 @@ def quest_info(qid):
     if si and not sn and not so:
         info["why"] = "item-started"
         return info
-    if not MODE.startswith("thorough") and sn and all(roam_yards(n) >= ROAM_SKIP for n in sn):
+    if not relaxed(MODE) and sn and all(roam_yards(n) >= ROAM_SKIP for n in sn):
         # the giver travels the zone (Gizelton caravans): the quest is only offered while it is
         # stopped at its camp, and the escort means waiting for its loop - speed guides skip these
         info["why"] = "giver travels (caravan)"
@@ -616,6 +674,11 @@ def quest_info(qid):
         return info
     # objectives
     cre, obj, items, rep, killcred, spell = objectives(q)
+    if rep and len(rep) >= 2 and isinstance(rep[1], (int, float)) and rep[1] > 0:
+        # "reach Friendly with the Gelkis" style goals: earned by killing a rival group (Magram vs
+        # Gelkis centaurs - you can only side with one), with no data on how many kills it takes
+        info["why"] = "reputation grind"
+        return info
     objpts = defaultdict(list)
     parts = []           # one entry per objective: {"label", "oname", "pts": {map: [...]}}
     kills = 0
@@ -698,6 +761,12 @@ def quest_info(qid):
         info["dungeon"] = dungeon_map
     if elite:
         info["why"] = "elite"
+        info["obj_elite"] = {m: list(v) for m, v in objpts.items()}
+        return info
+    if not has_obj and not q.get("reqItems") and not q.get("srcItem") and q.get("startedBy") == q.get("finishedBy")             and TASK_TEXT.search(" ".join(t for t in (q.get("objText") or []) if t)):
+        # back to the same NPC with something to do, but no objective data (Forever-only quests such
+        # as A Conqueror's Crown): it would look like an instant hand-in - leave it out
+        info["why"] = "objective data missing"
         return info
     if has_obj and not objpts:
         # objectives we cannot locate (instance / no data)
@@ -1087,6 +1156,9 @@ def eff_req(qid):
     return req
 
 
+OBJ_MIN_SPAWNS = 8    # the easiest mobs for an objective: enough of them to hunt
+
+
 def objective_point(qid, m, near, level):
     """where to send you for a quest's objectives on map m: among the mobs that serve them, the ones
     that suit your level (not grey, at most 2 above) - the easiest group above grey when none does"""
@@ -1101,7 +1173,17 @@ def objective_point(qid, m, near, level):
                 lo = min(c[0] for c in above)
                 ok = [c for c in above if c[0] <= lo + 1]
         if ok:
-            pts = [p for _, ps in ok for p in ps]
+            # the easiest of them: from the lowest level up, only as far as it takes to have enough to
+            # hunt (two lone level-35 spiders are not a hunting ground; 23 at 37-38 are) - never the
+            # densest group just because there are more of the tougher ones
+            ok.sort(key=lambda c: c[0])
+            pick, n = [], 0
+            for c in ok:
+                if n >= OBJ_MIN_SPAWNS and c[0] > pick[-1][0] + 0.5:
+                    break
+                pick.append(c)
+                n += len(c[1])
+            pts = [p for _, ps in pick for p in ps]
             return pick_point({m: pts}, m, near)
     return pick_point(info["obj"], m, near)
 
@@ -1209,9 +1291,15 @@ def main(mode="speed", keep=None, dry=False):
             DUNGEON_MAPS.add(sg.map)
             if not sg.start:
                 sg.start = (50.0, 50.0)
-        if mode.startswith("thorough"):
+        if relaxed(mode):
             sg.prune = 0
-    tricks.ALLOW_DEATH = not mode.startswith("thorough")
+    tricks.ALLOW_DEATH = not relaxed(mode)
+    # how far a quest's mobs may be above you when it is planned: orange at most (Speed / Thorough),
+    # at most a level above you - never orange (Safe)
+    global MAX_ABOVE, CATCHUP_WANT, CATCHUP_MAX
+    global ZONE_GRIND
+    MAX_ABOVE, CATCHUP_WANT, CATCHUP_MAX = (SAFE_ABOVE, SAFE_WANT, SAFE_CMAX) if safe_mode(mode) else (4, -2, 2.0)
+    ZONE_GRIND = SAFE_ZONE_GRIND if safe_mode(mode) else 1.5
     tricks.init(sys.modules[__name__])
     if has_dungeons(mode):
         # quest_info needs DUNGEON_AREAS (set above) before stops can be worked out
@@ -1376,7 +1464,10 @@ def main(mode="speed", keep=None, dry=False):
             else:
                 tgt = None
                 lo = max([x[0] for x in later], default=si + 1)
-                for sj in range(lo, len(plan) if qid in DUNGEON_QUEST else min(len(plan), si + CARRY_SEGMENTS)):
+                # a plain hand-in (nothing to do in between) rides along to wherever the route next
+                # reaches its NPC - a city it goes back to, a later zone: it only takes a log slot
+                carry = DELIVERY_CARRY if not info.get("has_obj") else CARRY_SEGMENTS
+                for sj in range(lo, len(plan) if qid in DUNGEON_QUEST else min(len(plan), si + carry)):
                     if plan[sj].map in info["end"] and seg.races <= plan[sj].races and not plan[sj].chain:
                         tgt = sj
                         break
@@ -1469,7 +1560,7 @@ def main(mode="speed", keep=None, dry=False):
                     has_later = any(plan[sj].map == seg.map and seg.races <= plan[sj].races
                                     for sj in range(si + 1, min(len(plan), si + 14)))
                     end_lv = levels[-1] if levels else level
-                    if not has_later and req <= end_lv + 1.5 and grind_ok(seg.map, req):
+                    if not has_later and req <= end_lv + ZONE_GRIND and grind_ok(seg.map, req):
                         # short grind inside the zone unlocks the rest of its quests.  Each grind
                         # only goes as far as the pickup it unlocks: a later, higher pickup gets its
                         # own grind after the quests in between (which often make it unnecessary),
@@ -1748,8 +1839,16 @@ def main(mode="speed", keep=None, dry=False):
     removed = enforce_quest_log(plan, report)
     if removed:
         report.append(f"quest log cap {tricks.QUEST_LOG_TARGET}: dropped {len(removed)} quests: {removed}")
-    flown = plan_flights(plan, report)
-    report.append(f"flights: ~{flown / 60:.0f} min saved over running")
+    plan_flights(plan, [])          # first pass: what each stretch knows, for the training trips
+    plan_training(plan, report)
+    plan_group_quests(plan, report)
+    plan_mounts(plan, report)
+    plan_skinning(plan, report)
+    plan_item_quests(plan, report)
+    plan_hoist(plan, report)
+    # flights again, on the finished order: the passes above add and move steps
+    flown = 0.0 if os.environ.get("SL_NO_REFLY") else plan_flights(plan, report, final=True)
+    report.append(f"flights (final order): ~{flown / 60:.0f} min saved over running")
     peaks = tricks.log_peaks(plan, sorted(ALL_RACES))
     report.append("")
     report.append(f"hearths={totals['hearths']} death-skips={totals['deaths']} stacked quests={totals['stacked']} "
@@ -1764,7 +1863,7 @@ def main(mode="speed", keep=None, dry=False):
         return plan, set()
     allq = write_lua(plan, mode)
     pre = "report" if FACTION == "horde" else f"report_{FACTION}"
-    name = f"{pre}.txt" if mode == "speed" else f"{pre}_{mode}.txt"
+    name = f"{pre}.txt" if mode == "thorough" else f"{pre}_{mode}.txt"
     (ROOT / "route" / name).write_text("\n".join(report), encoding="utf-8")
     print(f"--- mode {mode}")
     print("\n".join(r for r in report if r.startswith(("hearths", "estimated")) or (r.startswith("[") and "dungeon" in r)))
@@ -1946,7 +2045,8 @@ def grind_ok(m, req):
     return bool(sp) and sp[4] >= GRIND_FLOOR * req
 
 
-CATCHUP_MAX = 2.0      # never plan more than this many levels of catch-up grinding at once
+CATCHUP_MAX = 2.0      # never plan more than this many levels of catch-up grinding at once (Safe: 4)
+CATCHUP_WANT = -2      # arrive so the zone's typical quest is this many levels above you (Safe: 1 below)
 CATCHUP_FROM = 10      # below this, quests are easy whatever their colour - never grind first
 
 
@@ -1971,7 +2071,7 @@ def catchup(seg, si, used, level, start):
         return None
     lvls = sorted((qget(q).get("level") or 0) for q in cands)
     med = lvls[len(lvls) // 2]
-    want = med - 2                      # the typical quest yellow
+    want = med + CATCHUP_WANT           # the typical quest yellow (Safe: green / white)
     tgt = round(min(float(want), level + CATCHUP_MAX), 1)
     if tgt - level < 0.3 or not grind_ok(seg.map, int(tgt)):
         return None
@@ -2029,6 +2129,7 @@ def grind_quest(seg, cands, level, tgt, used, start, generic):
 # are simply not on the route later.
 CARRY_SEGMENTS = 14
 NO_REACH = []         # (segment, qid, maps): quests dropped because the route never gets back to their turn-in
+DELIVERY_CARRY = int(os.environ.get("SL_DELIVERY_CARRY", "999"))   # sections a plain hand-in may ride along
 SHARED_KILLS = {}     # qid -> kills charged to it after sharing mobs with other quests (this build pass)
 SHARED_EXTRA = 0.3    # mobs only some of a group's quests need: a third of their kills on top
 
@@ -2397,6 +2498,10 @@ FM_EXCLUDE = set(FCFG["fm_exclude"])
 DRUID_FM = {"horde": {11798}, "alliance": {11800}}
 
 
+PROFESSIONS = ("Alchemy", "Blacksmithing", "Enchanting", "Engineering", "Herbalism", "Leatherworking", "Mining",
+               "Skinning", "Tailoring")
+
+
 def write_travel():
     """Data/Travel.lua: Horde flight masters, inns and every zone's world rectangle + continent, so the
     addon can compare walking with flying / hearthing to the current step at run time"""
@@ -2422,19 +2527,43 @@ def write_travel():
                     out.append(f"T.zones[{um}] = {{{int(r['MapID'])},{x0:.1f},{y0:.1f},{x1:.1f},{y1:.1f}}}")
     else:
         print("  ! no UiMapAssignment cache: run tools/terrain_extract.py once (travel advice uses the client API then)")
-    out.append("-- fm[i] = {map, x, y, npcID, name[, druid only]}")
+    out.append("-- fm[i] = {map, x, y, npcID, name, druid only, town (as the flight map names it)}")
     for nid, e in sorted(N.items(), key=lambda kv: int(kv[0])):
         druid = int(nid) in DRUID_FM.get(FACTION, set())
         if not ((e.get("flags") or 0) & 8) or e.get("friendly") not in FRIEND or (int(nid) in FM_EXCLUDE and not druid):
             continue
         for m, pts in sorted(spawns_of("npc", int(nid)).items()):
             x, y = pts[0]
-            out.append(f"T.fm[#T.fm + 1] = {{{m},{x:.1f},{y:.1f},{int(nid)},{lua_str(e['name'])}{',true' if druid else ''}}}")
+            fmw = world(m, x, y)
+            place = place_name({"m": m, "w": fmw, "name": e["name"]}) if fmw else (AREA_NAME_BY_MAP.get(m) or "")
+            out.append(f"T.fm[#T.fm + 1] = {{{m},{x:.1f},{y:.1f},{int(nid)},{lua_str(e['name'])},"
+                       f"{'true' if druid else 'false'},{lua_str(place)}}}")
     out.append("-- boats[i] = {kind, mapA, xA, yA, placeA, mapB, xB, yB, placeB} (zeppelins / boats, both ways)")
     out.append("T.boats = {}")
     for kind, a, b in FCFG.get("transports", []):
         out.append(f"T.boats[#T.boats + 1] = {{{lua_str(kind)},{a[0]},{a[1]},{a[2]},{lua_str(a[3])},"
                    f"{b[0]},{b[1]},{b[2]},{lua_str(b[3])}}}")
+    out.append("-- ports[i] = {spellID, city map, x, y, level, city} (Mage teleports; x, y = the city's flight master / inn)")
+    out.append("T.ports = {}")
+    for spell, m, lvl in FCFG.get("ports", []):
+        city, npc = FCFG["cities"][m]
+        (x, y), pm, _ = npc_location_any(npc, m)
+        out.append(f"T.ports[#T.ports + 1] = {{{spell},{pm},{x:.1f},{y:.1f},{lvl},{lua_str(city)}}}")
+    out.append("-- prof[i] = {profession, map, x, y, name, junior} (profession trainers, for the tier reminders)")
+    out.append("T.prof = {}")
+    for nid, e in sorted(N.items(), key=lambda kv: int(kv[0])):
+        sub = e.get("sub") or ""
+        junior = sub.startswith("Junior ")
+        prof = sub[len("Junior "):] if junior else sub
+        if not prof.endswith(" Trainer") or prof[:-len(" Trainer")] not in PROFESSIONS:
+            continue
+        if e.get("friendly") not in FRIEND or not ((e.get("flags") or 0) & 16):
+            continue
+        for m, pts in sorted(spawns_of("npc", int(nid)).items()):
+            x, y = pts[0]
+            out.append(f"T.prof[#T.prof + 1] = {{{lua_str(prof[:-len(' Trainer')])},{m},{x:.1f},{y:.1f},"
+                       f"{lua_str(e['name'])}{',true' if junior else ''}}}")
+            break
     out.append("-- inns[i] = {map, x, y, npcID, bind name (what GetBindLocation() says)}")
     for nid, bind in sorted(tricks.INN_BIND.items()):
         if not friendly_npc(nid):
@@ -2443,6 +2572,22 @@ def write_travel():
             x, y = pts[0]
             out.append(f"T.inns[#T.inns + 1] = {{{m},{x:.1f},{y:.1f},{nid},{lua_str(bind)}}}")
     (ROOT / "SpeedLevel" / "Data" / f"Travel_{FNAME}.lua").write_text("\n".join(out) + "\n", encoding="utf-8")
+
+
+def npc_location_any(name, m):
+    """((x, y), map, npcID) of a friendly NPC by name, preferring map m"""
+    best = None
+    for nid, e in N.items():
+        if e.get("name") == name and e.get("friendly") in FRIEND + (None,):
+            sp = spawns_of("npc", nid)
+            if m in sp:
+                return sp[m][0], m, int(nid)
+            if sp and best is None:
+                mm, pts = next(iter(sp.items()))
+                best = (pts[0], mm, int(nid))
+    if best:
+        return best
+    raise SystemExit(f"NPC {name!r} not found")
 
 
 def describe(qid):
@@ -2460,13 +2605,22 @@ def describe(qid):
     return txt[:400]
 
 
+def target_names(qid):
+    """Lua list of the mobs a quest's objectives are about (kill targets, kill credit, what drops its
+    items) - the addon marks them and can target them; nil when none"""
+    ms = quest_info(qid).get("mob_spawns") or {}
+    names = sorted({v[2] for v in ms.values() if v[2] and v[2] != "?"})[:8]
+    return "{" + ",".join(lua_str(n) for n in names) + "}" if names else "nil"
+
+
 def write_quests(allq):
     out_dir = ROOT / "SpeedLevel" / "Data"
     lines = ["-- GENERATED by tools/build_route.py from QuestieDB (Forever). Do not edit by hand.",
              "local _, SL = ...",
              "-- [id] = {name, level, reqLevel, raceMask, classMask, preAll, preAny, xp, exclusive,",
              "--         breadcrumbFor (gone once taken/done), untilCompleted (gone once done), disabledBy (not while active),",
-             "--         mobLevel (its mobs are tougher than the quest), description (objective + mobs, for the hover panel)}",
+             "--         mobLevel (its mobs are tougher than the quest), description (objective + mobs, for the hover panel),",
+             "--         target names (the mobs its objectives are about)}",
              "SL.Quests = SL.Quests or {}",
              "SL.QuestItems = SL.QuestItems or {}",
              "local add = {"]
@@ -2479,7 +2633,8 @@ def write_quests(allq):
                      f"{quest_xp(qid)},{arr(q.get('exclusive'))},{arr(blockers(qid)['taken'])},"
                      f"{arr(blockers(qid)['done'])},{arr(blockers(qid)['active'])},"
                      f"{difficulty(qid) if difficulty(qid) > (q.get('level') or 0) else 'nil'},"
-                     f"{lua_str(describe(qid)) if describe(qid) else 'nil'}}},")
+                     f"{lua_str(describe(qid)) if describe(qid) else 'nil'},"
+                     f"{target_names(qid)}}},")
     lines.append("}")
     lines.append("for k, v in pairs(add) do SL.Quests[k] = v end")
     # items a quest hands you or needs you to carry (the Kodo Kombobulator, torches, empty flasks...):
@@ -2498,6 +2653,48 @@ def write_quests(allq):
     lines.append("}")
     lines.append("for k, v in pairs(add) do SL.QuestItems[k] = v end")
     (out_dir / f"Quests_{FNAME}.lua").write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+
+AREA_YARDS = 350.0     # spawns this close to an objective stop make up its area on the map
+AREA_POINTS = 18       # at most this many (thinned evenly) - each becomes a soft glow on the map
+B64C = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
+
+
+def objective_area(n, info):
+    """the spawn points around an objective stop (its mobs / objects), for the map's area blob:
+    "xxyy..." with x, y in tenths of a percent as 2 base64 chars each; None for fewer than 3"""
+    m = n.map
+    if info.get("split") and n.part is not None:
+        pts = [p for k in n.part for p in info["split"][k]["pts"].get(m, [])]
+    else:
+        pts = list((info.get("obj") or {}).get(m, []))
+    # several mobs give the item: only the ones around the pin, at about the pin's mob level
+    ms = [v for v in (info.get("mob_spawns") or {}).values() if m in v[3] and v[3][m]]
+    if len(ms) >= 2:
+        def d2(p):
+            return (p[0] - n.pos[0]) ** 2 + (p[1] - n.pos[1]) ** 2
+        here_mob = min(ms, key=lambda v: min(d2(p) for p in v[3][m]))
+        group = [v for v in ms if abs(v[0] - here_mob[0]) <= 1.0]
+        pts = [p for v in group for p in v[3][m]]
+    here = world(m, n.pos[0], n.pos[1])
+    if not here or len(pts) < 3:
+        return None
+    near = []
+    for p in pts:
+        w = world(m, p[0], p[1])
+        if w and math.hypot(w[1] - here[1], w[2] - here[2]) <= AREA_YARDS:
+            near.append(p)
+    near = sorted(set((round(p[0], 1), round(p[1], 1)) for p in near))
+    if len(near) < 3:
+        return None
+    if len(near) > AREA_POINTS:
+        step = len(near) / AREA_POINTS
+        near = [near[int(k * step)] for k in range(AREA_POINTS)]
+    out = []
+    for x, y in near:
+        xi, yi = max(0, min(999, int(x * 10))), max(0, min(999, int(y * 10)))
+        out.append(B64C[xi // 64] + B64C[xi % 64] + B64C[yi // 64] + B64C[yi % 64])
+    return "".join(out)
 
 
 def build_steps(seg):
@@ -2560,6 +2757,10 @@ def build_steps(seg):
             txt = " ".join(t for t in (q.get("objText") or []) if t)
             txt = re.split(r",? (?:and )?(?:then )?(?:return|bring them back|report back)", txt, maxsplit=1)[0]
             st["text"] = txt.strip().rstrip(",.;") + "."
+        if n.kind == "C" and n.pos:
+            ar = objective_area(n, info)
+            if ar:
+                st["ar"] = ar
         if n.kind == "C" and getattr(n, "keff", None) is not None:
             st["k"] = round(n.keff, 1)
         if n.kind == "C" and getattr(n, "mates", None):
@@ -2572,11 +2773,14 @@ def build_steps(seg):
 # ------------------------------------------------------------------ flight planning
 # Every flight path the route has taught (FP steps) is tracked per race; wherever flying from a known
 # flight master to another known one beats running to the next step, a FLY step is inserted.
+FIELD_YARDS = 4000.0      # how far walking distances from a flight master are worked out
 FLY_SPEED = 30.0          # yd/s on a taxi
 FLY_DETOUR = 1.25         # flight paths curve around terrain
 FLY_OVERHEAD = 25.0       # talk to the flight master, take off, land
 FLY_MIN_SAVE = 90.0       # seconds: smaller savings are not worth the extra step
 FP_GRAB_YARDS = 200.0     # a step this close to an unknown flight master picks the path up (town size)
+FP_FAR = 400.0            # a planned flight-path step this far from you and the next quests: not at the start
+FP_WALK_MAX = 1200.0      # longer gaps between two stops are flown / sailed, not walked past
 _ZONE_RECTS = None
 
 
@@ -2635,46 +2839,121 @@ def place_name(fm):
     return best or AREA_NAME_BY_MAP.get(fm["m"]) or fm["name"]
 
 
-def best_flight(a, b, known, level, fms):
-    """(saving seconds, from fm, to fm) for getting from world point a to b, or None"""
+FLY_TERRAIN_CANDS = 5    # flight options checked against the terrain (best by straight line first)
+NO_TERRAIN_FLY = bool(os.environ.get("SL_NO_TERRAIN_FLY"))     # straight-line flight choice (for comparison)
+
+
+def best_flight(a, b, known, level, fms, pa=None, pb=None):
+    """(saving seconds, from fm, to fm) for getting from world point a to b, or None.
+    Flight masters in any zone of the continent count.  With the map points pa / pb, the walks -
+    to the first flight master, from the last one, and the whole way on foot - are real terrain
+    walking distances (mountains, cliffs, zone crossings, lifts), not straight lines."""
     if not a or not b or a[0] != b[0]:
         return None
     spd = tricks.speed(level)
     walk = math.hypot(a[1] - b[1], a[2] - b[2]) * tricks.DETOUR / spd
-    if walk < FLY_MIN_SAVE * 2:
+    terrain = pa is not None and pb is not None and not NO_TERRAIN_FLY and walkgraph.graph() is not None
+    if walk < FLY_MIN_SAVE * (1 if terrain else 2):
         return None
     cands = [fms[n] for n in known if n in fms and fms[n]["w"][0] == a[0]]
-    best = None
+    opts = []
     for f in cands:
         t1 = math.hypot(a[1] - f["w"][1], a[2] - f["w"][2]) * tricks.DETOUR / spd
-        if t1 > walk * 0.5:
+        if t1 > walk * (0.7 if terrain else 0.5):
             continue
         for g in cands:
             if g is f:
                 continue
             t3 = math.hypot(b[1] - g["w"][1], b[2] - g["w"][2]) * tricks.DETOUR / spd
-            t = t1 + FLY_OVERHEAD + math.hypot(f["w"][1] - g["w"][1], f["w"][2] - g["w"][2]) * FLY_DETOUR / FLY_SPEED + t3
-            if walk - t >= FLY_MIN_SAVE and (best is None or walk - t > best[0]):
-                best = (walk - t, f, g)
+            leg = math.hypot(f["w"][1] - g["w"][1], f["w"][2] - g["w"][2]) * FLY_DETOUR / FLY_SPEED
+            opts.append((t1 + FLY_OVERHEAD + leg + t3, leg, f, g))
+    if not opts:
+        return None
+    opts.sort(key=lambda o: o[0])
+    if not terrain:
+        t, _, f, g = opts[0]
+        return (walk - t, f, g) if walk - t >= FLY_MIN_SAVE else None
+    wy = walkgraph.walk_yards(pa, pb)
+    walk_t = wy / spd if wy is not None else walk
+    if walk_t < FLY_MIN_SAVE * 2:
+        return None
+    best = None
+    for t_est, leg, f, g in opts[:FLY_TERRAIN_CANDS]:
+        fy = walkgraph.from_field(walkgraph.field_yards(f["npc"], (f["m"], f["x"], f["y"]), FIELD_YARDS), pa)
+        if fy is None:          # further than the cached distances reach (an island, a long way round)
+            fy = walkgraph.walk_yards(pa, (f["m"], f["x"], f["y"]))
+        gy = walkgraph.from_field(walkgraph.field_yards(g["npc"], (g["m"], g["x"], g["y"]), FIELD_YARDS), pb)
+        if gy is None:
+            gy = walkgraph.walk_yards((g["m"], g["x"], g["y"]), pb)
+        t1 = fy / spd if fy is not None else math.hypot(a[1] - f["w"][1], a[2] - f["w"][2]) * tricks.DETOUR / spd
+        t3 = gy / spd if gy is not None else math.hypot(b[1] - g["w"][1], b[2] - g["w"][2]) * tricks.DETOUR / spd
+        t = t1 + FLY_OVERHEAD + leg + t3
+        if walk_t - t >= FLY_MIN_SAVE and (best is None or walk_t - t > best[0]):
+            best = (walk_t - t, f, g)
     return best
 
 
 POSITION_RESET = {"USEHS", "DEATH", "BOAT", "DUNGEON", "FLY"}   # you end up somewhere else
 
 
-def plan_flights(plan, report):
-    """insert FLY steps where a known flight beats running; returns total seconds saved"""
+def seg_dist(p, a, b):
+    """yards from world point p to the straight walk a -> b (all (continent, x, y))"""
+    ax, ay, bx, by, px, py = a[1], a[2], b[1], b[2], p[1], p[2]
+    dx, dy = bx - ax, by - ay
+    L2 = dx * dx + dy * dy
+    t = 0.0 if L2 == 0 else max(0.0, min(1.0, ((px - ax) * dx + (py - ay) * dy) / L2))
+    return math.hypot(px - (ax + t * dx), py - (ay + t * dy))
+
+
+def conditional(st):
+    """a step only some players see (class training, gold mode, group / item quests, a race's mount):
+    never the reason for a flight everyone takes"""
+    return bool(st.get("cls") or st.get("gold") or st.get("grp") or st.get("item")
+                or st.get("t") in ("MOUNT", "PROF"))
+
+
+def plan_flights(plan, report, final=False):
+    """insert FLY steps where a known flight beats running; returns total seconds saved.
+    final=True plans them again on the finished step order (after the passes that add or move
+    steps), replacing the flights and flight-path pickups planned the first time"""
     fms = flight_masters()
     races_all = sorted(ALL_RACES)
     known = {r: set() for r in races_all}
     last = {r: None for r in races_all}
+    last_p = {}
     total = 0.0
     for seg in plan:
-        steps = build_steps(seg)
+        if final and getattr(seg, "final_steps", None) is not None:
+            steps = [st for st in seg.final_steps if not st.get("_auto")]
+        else:
+            steps = build_steps(seg)
         races = sorted(seg.races)
         lv = seg.entry_level or 1
-        main_known, main_last = known, last
+        # a planned flight-path step far from both where you are and where the questing goes next
+        # ("grab the Ratchet flight path when you pass through") would send you there first: leave it
+        # out here - the grab-on-the-way rule below adds it where the route really passes that town
+        lasts0 = {last[r] for r in races}
+        prev0 = lasts0.pop() if len(lasts0) == 1 else None
+        kept = []
+        for i, st in enumerate(steps):
+            here0 = world(st["m"], st["x"], st["y"]) if st.get("m") and st.get("x") is not None else None
+            if st.get("t") == "FP" and st.get("npc") and here0:
+                ahead = [world(x["m"], x["x"], x["y"]) for x in steps[i + 1:]
+                         if x.get("m") and x.get("x") is not None and x.get("t") in ("A", "T", "C", "GRIND")][:4]
+                near_prev = prev0 is None or (prev0[0] == here0[0] and math.hypot(prev0[1] - here0[1], prev0[2] - here0[2]) <= FP_FAR)
+                near_next = any(a and a[0] == here0[0] and math.hypot(a[1] - here0[1], a[2] - here0[2]) <= FP_FAR for a in ahead)
+                if not near_prev and not near_next:
+                    report.append(f"    flight path {st.get('name')} not at the start of {seg.title}: picked up where the route passes it")
+                    continue
+            kept.append(st)
+            if st.get("t") in POSITION_RESET:
+                prev0 = None
+            elif here0:
+                prev0 = here0
+        steps = kept
+        main_known, main_last, main_last_p = known, last, last_p
         if seg.chain:
+            last_p = dict(last_p)
             # class chain: a side trip only that class takes - plan its flights, but what it teaches
             # and where it ends do not carry over to the main route
             known = {r: set(v) for r, v in known.items()}
@@ -2682,20 +2961,41 @@ def plan_flights(plan, report):
         out, saved, grabbed = [], 0.0, []
         lasts = {last[r] for r in races}
         prev = lasts.pop() if len(lasts) == 1 else None
+        lastps = {last_p.get(r) for r in races}
+        prevp = lastps.pop() if len(lastps) == 1 and prev is not None else None
         for st in steps:
             t = st.get("t")
+            if conditional(st):
+                st["_known"] = frozenset(set.intersection(*(known[r] for r in races))) if races else frozenset()
+                out.append(st)
+                continue
             here = world(st["m"], st["x"], st["y"]) if st.get("m") and st.get("x") is not None else None
             if here and prev and t not in POSITION_RESET and not (out and out[-1].get("t") == "FLY"):
                 common = set.intersection(*(known[r] for r in races)) if races else set()
-                fl = best_flight(prev, here, common, lv, fms)
+                herep = (st["m"], st["x"], st["y"])
+                fl = best_flight(prev, here, common, lv, fms, prevp, herep)
                 if fl:
                     sv, f, g = fl
                     dest = place_name(g)
                     out.append({"t": "FLY", "x": f["x"], "y": f["y"], "m": f["m"], "npc": f["npc"], "name": f["name"],
                                 "fto": g["npc"], "tm": g["m"], "tx": g["x"], "ty": g["y"],
-                                "dest": f"Fly to {dest}",
+                                "dest": f"Fly to {dest}", "_auto": 1,
                                 "text": f"saves ~{max(1, int(sv // 60))} min over running"})
                     saved += sv
+            # walking past a flight master you do not have yet (between two stops): grab it on the way
+            if here and prev and prev[0] == here[0] and t not in POSITION_RESET and not (out and out[-1].get("t") == "FLY")                     and math.hypot(here[1] - prev[1], here[2] - prev[2]) <= FP_WALK_MAX:
+                later = {int(x["npc"]) for x in steps if x.get("t") == "FP" and x.get("npc")}
+                for f in fms.values():
+                    if f["w"][0] != here[0] or f["npc"] in later or all(f["npc"] in known[r] for r in races):
+                        continue
+                    if seg_dist(f["w"], prev, here) > FP_GRAB_YARDS:
+                        continue
+                    out.append({"t": "FP", "x": f["x"], "y": f["y"], "m": f["m"], "npc": f["npc"], "name": f["name"],
+                                "text": f"Grab the {place_name(f)} flight path on the way", "_auto": 1})
+                    for r in races:
+                        known[r].add(f["npc"])
+                    grabbed.append(f["name"])
+            st["_known"] = frozenset(set.intersection(*(known[r] for r in races))) if races else frozenset()
             out.append(st)
             # a flight path counts as known only after the step that teaches it
             if t in ("FP", "FLY") and st.get("npc"):
@@ -2713,17 +3013,20 @@ def plan_flights(plan, report):
                     if all(f["npc"] in known[r] for r in races):
                         continue
                     out.append({"t": "FP", "x": f["x"], "y": f["y"], "m": f["m"], "npc": f["npc"], "name": f["name"],
-                                "text": f"Grab the {place_name(f)} flight path while you are here"})
+                                "text": f"Grab the {place_name(f)} flight path while you are here", "_auto": 1})
                     for r in races:
                         known[r].add(f["npc"])
                     grabbed.append(f["name"])
             if t in POSITION_RESET:
-                prev = None
+                prev, prevp = None, None
             elif here:
-                prev = here
+                prev, prevp = here, (st["m"], st["x"], st["y"])
         seg.final_steps = out
         if grabbed:
             report.append(f"    flight paths grabbed on the way ({seg.title}): {', '.join(grabbed)}")
+        # the time model keeps only the last planning's saving
+        seg.minutes = getattr(seg, "minutes", 0) + getattr(seg, "_fly_saved", 0.0) / 60
+        seg._fly_saved = saved
         if saved:
             seg.minutes = max(0.0, getattr(seg, "minutes", 0) - saved / 60)
             n = sum(1 for x in out if x.get("t") == "FLY" and x.get("fto"))
@@ -2731,8 +3034,715 @@ def plan_flights(plan, report):
         total += saved
         for r in races:
             last[r] = prev
-        known, last = main_known, main_last
+            last_p[r] = prevp
+        known, last, last_p = main_known, main_last, main_last_p
     return total
+
+
+# ------------------------------------------------------------------ class training
+# New class spells come every even level.  For every class, a TRAIN step pinned on that class's own
+# trainer is put wherever the route passes close to one once a new even level is due; the further
+# behind on spells, the longer a detour it is worth.  In game the step only shows for your class and
+# is skipped when you have nothing new to learn.
+CLASS_FILES = ("WARRIOR", "PALADIN", "HUNTER", "ROGUE", "PRIEST", "SHAMAN", "MAGE", "WARLOCK", "DRUID")
+TRAIN_SECS = 30.0                       # talk to the trainer, learn the spells
+TRAIN_DETOUR = {1: 75.0, 2: 360.0, 3: 600.0}   # pending even levels -> longest detour worth it (s)
+TRAIN_DETOUR_MAX = 900.0                 # 8+ levels of spells missing: worth a flight to the trainer
+
+
+def class_trainers():
+    """{CLASS: [{npc, name, m, x, y, w}]} - this faction's class trainers that the client places"""
+    out = defaultdict(list)
+    for nid, e in N.items():
+        sub = e.get("sub") or ""
+        if not sub.endswith(" Trainer") or not ((e.get("flags") or 0) & 16) or e.get("friendly") not in FRIEND:
+            continue
+        cls = sub[:-len(" Trainer")].upper()
+        if cls not in CLASS_FILES:
+            continue
+        for m, pts in spawns_of("npc", int(nid)).items():
+            w = world(m, pts[0][0], pts[0][1])
+            if w:
+                out[cls].append({"npc": int(nid), "name": e["name"], "m": m, "x": round(pts[0][0], 1),
+                                 "y": round(pts[0][1], 1), "w": w})
+                break
+    return out
+
+
+def _secs(a, b, lv):
+    return math.hypot(a[1] - b[1], a[2] - b[2]) * tricks.DETOUR / tricks.speed(lv)
+
+
+def trainer_detour(steps, pos, j, tl, lv, fms, trips):
+    """(extra seconds, trainer) for visiting the nearest of trainers tl after step j: on foot, or with
+    trips a round trip by air from a known flight master next to you; (None, None) when none"""
+    a = pos[j]
+    if not a or steps[j].get("t") in POSITION_RESET:
+        return None, None
+    n = len(steps)
+    nxt = next((pos[x] for x in range(j + 1, n) if pos[x]), None)
+    best = None
+    for t in tl:
+        if t["w"][0] != a[0]:
+            continue
+        d = _secs(a, t["w"], lv) + (_secs(t["w"], nxt, lv) - _secs(a, nxt, lv) if nxt and nxt[0] == a[0]
+                                    else _secs(a, t["w"], lv))
+        if best is None or d < best[0]:
+            best = (d, t)
+    known = steps[j].get("_known") or ()
+    if trips and known:
+        here_fm = [fms[f] for f in known if f in fms and fms[f]["w"][0] == a[0] and _secs(a, fms[f]["w"], lv) <= 60]
+        for f in here_fm:
+            for t in tl:
+                if t["w"][0] != a[0]:
+                    continue
+                for g in (fms[x] for x in known if x in fms and x != f["npc"]):
+                    if g["w"][0] != a[0]:
+                        continue
+                    leg = math.hypot(f["w"][1] - g["w"][1], f["w"][2] - g["w"][2]) * FLY_DETOUR / FLY_SPEED
+                    d = 2 * (_secs(a, f["w"], lv) + FLY_OVERHEAD + leg + _secs(g["w"], t["w"], lv))
+                    if best is None or d < best[0]:
+                        best = (d, t)
+    return best if best else (None, None)
+
+
+def plan_training(plan, report):
+    """insert per-class TRAIN steps on the trainers the route passes; returns {class: [levels]}"""
+    trainers = class_trainers()
+    fms = flight_masters()
+    races_all = sorted(ALL_RACES)
+    last = {(r, c): 0 for r in races_all for c in trainers}
+    trained = defaultdict(list)
+
+    for seg in plan:
+        steps = getattr(seg, "final_steps", None) or build_steps(seg)
+        if seg.dungeon:
+            continue
+        races = sorted(seg.races)
+        n = len(steps)
+        lo, hi = seg.entry_level or 1, getattr(seg, "exit_level", None) or seg.entry_level or 1
+        pos = [world(st["m"], st["x"], st["y"]) if st.get("m") and st.get("x") is not None else None for st in steps]
+        main_last = last
+        if seg.chain:
+            last = dict(last)                      # a class side trip does not carry over
+        inserts = defaultdict(list)
+        for cls, tl in sorted(trainers.items()):
+            if seg.classes and cls not in seg.classes:
+                continue
+            k = 0
+            while k < n:
+                lv = lo + (hi - lo) * k / max(1, n)
+                even = int(lv) - int(lv) % 2
+                pend = max(0, max((even - last[(r, cls)]) // 2 for r in races))
+                here = pos[k]
+                if pend <= 0 or not here or steps[k].get("t") in POSITION_RESET:
+                    k += 1
+                    continue
+                limit = TRAIN_DETOUR.get(pend, TRAIN_DETOUR_MAX)
+
+                def detour(j):
+                    return trainer_detour(steps, pos, j, tl, lv, fms, pend >= 2)
+
+                d, t = detour(k)
+                if d is None or d > limit:
+                    k += 1
+                    continue
+                # the cheapest stop while you are still around this trainer
+                bj, bd, bt = k, d, t
+                j = k + 1
+                while j < n and j < k + 12:
+                    dj, tj = detour(j)
+                    if dj is None or dj > limit:
+                        break
+                    if dj < bd:
+                        bj, bd, bt = j, dj, tj
+                    j += 1
+                lvb = lo + (hi - lo) * bj / max(1, n)
+                inserts[bj].append({"t": "TRAIN", "cls": cls, "x": bt["x"], "y": bt["y"], "m": bt["m"],
+                                    "npc": bt["npc"], "name": bt["name"],
+                                    "text": f"Train new spells at {bt['name']} ({cls.title()} Trainer)"})
+                for r in races:
+                    last[(r, cls)] = max(last[(r, cls)], int(lvb) - int(lvb) % 2)
+                trained[cls].append(int(lvb))
+                seg.minutes = getattr(seg, "minutes", 0) + (bd + TRAIN_SECS) / 60 / len(trainers)
+                k = bj + 1
+        if inserts:
+            out = []
+            for k, st in enumerate(steps):
+                # the route's own generic "train" notes are replaced by the per-class stops
+                if st.get("t") == "TRAIN" and not st.get("cls"):
+                    continue
+                out.append(st)
+                out.extend(inserts.get(k, []))
+            seg.final_steps = out
+        else:
+            seg.final_steps = [st for st in steps if not (st.get("t") == "TRAIN" and not st.get("cls"))]
+        if seg.chain:
+            last = main_last
+    for cls in sorted(trained):
+        lv = sorted(set(trained[cls]))
+        gaps = [f"{a}-{b}" for a, b in zip([1] + lv, lv + [60]) if b - a > 6]
+        report.append(f"    training {cls.title():<8} {len(trained[cls])} stops at levels {lv}"
+                      + (f"  (long gaps: {', '.join(gaps)})" if gaps else ""))
+    return trained
+
+
+# ------------------------------------------------------------------ the level 40 mount
+# Your race's riding instructor and mount vendor, as soon as the route reaches 40 (a trip there by air /
+# zeppelin when they are far - the travel advice handles it).  The route assumes the mount from then on.
+def npc_spot(nid):
+    """{npc, name, m, x, y, w} of an NPC's first placed spawn, or None"""
+    e = N.get(str(nid))
+    if not e:
+        return None
+    for m, pts in spawns_of("npc", int(nid)).items():
+        w = world(m, pts[0][0], pts[0][1])
+        if w:
+            return {"npc": int(nid), "name": e["name"], "m": m, "x": round(pts[0][0], 1), "y": round(pts[0][1], 1), "w": w}
+    return None
+
+
+def plan_mounts(plan, report):
+    for race, (trainer, vendor) in sorted(FCFG.get("mounts", {}).items()):
+        if race not in ALL_RACES:
+            continue
+        t, v = npc_spot(trainer), npc_spot(vendor) if vendor else None
+        if not t:
+            report.append(f"    mount: no riding instructor placed for {race}")
+            continue
+        for seg in plan:
+            if seg.dungeon or seg.chain or race not in seg.races:
+                continue
+            lo, hi = seg.entry_level or 1, getattr(seg, "exit_level", None) or seg.entry_level or 1
+            if hi < tricks.MOUNT_LEVEL:
+                continue
+            steps = getattr(seg, "final_steps", None) or build_steps(seg)
+            n = len(steps)
+            k = next((j for j in range(n) if lo + (hi - lo) * j / max(1, n) >= tricks.MOUNT_LEVEL), n)
+            buy = f" and buy your mount from {v['name']}" if v else " and buy your mount next to them"
+            steps.insert(k, {"t": "MOUNT", "race": race, "x": t["x"], "y": t["y"], "m": t["m"], "npc": t["npc"],
+                             "name": t["name"],
+                             "text": f"Level {tricks.MOUNT_LEVEL}: learn Apprentice Riding from {t['name']}{buy}"})
+            seg.final_steps = steps
+            report.append(f"    mount: {race} at {seg.title} ({t['name']})")
+            break
+
+
+# ------------------------------------------------------------------ mount gold mode: skinning
+# Gold mode (an in-game option on top of any route) adds Skinning: you skin the beasts the route kills
+# anyway.  Its rank-ups are trainer stops like class training, marked gold (skipped unless gold mode
+# is on, or when your skill is not there yet).
+SKIN_RANKS = [  # (rank, character level, skill needed, max skill)  - classic requirements
+    ("Apprentice", 1, 0, 75), ("Journeyman", 10, 50, 150), ("Expert", 20, 125, 225), ("Artisan", 35, 200, 300)]
+SKIN_PLAN_LEVEL = {"Apprentice": 1, "Journeyman": 12, "Expert": 24, "Artisan": 38}   # when the skill is there
+SKIN_DETOUR = 240.0
+SKIN_DETOUR_TRIP = 600.0
+
+
+def skinning_trainers():
+    full, junior = [], []
+    for nid, e in N.items():
+        sub = e.get("sub") or ""
+        if sub not in ("Skinning Trainer", "Junior Skinning Trainer") or e.get("friendly") not in FRIEND:
+            continue
+        sp = npc_spot(nid)
+        if sp:
+            (full if sub == "Skinning Trainer" else junior).append(sp)
+    return full, junior
+
+
+SKIN_RETRIES = 3          # stops per rank (spaced out): a rank you were not ready for comes back
+SKIN_RETRY_GAP = 3       # levels between stops for the same rank
+
+
+def plan_skinning(plan, report):
+    full, junior = skinning_trainers()
+    fms = flight_masters()
+    # per race and rank: (stops placed, level of the last one)
+    done = {(r, rk[0]): (0, -99.0) for r in ALL_RACES for rk in SKIN_RANKS}
+    placed = []
+    for seg in plan:
+        if seg.dungeon or seg.chain:
+            continue
+        steps = getattr(seg, "final_steps", None) or build_steps(seg)
+        races = sorted(seg.races)
+        n = len(steps)
+        lo, hi = seg.entry_level or 1, getattr(seg, "exit_level", None) or seg.entry_level or 1
+        pos = [world(st["m"], st["x"], st["y"]) if st.get("m") and st.get("x") is not None else None for st in steps]
+        inserts = defaultdict(list)
+        for k in range(n):
+            lv = lo + (hi - lo) * k / max(1, n)
+            for rank, minlv, skill, cap in SKIN_RANKS:
+                start = SKIN_PLAN_LEVEL[rank]
+                if not (start <= lv < start + 4 * SKIN_RETRY_GAP + 2):
+                    continue
+                if not any(done[(r, rank)][0] < SKIN_RETRIES and lv - done[(r, rank)][1] >= SKIN_RETRY_GAP
+                           for r in races):
+                    continue
+                tl = full + (junior if rank == "Apprentice" else [])
+                first = all(done[(r, rank)][0] == 0 for r in races)
+                late = first and lv >= start + 6
+                d, t = trainer_detour(steps, pos, k, tl, lv, fms, late)
+                if d is None or d > (SKIN_DETOUR_TRIP if late else SKIN_DETOUR):
+                    continue
+                inserts[k].append({"t": "PROF", "gold": 1, "prof": "Skinning", "rank": rank, "level": minlv,
+                                   "skill": skill, "cap": cap, "x": t["x"], "y": t["y"], "m": t["m"],
+                                   "npc": t["npc"], "name": t["name"],
+                                   "text": f"Gold mode: learn {rank} Skinning from {t['name']}"
+                                           + (" (buy a Skinning Knife from a trade goods vendor)" if rank == "Apprentice" else "")})
+                placed.append(f"{rank} at {seg.title} (~{lv:.0f})")
+                for r in races:
+                    c, _ = done[(r, rank)]
+                    done[(r, rank)] = (c + 1, lv)
+        if inserts:
+            out = []
+            for j2, st in enumerate(steps):
+                out.append(st)
+                out.extend(inserts.get(j2, []))
+            seg.final_steps = out
+    report.append(f"    gold mode skinning: {', '.join(placed) or 'no trainer stops'}")
+
+
+# ------------------------------------------------------------------ never come back for what was there
+# The tour can plan a pickup (or a turn-in) on a later visit to an NPC although it was already
+# possible on an earlier one: you leave town and get sent back for it.  This pass moves each such
+# step to the first visit where it works - prerequisites turned in, level reached (never red),
+# no breadcrumb / exclusive / available-until conflict, and for a turn-in every objective done.
+HOIST_SAME_SPOT = 150.0       # yards: the same town / camp
+HOIST_LEFT = 200.0            # yards: you had walked away in between
+
+
+def plan_hoist(plan, report):
+    moved_a = moved_t = 0
+    examples = []
+    seen_moves = set()
+    # quests the whole route turns in, in order (prerequisites from earlier zones count)
+    done_before = set()
+    for seg in plan:
+        steps = getattr(seg, "final_steps", None) or build_steps(seg)
+        if seg.dungeon:
+            done_before |= {st["q"] for st in steps if st.get("t") == "T" and st.get("q")}
+            continue
+        n = len(steps)
+        lo, hi = seg.entry_level or 1, getattr(seg, "exit_level", None) or seg.entry_level or 1
+        changed = True
+        guard = 0
+        while changed and guard < 400:
+            changed = False
+            guard += 1
+            pos = [world(st["m"], st["x"], st["y"]) if st.get("m") and st.get("x") is not None else None for st in steps]
+            n = len(steps)
+            # quests turned in up to each step
+            pref, acc = [], set(done_before)
+            for x in steps:
+                if x.get("t") == "T" and x.get("q"):
+                    acc = acc | {x["q"]}
+                pref.append(acc)
+            # breadcrumbs in this stretch: quest -> its breadcrumb quests
+            crumbs = defaultdict(set)
+            for st in steps:
+                if st.get("q"):
+                    for tq in blockers(st["q"])["taken"]:
+                        crumbs[tq].add(st["q"])
+            for k, st in enumerate(steps):
+                t, qid = st.get("t"), st.get("q")
+                if t not in ("A", "T") or not qid or st.get("item") or st.get("grp") or not pos[k]:
+                    continue
+                w = pos[k]
+                # the visit before you last walked away from here
+                left = next((j for j in range(k - 1, -1, -1)
+                             if pos[j] and (pos[j][0] != w[0] or math.hypot(pos[j][1] - w[1], pos[j][2] - w[2]) > HOIST_LEFT)), None)
+                if left is None:
+                    continue
+                q = qget(qid)
+                target = None
+                for j in range(left):
+                    if not pos[j] or pos[j][0] != w[0] or math.hypot(pos[j][1] - w[1], pos[j][2] - w[2]) > HOIST_SAME_SPOT:
+                        continue
+                    if steps[j].get("t") in POSITION_RESET:
+                        continue
+                    lv = lo + (hi - lo) * j / max(1, n)
+                    before = pref[j]
+                    if t == "A":
+                        pg, ps = q.get("preGroup") or [], q.get("preSingle") or []
+                        if any(p not in before for p in pg) or (ps and not any(p in before for p in ps)):
+                            continue
+                        if eff_req(qid) > lv:
+                            continue
+                        if any(c not in before for c in crumbs.get(qid, ())):
+                            continue          # its breadcrumb is turned in first
+                        if q.get("exclusive"):
+                            continue
+                        if any(x in {y.get("q") for y in steps[j:k]} for x in blockers(qid)["active"]):
+                            continue          # disabled while another quest is in your log
+                    else:
+                        idx = [i for i, x in enumerate(steps) if x.get("q") == qid and x.get("t") in ("A", "C")]
+                        if not idx or max(idx) >= j:
+                            continue          # objectives (and the pickup) all done before this visit
+                        # a quest only available until this one is turned in, still to be picked up
+                        later_a = [x["q"] for x in steps[j:k] if x.get("t") == "A" and x.get("q")]
+                        if any(qid in blockers(x)["done"] for x in later_a):
+                            continue
+                    target = j
+                    break
+                if target is None:
+                    continue
+                # within that visit, the stop closest to this NPC (prerequisites only get easier later on)
+                bd = math.hypot(pos[target][1] - w[1], pos[target][2] - w[2])
+                for j in range(target + 1, left):
+                    if not pos[j] or pos[j][0] != w[0] or math.hypot(pos[j][1] - w[1], pos[j][2] - w[2]) > HOIST_SAME_SPOT:
+                        break
+                    if steps[j].get("t") in POSITION_RESET:
+                        break
+                    if t == "A" and any(x in {y.get("q") for y in steps[j:k]} for x in blockers(qid)["active"]):
+                        break
+                    dj = math.hypot(pos[j][1] - w[1], pos[j][2] - w[2])
+                    if dj < bd:
+                        target, bd = j, dj
+                # only when it shortens the walk: the step leaves its place (prev -> it -> next becomes
+                # prev -> next) and slots in after the earlier visit's stop
+                def P(i):
+                    return pos[i] if 0 <= i < len(pos) and pos[i] and steps[i].get("t") not in POSITION_RESET else None
+
+                def near(i, step):
+                    j = i + step
+                    while 0 <= j < len(pos) and not P(j):
+                        j += step
+                    return P(j) if 0 <= j < len(pos) else None
+
+                def dd(a, b):
+                    return math.hypot(a[1] - b[1], a[2] - b[2]) if a and b and a[0] == b[0] else 0.0
+                pa, na = near(k, -1), near(k, 1)
+                tb = P(target)
+                tn = near(target, 1) if target + 1 != k else na
+                gain = dd(pa, w) + dd(w, na) - dd(pa, na)
+                cost = dd(tb, w) + dd(w, tn) - dd(tb, tn)
+                if cost >= gain - 20:
+                    continue
+                steps.insert(target + 1, steps.pop(k))
+                key = (seg.title, t, qid)
+                if key in seen_moves:
+                    changed = True
+                    break
+                seen_moves.add(key)
+                if t == "A":
+                    moved_a += 1
+                else:
+                    moved_t += 1
+                if len(examples) < 12:
+                    examples.append(f"{seg.title}: {'pickup' if t == 'A' else 'turn-in'} {q['name']}")
+                changed = True
+                break
+        seg.final_steps = steps
+        done_before |= {st["q"] for st in steps if st.get("t") == "T" and st.get("q")}
+    report.append(f"return visits removed: {moved_a} pickups and {moved_t} turn-ins moved to an earlier visit")
+    for e in examples:
+        report.append(f"    moved: {e}")
+
+
+# ------------------------------------------------------------------ item-started quests
+# A quest that starts from a dropped item ("This item begins a quest") is planned where the route
+# already kills the mobs that drop it: an optional block - loot it, right-click it, its objective,
+# and the turn-in at a later stop next to its finisher.  In game the block only appears once the
+# item is in your bags.  Kept only when it beats grinding (XP per minute of extra work), and marked
+# drop=1 when the route's own kills make the drop more likely than not.
+ITEMQ_OBJ_YARDS = 600.0       # its objectives this close to where the item drops
+ITEMQ_TURNIN_YARDS = 150.0
+ITEMQ_LOOKAHEAD = 8           # segments to look ahead for the turn-in
+
+
+def item_quest_info(qid, drop_npcs):
+    """quest_info for an item-started quest (its objectives, finisher, kills): the finisher stands in
+    for the giver - where the item drops is worked out from the route's kill steps instead"""
+    q = Q[str(qid)]
+    orig = q.get("startedBy")
+    q["startedBy"] = q.get("finishedBy")
+    _info_cache.pop((MODE, qid), None)
+    try:
+        info = quest_info(qid)
+    finally:
+        q["startedBy"] = orig
+        # never leave the stand-in cached: anything else asking about this quest must still see
+        # an item-started quest (no giver to walk to)
+        _info_cache.pop((MODE, qid), None)
+    return info
+
+
+def plan_item_quests(plan, report):
+    used = {r["qid"] for sg in plan for r in sg.quests}
+    for sg in plan:
+        for st in getattr(sg, "final_steps", None) or []:
+            if st.get("q"):
+                used.add(st["q"])
+    cands = []
+    for qid, q in Q.items():
+        qid = int(qid)
+        if qid in used or (q.get("classes") or 0) or not race_ok(q, ALL_RACES):
+            continue
+        sn, so, si = givers(q.get("startedBy"))
+        if not si or sn or so:
+            continue
+        item = si[0]
+        it = I.get(str(item)) or {}
+        drops = [n for n in (it.get("npcDrops") or []) if (N.get(str(n)) or {}).get("friendly") != FCFG["letter"]]
+        if not drops:
+            continue
+        cands.append((qid, item, it.get("name", "item"), drops))
+    # every route kill step: which mobs it kills, how many, where
+    flat = []
+    for si_, sg in enumerate(plan):
+        if sg.dungeon:
+            continue
+        for k, st in enumerate(getattr(sg, "final_steps", None) or build_steps(sg)):
+            flat.append((si_, k, st))
+    placed = []
+    why = defaultdict(int)
+    inserts = defaultdict(list)          # (seg index, step index) -> steps after it
+    for qid, item, iname, drops in cands:
+        q = qget(qid)
+        info = item_quest_info(qid, drops)
+        if not info.get("ok"):
+            why["quest: " + (info.get("why") or "?")] += 1
+            continue
+        stage = "no route kill step drops it at a fitting level"
+        ql = q.get("level") or 1
+        best = None
+        for fi, (si_, k, st) in enumerate(flat):
+            if st.get("t") != "C" or not st.get("q") or not st.get("m") or st.get("grp"):
+                continue
+            sg = plan[si_]
+            n = len(getattr(sg, "final_steps", None) or [])
+            lv = (sg.entry_level or 1) + ((getattr(sg, "exit_level", None) or sg.entry_level or 1) - (sg.entry_level or 1)) * k / max(1, n)
+            if not (ql - 2 <= lv <= ql + 3) or (q.get("reqLevel") or 1) > lv + 0.5:
+                continue
+            if not race_ok(q, sg.races):
+                continue
+            kinfo = quest_info(st["q"])
+            mobs = set((kinfo.get("mob_spawns") or {}).keys())
+            hit = [n for n in drops if n in mobs or str(n) in {str(x) for x in mobs}]
+            if not hit:
+                continue
+            known = [(DROPS.get(int(item)) or {}).get(int(n)) for n in hit]
+            known = [r for r in known if r]
+            if known:
+                rate = max(known) / 100.0
+                kills = max(1.0, float(st.get("k") or kinfo.get("kills") or 8))
+                p = 1 - (1 - min(rate, 1.0)) ** kills
+            elif len(drops) == 1:
+                p = 1.0           # a named mob's own item (Fizsprocket's plans, Sharptalon's claw)
+            else:
+                p = None          # many mobs, rate unknown: a lucky drop - shown only once you loot it
+            if p is not None and p < 0.05:
+                stage = "drop chance under 5%"
+                continue
+            here = world(st["m"], st["x"], st["y"]) if st.get("x") is not None else None
+            if not here:
+                continue
+            # its objectives: next to the kill spot, or none (a delivery)
+            obj_pt, extra = None, 0.0
+            if info.get("has_obj"):
+                op = (info.get("obj") or {}).get(st["m"])
+                if not op:
+                    continue
+                o = objective_point(qid, st["m"], (st["x"], st["y"]), lv) or op[0]
+                ow = world(st["m"], o[0], o[1])
+                if not ow or math.hypot(ow[1] - here[1], ow[2] - here[2]) > ITEMQ_OBJ_YARDS:
+                    continue
+                obj_pt = o
+                extra = 2 * math.hypot(ow[1] - here[1], ow[2] - here[2]) * tricks.DETOUR / tricks.speed(lv) \
+                    + (info.get("kills") or 0) * (14 + lv * 0.25)
+            # the turn-in: a later stop next to the finisher
+            tk = None
+            for fj in range(fi, len(flat)):
+                sj, kj, stj = flat[fj]
+                if sj > si_ + ITEMQ_LOOKAHEAD:
+                    break
+                pj = world(stj["m"], stj["x"], stj["y"]) if stj.get("m") and stj.get("x") is not None else None
+                if not pj:
+                    continue
+                for em, eps in info["end"].items():
+                    for e in eps[:20]:
+                        ew = world(em, e[0], e[1])
+                        if ew and ew[0] == pj[0] and math.hypot(ew[1] - pj[1], ew[2] - pj[2]) <= ITEMQ_TURNIN_YARDS:
+                            tk = (sj, kj, em, e)
+                            break
+                    if tk:
+                        break
+                if tk:
+                    break
+            if not tk:
+                stage = "no later stop near the turn-in"
+                continue
+            xp = quest_xp(qid) * xp_factor(int(lv), ql)
+            grind = mob_xp(int(lv)) * 3600.0 / (14 + lv * 0.25)
+            secs = extra + 25.0
+            if xp / (secs / 3600.0) < PRUNE_FRAC * grind:
+                stage = "slower than grinding"
+                continue
+            cand = (p, xp, si_, k, st, lv, obj_pt, tk)
+            score = (p if p is not None else 0.05) * xp
+            if not best or score > ((best[0] if best[0] is not None else 0.05) * best[1]):
+                best = cand
+        if not best:
+            why[stage] += 1
+            continue
+        p, xp, si_, k, st, lv, obj_pt, tk = best
+        mob = (N.get(str(drops[0])) or {}).get("name", "mobs")
+        block = [{"t": "A", "q": qid, "item": int(item), "m": st["m"], "x": st["x"], "y": st["y"],
+                  "npc": iname, "drop": 1 if (p or 0) >= 0.5 else None,
+                  "text": f"{iname} drops here - right-click it to start the quest"}]
+        if obj_pt:
+            txt = " ".join(t for t in (q.get("objText") or []) if t)
+            txt = re.split(r",? (?:and )?(?:then )?(?:return|bring them back|report back)", txt, maxsplit=1)[0]
+            block.append({"t": "C", "q": qid, "m": st["m"], "x": round(obj_pt[0], 1), "y": round(obj_pt[1], 1),
+                          "text": txt.strip().rstrip(",.;") + "." if txt else "Objective."})
+        inserts[(si_, k)].extend(block)
+        sj, kj, em, e = tk
+        tst = {"t": "T", "q": qid, "m": em, "x": round(e[0], 1), "y": round(e[1], 1), "npc": info.get("endName", "")}
+        if (sj, kj) == (si_, k):
+            inserts[(si_, k)].append(tst)
+        else:
+            inserts[(sj, kj)].append(tst)
+        chance = f"{p * 100:.0f}% from the route's kills" if p is not None else "lucky drop"
+        placed.append(f"{qid} {q['name']} ({iname}, {chance}, {int(xp)} XP)")
+    for si_, sg in enumerate(plan):
+        steps = getattr(sg, "final_steps", None)
+        if not steps or not any(key[0] == si_ for key in inserts):
+            continue
+        out = []
+        for k, st in enumerate(steps):
+            out.append(st)
+            out.extend(inserts.get((si_, k), []))
+        sg.final_steps = out
+    report.append(f"item-started quests planned: {len(placed)} of {len(cands)} (left out: {dict(why)})")
+    for x in placed:
+        report.append(f"    item quest: {x}")
+
+
+# ------------------------------------------------------------------ group (elite) quests
+# Elite quests are left out of the solo route, but whoever finds a group can do them.  Each one whose
+# giver stands at a hub the route visits at the right level becomes an optional block right there:
+# pickup, objective, turn-in, all marked grp.  In game the pickup is only a hint ("group quest here");
+# once you accept it, the objective and turn-in are guided like any other quest.
+GROUP_HUB_YARDS = 60.0
+GROUP_TURNIN_YARDS = 120.0
+
+
+def _densest(pts):
+    best, bn = pts[0], -1
+    for p in pts[:200]:
+        n = sum(1 for q in pts[:200] if abs(q[0] - p[0]) < 4 and abs(q[1] - p[1]) < 4)
+        if n > bn:
+            best, bn = p, n
+    return best
+
+
+def plan_group_quests(plan, report):
+    used = {r["qid"] for sg in plan for r in sg.quests}
+    elites = []
+    for qid, q in Q.items():
+        qid = int(qid)
+        info = quest_info(qid)
+        if info.get("why") != "elite" or qid in used or (q.get("classes") or 0):
+            continue
+        if not race_ok(q, ALL_RACES) or not info.get("obj_elite"):
+            continue
+        if any(x in used for x in (q.get("exclusive") or [])):
+            continue
+        elites.append(qid)
+    done = set()          # turned in so far along the route (any race)
+    placed = []
+    for seg in plan:
+        steps = getattr(seg, "final_steps", None) or build_steps(seg)
+        if seg.dungeon or seg.chain:
+            for st in steps:
+                if st.get("t") == "T" and st.get("q"):
+                    done.add(st["q"])
+            continue
+        n = len(steps)
+        lo, hi = seg.entry_level or 1, getattr(seg, "exit_level", None) or seg.entry_level or 1
+        pos = [world(st["m"], st["x"], st["y"]) if st.get("m") and st.get("x") is not None else None for st in steps]
+        inserts = defaultdict(list)
+        for k, st in enumerate(steps):
+            if st.get("t") == "T" and st.get("q"):
+                done.add(st["q"])
+            if st.get("t") not in ("A", "T") or not pos[k]:
+                continue
+            lv = lo + (hi - lo) * k / max(1, n)
+            for qid in elites:
+                if qid in placed:
+                    continue
+                q = qget(qid)
+                ql, req = q.get("level") or 1, q.get("reqLevel") or 1
+                if not (lv - 1 <= ql <= lv + 4) or req > lv + 1:
+                    continue
+                if not race_ok(q, seg.races):
+                    continue
+                pre_s, pre_g = q.get("preSingle") or [], q.get("preGroup") or []
+                if (pre_s and not any(p in done for p in pre_s)) or any(p not in done for p in pre_g):
+                    continue
+                info = quest_info(qid)
+                m = st["m"]
+                gs = info["start"].get(m)
+                if not gs:
+                    continue
+                g = min(gs, key=lambda p: (p[0] - st["x"]) ** 2 + (p[1] - st["y"]) ** 2)
+                gw = world(m, g[0], g[1])
+                if not gw or math.hypot(gw[1] - pos[k][1], gw[2] - pos[k][2]) > GROUP_HUB_YARDS:
+                    continue
+                op = info["obj_elite"].get(m)
+                if not op:
+                    continue
+                o = _densest(op)
+                # the turn-in: right here (same hub) or a later stop of this zone next to the finisher
+                tk, tpt = None, None
+                for em, eps in info["end"].items():
+                    for e in eps:
+                        ew = world(em, e[0], e[1])
+                        if not ew:
+                            continue
+                        if em == m and math.hypot(ew[1] - gw[1], ew[2] - gw[2]) <= GROUP_TURNIN_YARDS:
+                            tk, tpt = k, (em, e)
+                            break
+                        for j in range(k + 1, n):
+                            if pos[j] and pos[j][0] == ew[0] and math.hypot(ew[1] - pos[j][1], ew[2] - pos[j][2]) <= GROUP_TURNIN_YARDS:
+                                tk, tpt = j, (em, e)
+                                break
+                        if tk is not None:
+                            break
+                    if tk is not None:
+                        break
+                if tk is None:
+                    continue
+                txt = " ".join(t for t in (q.get("objText") or []) if t)
+                txt = re.split(r",? (?:and )?(?:then )?(?:return|bring them back|report back)", txt, maxsplit=1)[0]
+                block = [
+                    {"t": "A", "q": qid, "grp": 1, "m": m, "x": round(g[0], 1), "y": round(g[1], 1),
+                     "npc": info.get("startName", "")},
+                    {"t": "C", "q": qid, "grp": 1, "m": m, "x": round(o[0], 1), "y": round(o[1], 1),
+                     "text": (txt.strip().rstrip(",.;") + ". " if txt else "") + "Elite - with a group."},
+                ]
+                tst = {"t": "T", "q": qid, "grp": 1, "m": tpt[0], "x": round(tpt[1][0], 1), "y": round(tpt[1][1], 1),
+                       "npc": info.get("endName", "")}
+                if tk == k:
+                    block.append(tst)
+                    inserts[k].extend(block)
+                else:
+                    inserts[k].extend(block)
+                    inserts[tk].append(tst)
+                placed.append(qid)
+                done.add(qid)        # its follow-ups can be offered later (in game: only if you did it)
+        if inserts:
+            out = []
+            for k, st in enumerate(steps):
+                out.append(st)
+                out.extend(inserts.get(k, []))
+            seg.final_steps = out
+    names = [f"{qid} {qget(qid)['name']}" for qid in placed]
+    report.append(f"group (elite) quests offered as optional blocks: {len(placed)}")
+    for x in names:
+        report.append(f"    group: {x}")
+    return placed
 
 
 def write_lua(plan, mode):
@@ -2742,6 +3752,9 @@ def write_lua(plan, mode):
     for seg in plan:
         for r in seg.quests:
             allq.add(r["qid"])
+        for st in getattr(seg, "final_steps", None) or []:
+            if st.get("q"):
+                allq.add(st["q"])
     L = [f"-- GENERATED by tools/build_route.py from route/{PLAN_FILE.name} + QuestieDB. Do not edit by hand.",
          "local _, SL = ...",
          "SL.Routes = SL.Routes or {}",
@@ -2761,7 +3774,8 @@ def write_lua(plan, mode):
             nsteps += 1
             parts = []
             for k in ("t", "q", "x", "y", "m", "to", "max", "npc", "name", "bind", "text", "dest", "level",
-                      "fto", "tm", "tx", "ty", "oname", "k"):
+                      "fto", "tm", "tx", "ty", "oname", "k", "cls", "grp", "race", "gold", "prof", "rank",
+                      "skill", "cap", "item", "drop", "ar"):
                 if k in st and st[k] not in (None, ""):
                     v = st[k]
                     parts.append(f"{k}={lua_str(v) if isinstance(v, str) else (repr(v) if isinstance(v, float) else v)}")
@@ -2784,7 +3798,8 @@ def write_lua(plan, mode):
 def build_all():
     union = set()
     maps = set(CITIES)
-    for mode in MODES:
+    only = [m for m in os.environ.get("SL_MODES", "").split(",") if m]
+    for mode in (only or MODES):
         keep = None
         if has_dungeons(mode):
             # pass 1: every possible stop; keep stops serving >= 2 dungeon pickups/turn-ins (>= 1 in the

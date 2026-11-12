@@ -39,6 +39,7 @@ ALLIANCE_CHARACTERS = [
     (7, "Gnome", 9, "WARLOCK", 1426, 0.30, 0.71),
     (4, "NightElf", 11, "DRUID", 1438, 0.59, 0.44),
     (95, "Skyborne", 3, "HUNTER", 2521, 0.43, 0.23),
+    (7, "Gnome", 8, "MAGE", 1426, 0.30, 0.71),
 ]
 CHARACTERS = [   # race id, race file, class id, class file, start map, x, y
     (2, "Orc", 1, "WARRIOR", 1411, 0.43, 0.69),
@@ -47,14 +48,29 @@ CHARACTERS = [   # race id, race file, class id, class file, start map, x, y
     (5, "Undead", 9, "WARLOCK", 1420, 0.30, 0.71),
     (96, "Skyborne", 3, "HUNTER", 2521, 0.50, 0.50),
     (2, "Orc", 4, "ROGUE", 1411, 0.43, 0.69),
+    (5, "Undead", 8, "MAGE", 1420, 0.30, 0.71),
 ]
 FLY_SPEED, ZONE_TRAVEL = 30.0, 240.0
 MAX_ITER = 12000
 if FACTION == "alliance":
     CHARACTERS = ALLIANCE_CHARACTERS
 
+SKIN_PER_KILL = 1.5      # gold mode: seconds per kill spent skinning (estimate, see above)
+
 LUA_HELPERS = r"""
 SIM = {}
+-- skill lines (Skinning from the gold-mode stops): {name, cap}
+SIM.skills = {}
+function SIM.learnSkill(name, cap)
+  for _, sk in ipairs(SIM.skills) do if sk[1] == name then sk[2] = cap return end end
+  table.insert(SIM.skills, { name, cap })
+end
+function GetNumSkillLines() return #SIM.skills end
+function GetSkillLineInfo(i)
+  local sk = SIM.skills[i]
+  -- skill rank keeps up with the cap's requirement (you skin what you kill)
+  return sk[1], false, false, math.max(0, sk[2] - 25), 0, 0, sk[2]
+end
 function SIM.abandonSkipped()
   local E = SpeedLevel.Engine
   local gone = {}
@@ -79,7 +95,7 @@ function SIM.travel(m, x, y)
   local pc, pwx, pwy = A:World(pm, px, py)
   local tc, twx, twy = A:World(m, x, y)
   if not pc or not tc then return { secs = -1, kind = "unknown", cross = false } end
-  local spd = 7 * ((STATE.level or 1) >= 40 and 1.6 or 1)
+  local spd = 7 * (((STATE.level or 1) >= 40 and P:HasMount()) and 1.6 or 1)
   local walk = (pc == tc) and math.sqrt((pwx - twx) ^ 2 + (pwy - twy) ^ 2) * 1.3 / spd or nil
   local adv = A:Advise({ m = m, x = x, y = y })
   local secs = adv and adv.eta or walk
@@ -159,6 +175,7 @@ def lua_table(L, t):
 def run(char, mode):
     import build_route as br
     import tricks
+    import walkgraph
     tricks.init(br)
     br.MODE = mode.replace("_dungeons", "") if False else mode
     race, race_file, cls, cls_file, m0, x0, y0 = char
@@ -174,8 +191,21 @@ def run(char, mode):
         FireEvent("ADDON_LOADED", "SpeedLevel"); FireEvent("PLAYER_LOGIN"); RunTimers()
         SpeedLevel.char.dungeonsAsked = true
     """)
-    if mode != "speed":
+    if os.environ.get("SIM_NO_HERE"):
+        L.execute("SpeedLevel.Engine.HereNow = function() return {} end")
+    if os.environ.get("SIM_NO_HERE_C"):
+        # the objectives part of "while you're here" off (pickups / turn-ins stay)
+        L.execute("""local E = SpeedLevel.Engine
+            local orig = E.HereNow
+            E.HereNow = function(self)
+                local out = {}
+                for _, i in ipairs(orig(self)) do if self.steps[i].t ~= "C" then out[#out + 1] = i end end
+                return out
+            end""")
+    if mode != "thorough":
         L.execute(f"SpeedLevel.Engine:SetMode('{mode}')")
+    # item-started quests the route's own kills make likely (drop=1): the item drops
+    L.execute("for _, st in ipairs(SpeedLevel.Engine.steps) do if st.item and st.drop then BAGS[st.item] = 1 end end")
     G = L.globals()
     clock = 0.0
     last_hs = -1e9
@@ -197,6 +227,12 @@ def run(char, mode):
     prev_sec = None
     pos = (m0, x0 * 100, y0 * 100)
     steps_done = 0
+    mounted = False
+    prof_stops = 0
+    gold = bool(os.environ.get("SIM_GOLD"))
+    skin_secs = 0.0          # gold mode: skinning what you kill (estimate: half the kills are beasts, ~3 s each)
+    if gold:
+        L.execute("SpeedLevel.char.goldMode = true")
 
     def lv():
         return float(G.STATE.level) + float(G.STATE.xp) / max(1.0, float(G.STATE.xpMax))
@@ -206,12 +242,24 @@ def run(char, mode):
         if m is None or x is None:
             return 0.0
         if pos[0] == m:
-            t = tricks.walk_time(m, (pos[1], pos[2]), (x, y), int(lv()))
+            # no mount before the guide's riding stop; the walk follows the real terrain
+            wl = int(lv()) if mounted else min(int(lv()), 39)
+            wy = None if os.environ.get("SIM_STRAIGHT") else walkgraph.walk_yards((m, pos[1], pos[2]), (m, x, y))
+            if wy is not None:
+                t = wy / tricks.speed(wl)
+            else:
+                t = tricks.walk_time(m, (pos[1], pos[2]), (x, y), wl)
         else:
             # another map: travel the way the guide would tell you (its live travel advice)
             tr = lua_table(L, L.eval(f"SIM.travel({m}, {x}, {y})"))
             t = float(tr["secs"])
             kind = tr["kind"]
+            if kind == "walk" and not os.environ.get("SIM_STRAIGHT"):
+                # on foot to another zone: over the real terrain (passes, not over the mountains)
+                wl = int(lv()) if mounted else min(int(lv()), 39)
+                wy = walkgraph.walk_yards((pos[0], pos[1], pos[2]), (m, x, y))
+                if wy is not None:
+                    t = wy / tricks.speed(wl)
             if t < 0:
                 t = ZONE_TRAVEL
                 kind = "unknown"
@@ -324,6 +372,9 @@ def run(char, mode):
             if ql - level_now >= 3:
                 secs *= 1 + tricks.ORANGE_PENALTY * (ql - level_now - 2)
             clock += secs
+            if gold and prof_stops:
+                skin_secs += k * SKIN_PER_KILL
+                clock += k * SKIN_PER_KILL
         elif t == "T":
             e = L.eval(f"SIM.logEntry({q})")
             if e is None:
@@ -342,6 +393,16 @@ def run(char, mode):
             if f.get("npc"):
                 known_fp.add(int(f["npc"]))
             L.execute(f"""SpeedLevel.char.knownTaxi[SpeedLevel.Advisor.taxiKey({f['m']}, {f['x']}, {f['y']})] = true""")
+            # learning a flight path opens the flight map: the guide then knows this continent exactly
+            known_lua = "{" + ",".join(f"[{n}]=true" for n in known_fp) + "}"
+            L.execute(f"""local A, kt = SpeedLevel.Advisor, SpeedLevel.char.knownTaxi
+                local here = A:World({f['m']}, {f['x']}, {f['y']})
+                local known = {known_lua}
+                SpeedLevel.char.taxiScanned = SpeedLevel.char.taxiScanned or {{}}
+                SpeedLevel.char.taxiScanned[here] = true
+                for _, fm in ipairs(A.FlightMasters()) do
+                    if fm.c == here and not fm.druidOnly then kt[fm.key] = known[fm.npc] == true end
+                end""")
             flag(i)
         elif t == "FLY":
             for npc in (f.get("npc"), f.get("fto")):
@@ -385,6 +446,10 @@ def run(char, mode):
                 need += step
             grind_secs += need / max(rate, 1) * 3600
             clock += need / max(rate, 1) * 3600
+            if gold and prof_stops:
+                kills = need / max(1.0, br.mob_xp(int(lv())))
+                skin_secs += kills * SKIN_PER_KILL
+                clock += kills * SKIN_PER_KILL
             flag(i)
         elif t == "DUNGEON":
             clock += teleport(f.get("m"), f.get("x"), f.get("y"))
@@ -395,6 +460,16 @@ def run(char, mode):
             end""")
             gain(float(G.STATE.xpMax) * 0.25)
             clock += 3600
+            flag(i)
+        elif t == "MOUNT":
+            clock += teleport(f.get("m"), f.get("x"), f.get("y")) + 60
+            mounted = True
+            L.execute("SpeedLevel.char.hasMount = true")
+            flag(i)
+        elif t == "PROF":
+            clock += teleport(f.get("m"), f.get("x"), f.get("y")) + 30
+            prof_stops += 1
+            L.execute(f"SIM.learnSkill('Skinning', {int(f.get('cap') or 75)})")
             flag(i)
         elif t == "TRAIN":
             clock += 30
@@ -421,11 +496,14 @@ def run(char, mode):
         "abandoned": abandoned,
         "travel": dict(travel), "travel_n": dict(travel_n), "long_walks": long_walks,
         "shortfall": round(shortfall, 2),
+        "mounted": mounted, "skin_h": round(skin_secs / 3600, 2), "prof_stops": prof_stops,
     }
 
 
 def main():
-    modes = ["speed", "speed_dungeons"] + (["thorough", "thorough_dungeons"] if "--all-modes" in sys.argv else [])
+    modes = ["thorough", "thorough_dungeons"] + (["safe", "safe_dungeons"] if "--all-modes" in sys.argv else [])
+    if "--modes" in sys.argv:
+        modes = sys.argv[sys.argv.index("--modes") + 1].split(",")
     jobs = [(c, m) for m in modes for c in CHARACTERS]
     with ProcessPoolExecutor(max_workers=min(len(jobs), 15)) as pool:
         results = list(pool.map(run, *zip(*jobs)))
@@ -503,15 +581,17 @@ def main():
     lines.append("")
     zt = defaultdict(float)
     for r in results:
-        if r["mode"] == "speed":
+        if r["mode"] == "thorough":
             for z, s in r["zone_time"].items():
                 zt[z] += s / 3600
-    nspeed = sum(1 for r in results if r["mode"] == "speed") or 1
-    lines.append("Slowest zones (Speed, average hours):")
+    nspeed = sum(1 for r in results if r["mode"] == "thorough") or 1
+    lines.append("Slowest zones (Thorough, average hours):")
     for z, h in sorted(zt.items(), key=lambda kv: -kv[1])[:10]:
         lines.append(f"  {h / nspeed:5.2f} h  {z}")
     report = "\n".join(lines)
     name = "sim_report" if FACTION == "horde" else f"sim_report_{FACTION}"
+    if os.environ.get("SIM_GOLD"):
+        name += "_gold"
     (ROOT / "route" / f"{name}.txt").write_text(report + "\n", encoding="utf-8")
     (ROOT / "route" / f"{name}.json").write_text(json.dumps(results, indent=1, default=str), encoding="utf-8")
     print(report)

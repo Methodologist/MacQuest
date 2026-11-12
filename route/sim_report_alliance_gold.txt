@@ -1,0 +1,72 @@
+Human Warrior      thorough           reached 60                  1375 steps  101.8 h (grind 39.2 h)  orange  70  issues 0
+Human Paladin      thorough           reached 60                  1356 steps  101.9 h (grind 39.0 h)  orange  70  issues 0
+Dwarf Hunter       thorough           reached 60                  1352 steps  102.5 h (grind 40.2 h)  orange  70  issues 0
+Gnome Warlock      thorough           reached 60                  1361 steps  103.5 h (grind 39.9 h)  orange  70  issues 0
+NightElf Druid     thorough           reached 60                  1422 steps  101.8 h (grind 37.7 h)  orange  75  issues 0
+Skyborne Hunter    thorough           reached 60                  1330 steps  102.9 h (grind 40.4 h)  orange  72  issues 0
+Gnome Mage         thorough           reached 60                  1347 steps  100.5 h (grind 39.7 h)  orange  66  issues 0
+Human Warrior      thorough_dungeons  reached 60                  1419 steps   99.3 h (grind 25.3 h)  orange  60  issues 0
+Human Paladin      thorough_dungeons  reached 60                  1405 steps   99.3 h (grind 25.0 h)  orange  63  issues 0
+Dwarf Hunter       thorough_dungeons  reached 60                  1398 steps  100.5 h (grind 26.4 h)  orange  66  issues 0
+Gnome Warlock      thorough_dungeons  reached 60                  1406 steps  101.1 h (grind 26.3 h)  orange  63  issues 0
+NightElf Druid     thorough_dungeons  reached 60                  1476 steps   99.4 h (grind 24.1 h)  orange  65  issues 0
+Skyborne Hunter    thorough_dungeons  reached 60                  1375 steps  100.1 h (grind 26.5 h)  orange  65  issues 0
+Gnome Mage         thorough_dungeons  reached 60                  1404 steps   97.2 h (grind 25.4 h)  orange  55  issues 0
+
+Pickups left behind waiting for a level (zone: count over all runs):
+    35  Desolace
+    21  Feralas
+    13  Redridge Mountains
+     7  Ironforge (turn in Gnomeregan)
+     7  Stranglethorn Vale
+     7  Stormwind (turn in City of Dalaran)
+     7  Un'Goro Crater
+     7  Felwood
+     4  Stranglethorn Vale 2
+     3  Dun Morogh
+     1  Darnassus
+
+Quests picked up but then dropped (turn-in skipped), by zone:
+    10  Maraudon - turn-in: objectives skipped; objective: grey
+     7  Felwood - turn-in: objectives skipped; objective: grey
+     2  Wetlands - turn-in: objectives skipped; objective: grey
+
+Travel between maps, as the guide advises it (average per run):
+  walk      3.57 h over  28.5 trips
+  boat      3.44 h over  11.7 trips
+  hearth    0.66 h over   5.1 trips
+  fly       0.61 h over   6.0 trips
+  spell     0.22 h over   2.9 trips
+  unknown   0.03 h over   0.4 trips
+
+Runs of 20+ minutes with no faster way (zone, from map -> to map, minutes: runs):
+  Stonetalon Mountains               1440 -> 1442   23 min: 7
+  Stonetalon Mountains               1440 -> 1442   26 min: 7
+  Silithus                           1444 -> 1451   21 min: 7
+  Stormwind (Skyborne)               1416 -> 1453   29 min: 2
+
+Level on arrival vs plan (avg difference, biggest first):
+  -1.56  Hunter: Taming the Beast (Skyborne)
+  -1.24  Stormwind (quests for City of Dalaran)
+  -1.22  Alterac Mountains (turn in City of Dalaran)
+  -1.22  City of Dalaran
+  -1.22  Stormwind (turn in City of Dalaran)
+  -1.21  Scarlet Monastery
+  -1.19  Razorfen Downs
+  -1.10  Badlands (turn in Uldaman)
+  -1.10  Uldaman
+  -1.04  Dalaran (Skyborne)
+  -1.04  Stormwind (Skyborne)
+  -1.02  Blackfathom Deeps
+
+Slowest zones (Thorough, average hours):
+  11.48 h  Tanaris
+   9.67 h  Stranglethorn Vale
+   8.95 h  Azshara
+   8.24 h  Western Plaguelands
+   6.94 h  Wetlands
+   5.62 h  Silithus
+   5.26 h  Un'Goro Crater
+   4.09 h  Redridge Mountains
+   3.37 h  Stranglethorn Vale 2
+   2.97 h  Eastern Plaguelands

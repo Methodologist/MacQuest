@@ -155,10 +155,16 @@ function P:IsQuestReady(questID)
     if e.complete then return true end
     local objs = self:Objectives(questID)
     if objs == nil then return false end
+    if #objs == 0 then
+        -- an empty list is a delivery / talk-to quest - unless the route knows it has an objective
+        -- (the game had not loaded it yet): then only the game's own "complete" counts
+        local qs = SL.Engine and SL.Engine.questSteps and SL.Engine.questSteps[questID]
+        return not (qs and qs.C)
+    end
     for _, o in ipairs(objs) do
         if not o.finished then return false end
     end
-    return true          -- no objectives (deliveries, talk-to) or every one finished
+    return true          -- every objective finished
 end
 
 function P:Objectives(questID)
@@ -178,6 +184,59 @@ function P:Refresh()
     if self.xpMax <= 0 then self.xpMax = 1 end
     self.levelFrac = self.level + self.xp / self.xpMax
     self:RefreshLog()
+end
+
+-- a skill line (profession / Riding): rank, max rank - or 0, 0 when you do not have it
+function P:Skill(name)
+    if not (GetNumSkillLines and GetSkillLineInfo) then return 0, 0 end
+    for i = 1, GetNumSkillLines() do
+        local sname, header, _, rank, _, _, maxRank = GetSkillLineInfo(i)
+        if not header and sname == name then return rank or 0, maxRank or 0 end
+    end
+    return 0, 0
+end
+
+-- your race's home city faction (mount vendor discount at Honored)
+local HOME_FACTION = { Orc = 76, Troll = 530, Tauren = 81, Undead = 68,
+    Human = 72, Dwarf = 47, Gnome = 54, NightElf = 69 }
+local HOME_NAME = { Orc = "Orgrimmar", Troll = "Darkspear Trolls", Tauren = "Thunder Bluff", Undead = "Undercity",
+    Human = "Stormwind", Dwarf = "Ironforge", Gnome = "Gnomeregan Exiles", NightElf = "Darnassus" }
+function P:HomeCity() return HOME_NAME[self.raceName or ""] end
+
+-- standing with your race's home city (1 hated .. 4 neutral .. 6 honored .. 8 exalted), or nil
+function P:HomeStanding()
+    local id = HOME_FACTION[self.raceName or ""]
+    if not id then return nil end
+    -- newer clients: C_Reputation.GetFactionDataByID -> { reaction = standing, ... }
+    if C_Reputation and C_Reputation.GetFactionDataByID then
+        local ok, d = pcall(C_Reputation.GetFactionDataByID, id)
+        if ok and type(d) == "table" and type(d.reaction) == "number" then return d.reaction end
+    end
+    -- classic clients
+    if GetFactionInfoByID then
+        local ok, _, _, standing = pcall(GetFactionInfoByID, id)
+        if ok and type(standing) == "number" then return standing end
+    end
+    -- last resort: the reputation list itself
+    if GetNumFactions and GetFactionInfo then
+        for i = 1, GetNumFactions() do
+            local ok, _, _, standing, _, _, _, _, _, _, _, _, _, _, fid = pcall(GetFactionInfo, i)
+            if ok and fid == id and type(standing) == "number" then return standing end
+        end
+    end
+    return nil
+end
+
+function P:HomeHonored()
+    local st = self:HomeStanding()
+    return st ~= nil and st >= 6
+end
+
+-- can you ride (Apprentice Riding learned, or the guide saw you buy it)?
+function P:HasMount()
+    if SL.char and SL.char.hasMount then return true end
+    local r = self:Skill("Riding")
+    return r > 0
 end
 
 -- XP needed to go from level L to L+1 (Forever keeps the classic 1-60 curve).  The current level

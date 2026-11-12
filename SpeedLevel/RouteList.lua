@@ -50,6 +50,7 @@ local function makeRow(parent)
         if self.secIndex then
             E:JumpSection(self.secIndex)
         elseif self.stepIndex then
+            if button == "LeftButton" and E:LinkToChat(self.stepIndex) then return end
             if button == "RightButton" then
                 SL.Telemetry:Skipped(self.stepIndex)
                 SL.char.manualSkip[self.stepIndex] = not SL.char.manualSkip[self.stepIndex] or nil

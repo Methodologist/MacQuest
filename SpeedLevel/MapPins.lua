@@ -22,7 +22,7 @@ local DEFAULT = { 0.85, 0.85, 0.85 }
 local TYPE_NAME = {
     A = "Pick up", T = "Turn in", C = "Objective", GRIND = "Grind", DEATH = "Death-skip",
     FP = "Flight path", FLY = "Flight", HEARTH = "Set hearth", GOTO = "Travel", NOTE = "Note",
-    TRAIN = "Train", BOAT = "Boat / zeppelin", DUNGEON = "Dungeon",
+    TRAIN = "Train", MOUNT = "Mount", PROF = "Profession", BOAT = "Boat / zeppelin", DUNGEON = "Dungeon",
 }
 -- step types that get a small icon on their pin (objectives are the plain numbered badge)
 local BADGE = { A = true, T = true, FP = true, FLY = true, HEARTH = true, GRIND = true, DEATH = true, DUNGEON = true }
@@ -268,6 +268,27 @@ local function translate(info, mapID)
     if ok and x and x >= 0 and x <= 1 and y >= 0 and y <= 1 then return x, y end
 end
 
+-- ------------------------------------------------------------------ objective areas
+
+local B64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
+local B64I = {}
+for i = 1, #B64 do B64I[B64:sub(i, i)] = i - 1 end
+local AREA_YARDS = 55          -- radius of each spawn's soft glow
+local AREA_ALPHA = 0.38
+
+-- an objective step's spawn points ("ar": 4 base64 chars per point, x / y in tenths of a percent)
+function MP.AreaPoints(st)
+    local out = {}
+    local ar = st and st.ar
+    if type(ar) ~= "string" then return out end
+    for k = 1, #ar - 3, 4 do
+        local xi = (B64I[ar:sub(k, k)] or 0) * 64 + (B64I[ar:sub(k + 1, k + 1)] or 0)
+        local yi = (B64I[ar:sub(k + 2, k + 2)] or 0) * 64 + (B64I[ar:sub(k + 3, k + 3)] or 0)
+        out[#out + 1] = { xi / 10, yi / 10 }
+    end
+    return out
+end
+
 local function playerOn(mapID)
     local pos = C_Map.GetPlayerMapPosition(mapID, "player")
     if not pos then return nil end
@@ -353,6 +374,7 @@ function MP:SetupWorldMap()
     function provider:RemoveAllData()
         self:GetMap():RemoveAllPinsByTemplate(TEMPLATE)
         self:HideLines()
+        if self.HideAreas then self:HideAreas() end
     end
     function provider:RefreshAllData()
         local ok, err = pcall(self.RefreshPins, self)
@@ -382,6 +404,8 @@ function MP:SetupWorldMap()
         -- route line (or the other pins) down with it
         local okLine, errLine = pcall(self.DrawRoute, self)
         if not okLine then SL:ReportError("world map route", errLine) end
+        local okArea, errArea = pcall(self.DrawAreas, self)
+        if not okArea then SL:ReportError("world map areas", errArea) end
         if SL.db.mapPins then
             local map = self:GetMap()
             for _, pl in ipairs(place) do
@@ -435,6 +459,57 @@ function MP.MakeRouteDrawer(provider)
     end
     function provider:HideLines()
         if self.overlay then self.overlay:Reset() end
+    end
+    -- the areas are cleared only when the pins are rebuilt (the route line redraws twice a second)
+    function provider:HideAreas()
+        if self.areas then
+            for _, t in ipairs(self.areas.tex) do t:Hide() end
+            self.areas.used = 0
+        end
+    end
+    -- where the current objectives' mobs / objects are: a soft glow per spawn, merging into a blob
+    -- (drawn under the route line and the pins, in map units so it zooms with the map)
+    function provider:DrawAreas()
+        self:HideAreas()
+        if SL.db.mapAreas == false or not self.points then return end
+        -- on the route line's own layer (a frame below it can end up under the map's terrain tiles),
+        -- in its BACKGROUND, so the line and the pins stay on top
+        local f = self:Overlay()
+        self:PlaceOverlay()
+        if not self.areas then self.areas = { tex = {}, used = 0 } end
+        local A = self.areas
+        local w, h = f:GetWidth(), f:GetHeight()
+        if not w or w == 0 then return end
+        local inGroup = {}
+        for _, i in ipairs(SL.Engine:CurrentGroup()) do inGroup[i] = true end
+        local PA = SL.Pathing
+        for _, p in ipairs(self.points) do
+            local st = p.st
+            if st and st.t == "C" and st.ar and st.i and inGroup[st.i] then
+                local W = PA and PA.zoneSize and PA.zoneSize(st.m) or 4000
+                local dx = AREA_YARDS / math.max(W, 1) * 100
+                local r, g, b = gradient(p.g or 0)
+                for _, pt in ipairs(MP.AreaPoints(st)) do
+                    local x, y = translate({ m = st.m, x = pt[1], y = pt[2] }, self.mapID)
+                    local x2 = x and translate({ m = st.m, x = pt[1] + dx, y = pt[2] }, self.mapID)
+                    if x and x2 then
+                        local size = math.max(6, math.abs(x2 - x) * w * 2)
+                        A.used = A.used + 1
+                        local t = A.tex[A.used]
+                        if not t then
+                            t = f:CreateTexture(nil, "BACKGROUND")
+                            t:SetTexture(GLOW_TEX)
+                            A.tex[A.used] = t
+                        end
+                        t:SetVertexColor(r, g, b, AREA_ALPHA)
+                        t:SetSize(size, size)
+                        t:ClearAllPoints()
+                        t:SetPoint("CENTER", f, "TOPLEFT", x * w, -y * h)
+                        t:Show()
+                    end
+                end
+            end
+        end
     end
     function provider:DrawRoute()
         self:HideLines()

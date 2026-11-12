@@ -46,6 +46,8 @@ BUILD = "1.60.1.70862"
 PRODUCT = "wowf"
 HAZARD_LIQUIDS = {3, 4, 19, 20, 21}   # magma / slime families (LiquidType ids)
 OPEN_WORLD = {0, 1, 2991}             # Eastern Kingdoms, Kalimdor, Zephras Isle
+TRANSIT = {1430, 1450}                # zones you only walk through (Deadwind Pass, Moonglade): the
+                                      # arrow needs their terrain to lead you across them
 UNDERGROUND = {1458, 1455}            # Undercity, Ironforge (inside the mountain)
 TACTTOOL_URL = "https://github.com/wowdev/TACTSharp/releases/download/0.2.0-alpha1/TACTTool-Release-win-x64.zip"
 
@@ -321,6 +323,177 @@ def build_zone(rect, tiles_quads):
     return cells
 
 
+# ------------------------------------------------------------------ zone crossings
+# Which zone a spot belongs to comes from the terrain chunks' area IDs (what the game itself uses).
+# A crossing from zone A into zone B is a walkable region of A's grid that is B ground, touches
+# walkable A ground across the border, and belongs to B's main walkable area: a pass or a road, never
+# a ridge.  The arrow aims at the best crossing when the target is in the next zone.
+
+def parse_areas(path):
+    """16x16 area IDs of a tile's chunks (row = north-south chunk index)"""
+    d = Path(path).read_bytes()
+    out = np.zeros((16, 16), dtype=np.int32)
+    for tag, off, size in chunks(d):
+        if tag == "MCNK":
+            ix, iy = struct.unpack_from("<II", d, off + 4)
+            area = struct.unpack_from("<I", d, off + 52)[0]
+            if 0 <= ix < 16 and 0 <= iy < 16:
+                out[iy, ix] = area
+    return out
+
+
+def components(cells):
+    """region node -> component id, and component sizes, over the region links"""
+    comp, sizes = {}, []
+    for j in range(GRID):
+        for i in range(GRID):
+            for r in range(len(cells[j][i] or [])):
+                if (i, j, r) in comp:
+                    continue
+                cid = len(sizes)
+                comp[(i, j, r)] = cid
+                q = deque([(i, j, r)])
+                n = 0
+                while q:
+                    ci, cj, cr = q.popleft()
+                    n += 1
+                    for d, (dx, dy) in enumerate(DIRS):
+                        nr = cells[cj][ci][cr]["conn"][d]
+                        if nr:
+                            k = (ci + dx, cj + dy, nr - 1)
+                            if 0 <= k[0] < GRID and 0 <= k[1] < GRID and k not in comp:
+                                comp[k] = cid
+                                q.append(k)
+                sizes.append(n)
+    return comp, sizes
+
+
+def region_center(i, j, reg):
+    sx = sy = n = 0
+    for b in range(16):
+        if reg["mask"] >> b & 1:
+            sx += b % 4 + 0.5
+            sy += b // 4 + 0.5
+            n += 1
+    if not n:
+        sx = sy = n = 2
+    return (i + sx / n / 4) / GRID * 100, (j + sy / n / 4) / GRID * 100
+
+
+def to_world(rect, x, y):
+    minX, minY, maxX, maxY = rect
+    return maxX - (maxX - minX) * y / 100, maxY - (maxY - minY) * x / 100
+
+
+def to_map(rect, wx, wy):
+    minX, minY, maxX, maxY = rect
+    return (maxY - wy) / (maxY - minY) * 100, (maxX - wx) / (maxX - minX) * 100
+
+
+def zone_crossings(zones, cells_by, areas_by, area_to_map):
+    """{A: {B: [node ids of A's grid]}} - node id = cellIdx0 * 4 + region + 1, as the addon numbers them"""
+    def map_at(mid, wx, wy):
+        ty, tx = int(math.floor(32 - wx / TILE)), int(math.floor(32 - wy / TILE))
+        a = areas_by.get((mid, (tx, ty)))
+        if a is None:
+            return None
+        cy = int(((32 - ty) * TILE - wx) // CHUNK)
+        cx = int(((32 - tx) * TILE - wy) // CHUNK)
+        if not (0 <= cx < 16 and 0 <= cy < 16):
+            return None
+        return area_to_map.get(int(a[cy, cx]))
+
+    info = {}
+    for um, cells in cells_by.items():
+        comp, sizes = components(cells)
+        big = max(sizes) if sizes else 0
+        main = {c for c, n in enumerate(sizes) if n >= max(30, 0.15 * big)}
+        info[um] = (comp, main)
+    out = defaultdict(dict)
+    for A, cellsA in cells_by.items():
+        midA, rectA = zones[A]
+        compA, mainA = info[A]
+        owner = {}
+        for j in range(GRID):
+            for i in range(GRID):
+                for r, reg in enumerate(cellsA[j][i] or []):
+                    x, y = region_center(i, j, reg)
+                    wx, wy = to_world(rectA, x, y)
+                    owner[(i, j, r)] = (map_at(midA, wx, wy), wx, wy)
+        for B, cellsB in cells_by.items():
+            midB, rectB = zones[B]
+            if B == A or midB != midA:
+                continue
+            compB, mainB = info[B]
+            gates = []
+            for (i, j, r), (o, wx, wy) in owner.items():
+                if o != B or compA.get((i, j, r)) not in mainA:
+                    continue
+                # walkable A ground right next to it (the border is crossed on foot here)
+                reg = cellsA[j][i][r]
+                touches = False
+                for d, (dx, dy) in enumerate(DIRS):
+                    nr = reg["conn"][d]
+                    if nr:
+                        k = (i + dx, j + dy, nr - 1)
+                        ok = owner.get(k)
+                        if ok and ok[0] != B:
+                            touches = True
+                            break
+                if not touches:
+                    continue
+                # and on B's own grid it is part of B's main walkable area
+                bx, by = to_map(rectB, wx, wy)
+                if not (0 <= bx < 100 and 0 <= by < 100):
+                    continue
+                bi, bj = int(bx / 100 * GRID), int(by / 100 * GRID)
+                regsB = cellsB[bj][bi] or []
+                if not any(compB.get((bi, bj, rb)) in mainB for rb in range(len(regsB))):
+                    continue
+                gates.append((j * GRID + i) * 4 + r + 1)
+            if gates:
+                out[A][B] = sorted(gates)
+    return out
+
+
+def zone_lifts(zones, cells_by, qdb):
+    """{zone: [[node ids], ...]}: the regions around each lift / elevator (The Great Lift, Thunder
+    Bluff's elevators) - the top and the bottom are linked by riding it"""
+    a2u = {int(k): int(v) for k, v in qdb.get("areaToUiMap", {}).items() if v}
+    pts = []
+    for oid, o in qdb.get("objects", {}).items():
+        name = (o.get("name") or "").lower()
+        if not ("lift" in name or "elevator" in name):
+            continue
+        for area, ps in (o.get("spawns") or {}).items():
+            um = a2u.get(int(area))
+            if um not in zones:
+                continue
+            mid, rect = zones[um]
+            for p in ps or []:
+                if p and p[0] is not None and p[0] >= 0:
+                    pts.append((mid,) + to_world(rect, float(p[0]), float(p[1])))
+    out = defaultdict(list)
+    for um, cells in cells_by.items():
+        mid, rect = zones[um]
+        for pm, wx, wy in pts:
+            if pm != mid:
+                continue
+            x, y = to_map(rect, wx, wy)
+            if not (0 <= x < 100 and 0 <= y < 100):
+                continue
+            ci, cj = int(x / 100 * GRID), int(y / 100 * GRID)
+            group = []
+            # the lift's top and bottom landings: within ~2 cells (~100 yd) of where the database puts it
+            for j in range(max(0, cj - 2), min(GRID, cj + 3)):
+                for i in range(max(0, ci - 2), min(GRID, ci + 3)):
+                    for r in range(len(cells[j][i] or [])):
+                        group.append((j * GRID + i) * 4 + r + 1)
+            if len(group) >= 2:
+                out[um].append(group)
+    return out
+
+
 # ------------------------------------------------------------------ encoding
 
 def b64_16(v):
@@ -393,7 +566,7 @@ def main():
     else:
         import re
         wanted = sorted({int(m) for m in re.findall(r"\bmap=(\d+)", "".join(
-            p.read_text(encoding="utf-8") for p in (ROOT / "SpeedLevel" / "Data").glob("Route_*.lua")))})
+            p.read_text(encoding="utf-8") for p in (ROOT / "SpeedLevel" / "Data").glob("Route_*.lua")))} | TRANSIT)
     zones = {}
     for um in wanted:
         rows = [r for r in assign.get(um, []) if r["UiMin_0"] == "0" and r["UiMax_0"] == "1"]
@@ -452,6 +625,7 @@ def main():
            "SL.TerrainHi = SL.TerrainHi or {}"]
     sizes = {}
     incomplete = []
+    cells_by = {}
     for um, (mid, rect) in sorted(zones.items()):
         tq = {t: v for (m, t), v in quads.items() if m == mid}
         # every terrain tile of the zone must be present - a missing tile would read as a wall
@@ -465,12 +639,56 @@ def main():
             print(f"  zone {um}: {len(missing)} tiles missing - skipped (the older grid is used there)")
             continue
         cells = build_zone(rect, tq)
+        cells_by[um] = cells
         enc = encode(cells)
         nreg = sum(len(c) for row in cells for c in row if c)
         multi = sum(1 for row in cells for c in row if c and len(c) > 1)
         sizes[um] = (len(enc), nreg, multi)
         out.append(f'SL.TerrainHi[{um}] = "{enc}"')
         print(f"  zone {um}: {nreg} regions, {multi} cells with several levels (cliffs), {len(enc) // 1024} KB")
+    # zone crossings from the chunks' area IDs
+    areas_by = {}
+    for (mid, t) in quads:
+        npy = CACHE / f"adt{mid}" / f"{t[0]}_{t[1]}.area.npy"
+        adt = CACHE / f"adt{mid}" / f"{t[0]}_{t[1]}.adt"
+        if npy.exists():
+            areas_by[(mid, t)] = np.load(npy)
+        elif adt.exists():
+            a = parse_areas(adt)
+            np.save(npy, a)
+            areas_by[(mid, t)] = a
+    qdb = json.loads((ROOT / "data" / "questiedb.json").read_text(encoding="utf-8"))
+    area_to_map = {int(k): int(v) for k, v in qdb.get("areaToUiMap", {}).items() if v}
+    gates = zone_crossings(zones, cells_by, areas_by, area_to_map)
+    out.append("-- zone crossings: [zone][next zone] = walkable regions of the zone's grid that are the next")
+    out.append("-- zone's ground, joined to it on foot (passes and roads, never ridges); 3 base64 chars each")
+    out.append("SL.TerrainGates = SL.TerrainGates or {}")
+    ngates = 0
+    for A in sorted(gates):
+        parts = []
+        for B in sorted(gates[A]):
+            parts.append(f'[{B}]="' + "".join(b64_16(n) for n in gates[A][B]) + '"')
+            ngates += len(gates[A][B])
+        out.append(f"SL.TerrainGates[{A}] = {{{','.join(parts)}}}")
+    print(f"zone crossings: {sum(len(v) for v in gates.values())} zone pairs, {ngates} crossing regions")
+    lifts = zone_lifts(zones, cells_by, qdb)
+    out.append("-- lifts / elevators: [zone] = { regions around one lift (top and bottom linked), ... }")
+    out.append("SL.TerrainLifts = SL.TerrainLifts or {}")
+    for um in sorted(lifts):
+        out.append(f"SL.TerrainLifts[{um}] = {{" + ",".join('"' + "".join(b64_16(n) for n in g) + '"' for g in lifts[um]) + "}")
+    print(f"lifts: {sum(len(v) for v in lifts.values())} in {len(lifts)} zones")
+    # the region graph for the route builder's walking distances (derived data only)
+    import pickle
+    graph = {}
+    for um, cells in cells_by.items():
+        mid, rect = zones[um]
+        graph[um] = {"mid": mid, "rect": rect,
+                     "cells": [[[(r["mask"], tuple(r["conn"]), bool(r["water"])) for r in (c or [])] for c in row]
+                               for row in cells],
+                     "gates": dict(gates.get(um, {})), "lifts": lifts.get(um, [])}
+    with open(CACHE / "walkgraph.pkl", "wb") as fh:
+        pickle.dump({"grid": GRID, "zones": graph}, fh)
+    print("wrote", CACHE / "walkgraph.pkl")
     out.append("-- world rectangles of the zone maps (minX, minY, maxX, maxY) for exact distances")
     out.append("SL.ZoneRect = SL.ZoneRect or {}")
     for um, (mid, rect) in sorted(zones.items()):

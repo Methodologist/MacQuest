@@ -35,6 +35,8 @@ function QI:Pick()
     for _, i in ipairs(E:Upcoming(4)) do list[#list + 1] = i end
     for _, i in ipairs(list) do
         local st = E.steps[i]
+        -- an item that starts the quest: right-click it from the button
+        if st and st.t == "A" and st.item and (GetItemCount(st.item) or 0) > 0 then return st.item, st.q end
         if st and st.q and not seen[st.q] and (st.t == "C" or st.t == "T") then
             seen[st.q] = true
             local id = itemFor(st.q)

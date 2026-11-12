@@ -80,6 +80,21 @@ function PA:Hi(m)
         end
         cells[ci][1].conn = cn
     end
+    -- links both ways: a cell with two levels can link "there" to one region and "back" to another
+    for ci, regs in pairs(cells) do
+        local cx, cy = (ci - 1) % G, floor((ci - 1) / G)
+        for r, reg in ipairs(regs) do
+            for d = 1, 8 do
+                local nr = reg.conn and reg.conn[d]
+                if nr and nr > 0 then
+                    local nx, ny = cx + DIRS[d][1], cy + DIRS[d][2]
+                    local nreg = cells[ny * G + nx + 1] and cells[ny * G + nx + 1][nr]
+                    local back = ((d + 3) % 8) + 1
+                    if nreg and nreg.conn and (nreg.conn[back] or 0) == 0 then nreg.conn[back] = r end
+                end
+            end
+        end
+    end
     h = { G = G, cells = cells }
     self.hi[m] = h
     return h
@@ -189,34 +204,78 @@ end
 local function nodeOf(ci, r) return (ci - 1) * 4 + r end
 local function splitNode(id) return floor((id - 1) / 4) + 1, (id - 1) % 4 + 1 end
 
-function PA:FindPathHi(m, startNode, goals)
+-- lifts / elevators: [node] = { every node around that lift } (riding it links top and bottom)
+local LIFT_YARDS = 120       -- the ride, as yards of walking
+function PA:Lifts(m)
+    self.lifts = self.lifts or {}
+    local l = self.lifts[m]
+    if l ~= nil then return l or nil end
+    local list = SL.TerrainLifts and SL.TerrainLifts[m]
+    if not list then
+        self.lifts[m] = false
+        return nil
+    end
+    l = {}
+    for _, enc in ipairs(list) do
+        local group = {}
+        for k = 1, #enc, 3 do group[#group + 1] = b64_16(enc, k) end
+        for _, id in ipairs(group) do l[id] = group end
+    end
+    self.lifts[m] = l
+    return l
+end
+
+function PA:FindPathHi(m, startNode, goals, hx, hy)
     local hi = self:Hi(m)
     if not hi then return nil end
     local G, cells = hi.G, hi.cells
     local W, H = zoneSize(m)
     local cw, ch = W / G, H / G
     local cd = sqrt(cw * cw + ch * ch)
-    local gx, gy = 0, 0
-    for id in pairs(goals) do
-        local ci = splitNode(id)
-        gx, gy = (ci - 1) % G, floor((ci - 1) / G)
-        break
+    local gx, gy = hx, hy          -- heuristic target (cell units; may lie outside this zone)
+    if not gx then
+        gx, gy = 0, 0
+        for id in pairs(goals) do
+            local ci = splitNode(id)
+            gx, gy = (ci - 1) % G, floor((ci - 1) / G)
+            break
+        end
     end
     local function hfun(ci)
         local x, y = (ci - 1) % G, floor((ci - 1) / G)
         local dx, dy = (x - gx) * cw, (y - gy) * ch
         return sqrt(dx * dx + dy * dy) * COST_WALKED
     end
+    local lifts = self:Lifts(m)
+    -- road cells (patrol paths) and cells players walked: tunnels and bridges the terrain can't see
+    local walked = SL.db.walkData and SL.db.walkData[m]
+    local old = self:Costs(m)
+    local function isRoad(ci)
+        return (walked and walked[ci]) or (old and old[ci] and old[ci] <= 1.0)
+    end
     local gs, came, closed = { [startNode] = 0 }, {}, {}
     local open = {}
     local sci = splitNode(startNode)
     heapPush(open, hfun(sci), startNode)
     local found, expanded = nil, 0
+    local GOAL = -1
     while #open > 0 do
         local cur = heapPop(open)[2]
-        if goals[cur] then
+        if cur == GOAL then
+            found = came[GOAL]
+            break
+        end
+        local gv = goals[cur]
+        if gv == true then
             found = cur
             break
+        elseif gv and not closed[cur] then
+            -- a zone crossing: finishing through it costs the straight distance still to go
+            local f = gs[cur] + gv
+            if not gs[GOAL] or f < gs[GOAL] then
+                gs[GOAL], came[GOAL] = f, cur
+                heapPush(open, f, GOAL)
+            end
         end
         if not closed[cur] then
             closed[cur] = true
@@ -227,10 +286,37 @@ function PA:FindPathHi(m, startNode, goals)
             if reg then
                 local cx, cy = (ci - 1) % G, floor((ci - 1) / G)
                 local cc = self:NodeCost(m, ci, reg)
+                -- a lift here: every level around it is a ride away
+                local lg = lifts and lifts[cur]
+                if lg then
+                    for _, nid in ipairs(lg) do
+                        if nid ~= cur and not closed[nid] then
+                            local ng = gs[cur] + LIFT_YARDS
+                            if not gs[nid] or ng < gs[nid] then
+                                gs[nid] = ng
+                                came[nid] = cur
+                                heapPush(open, ng + hfun(splitNode(nid)), nid)
+                            end
+                        end
+                    end
+                end
                 for d = 1, 8 do
                     local nr = reg.conn[d]
+                    local nx, ny = cx + DIRS[d][1], cy + DIRS[d][2]
+                    if (not nr or nr == 0) and nx >= 0 and ny >= 0 and nx < G and ny < G
+                        and isRoad(ci) and isRoad(ny * G + nx + 1) then
+                        -- road / walked ground on both sides with no terrain link: a tunnel or a bridge
+                        -- (Booty Bay's tunnel, the gorges in Stranglethorn) - people walk it, so do we
+                        local nci0 = ny * G + nx + 1
+                        if cells[nci0] and cells[nci0][1] then
+                            nr = 1
+                        else
+                            cells[nci0] = cells[nci0] or {}
+                            cells[nci0][4] = cells[nci0][4] or { mask = 0xFFFF, conn = { 0, 0, 0, 0, 0, 0, 0, 0 }, water = false }
+                            nr = 4
+                        end
+                    end
                     if nr and nr > 0 then
-                        local nx, ny = cx + DIRS[d][1], cy + DIRS[d][2]
                         local nci = ny * G + nx + 1
                         local nreg = cells[nci] and cells[nci][nr]
                         if nreg then
@@ -299,9 +385,17 @@ function PA:SteerHi(target)
     end
     self.hiAimKey, self.hiAimTime, self.hiAim = target, now, false
     local pm, px, py = SL.Player:Position()
-    if not pm or pm ~= target.m then
+    if not pm then
         self.poly = nil
         return nil
+    end
+    local cross
+    if pm ~= target.m then
+        cross = self:Crossing(pm, px, py, target)
+        if not cross then
+            self.poly = nil
+            return nil
+        end
     end
     local hi = self:Hi(pm)
     if not hi then return nil end
@@ -326,9 +420,13 @@ function PA:SteerHi(target)
     if not sr then return nil end
     local startNode = nodeOf(sci, sr)
     self.hiLast = startNode
+    local goals, gci, hx, hy
+    if cross then
+        goals, gci, hx, hy = cross.goals, "x" .. cross.to, cross.hx, cross.hy
+    else
     -- goal regions (snap to the nearest cell with ground if the target is inside a building)
     local gcx, gcy, gsub = cellAndSub(G, target.x, target.y)
-    local gci = gcy * G + gcx + 1
+    gci = gcy * G + gcx + 1
     if not cells[gci] then
         for r = 1, 4 do
             for dy = -r, r do
@@ -342,14 +440,15 @@ function PA:SteerHi(target)
         end
         if not cells[gci] then return nil end
     end
-    local goals = {}
+    goals = {}
     local gr = regionAt(cells[gci], gsub, nil)
     for r, reg in ipairs(cells[gci]) do
         if r == gr or hasBit(reg.mask, gsub) then goals[nodeOf(gci, r)] = true end
     end
+    end
     local key = gci .. ":" .. startNode
     if self.hiKey ~= key and (self.hiKeyGoal ~= gci or now - (self.hiTime or 0) > REPATH_SECONDS) or not self.hiPath then
-        self.hiPath = self:FindPathHi(pm, startNode, goals)
+        self.hiPath = self:FindPathHi(pm, startNode, goals, hx, hy)
         self.hiKey, self.hiKeyGoal, self.hiTime = key, gci, now
     end
     local path = self.hiPath
@@ -361,7 +460,7 @@ function PA:SteerHi(target)
     local best
     for k = 1, #path do if path[k] == startNode then best = k break end end
     if not best then
-        self.hiPath = self:FindPathHi(pm, startNode, goals)
+        self.hiPath = self:FindPathHi(pm, startNode, goals, hx, hy)
         self.hiTime = now
         path = self.hiPath
         if not path or #path < 2 then return nil end
@@ -405,12 +504,24 @@ function PA:SteerHi(target)
     for n, k in ipairs(legs) do
         local ci, r = splitNode(path[k])
         local cx, cy = regionCenter(G, (ci - 1) % G, floor((ci - 1) / G), cells[ci][r])
-        if k == #path then cx, cy = target.x, target.y end
+        if k == #path and not cross then cx, cy = target.x, target.y end
         remaining = remaining + yards(lx, ly, cx, cy)
         lx, ly = cx, cy
         poly[#poly + 1] = { cx / 100, cy / 100 }
     end
+    if cross then
+        -- on from the crossing to the target (straight: the next zone's own terrain takes over there)
+        remaining = remaining + yards(lx, ly, cross.tx, cross.ty)
+        poly[#poly + 1] = { cross.tx / 100, cross.ty / 100 }
+    end
     self.poly, self.polyMap = poly, pm
+    if cross and aimK >= #path then
+        -- the crossing is in a straight line: aim at it (the target itself may be behind the ridge)
+        local gci2, gr2 = splitNode(path[#path])
+        local gx2, gy2 = regionCenter(G, (gci2 - 1) % G, floor((gci2 - 1) / G), cells[gci2][gr2])
+        self.hiAim = { m = pm, x = gx2, y = gy2, remaining = remaining, detour = true, crossing = cross.to }
+        return self.hiAim
+    end
     if aimK >= #path then
         self.hiAim = false
         return nil            -- target in a straight, connected line: plain arrow
@@ -421,10 +532,224 @@ function PA:SteerHi(target)
     return self.hiAim
 end
 
+-- ------------------------------------------------------------------ zone crossings
+
+-- crossings from zone a into zone b: node ids of a's grid (Data/TerrainHi.lua SL.TerrainGates)
+function PA:Gates(a, b)
+    self.gates = self.gates or {}
+    local key = a .. ">" .. b
+    local g = self.gates[key]
+    if g ~= nil then return g or nil end
+    local enc = SL.TerrainGates and SL.TerrainGates[a] and SL.TerrainGates[a][b]
+    if not enc then
+        self.gates[key] = false
+        return nil
+    end
+    g = {}
+    for k = 1, #enc, 3 do g[#g + 1] = b64_16(enc, k) end
+    self.gates[key] = g
+    return g
+end
+
+-- a world point in map % of zone m (outside 0-100 when it is beyond the zone)
+local function onMap(m, wx, wy)
+    local z = SL.Travel and SL.Travel.zones and SL.Travel.zones[m]
+    if not z then return nil end
+    return (z[5] - wy) / (z[5] - z[3]) * 100, (z[4] - wx) / (z[4] - z[2]) * 100
+end
+
+-- target in another zone: goals = the crossings into it (or into a zone between), each with the
+-- straight distance from there to the target
+-- the middle of the crossings from zone a into zone b, in world yards (cached)
+function PA:GateCenter(a, b)
+    self.gateCenter = self.gateCenter or {}
+    local key = a .. ">" .. b
+    local c = self.gateCenter[key]
+    if c ~= nil then return c or nil end
+    c = false
+    local g = self:Gates(a, b)
+    local hi = self:Hi(a)
+    local A = SL.Advisor
+    if g and hi and A then
+        local G = hi.G
+        local sx, sy, n, cont = 0, 0, 0, nil
+        for _, id in ipairs(g) do
+            local ci = splitNode(id)
+            local wc, wx, wy = A:World(a, ((ci - 1) % G + 0.5) / G * 100, (floor((ci - 1) / G) + 0.5) / G * 100)
+            if wc then sx, sy, n, cont = sx + wx, sy + wy, n + 1, wc end
+        end
+        if n > 0 then c = { c = cont, x = sx / n, y = sy / n } end
+    end
+    self.gateCenter[key] = c
+    return c or nil
+end
+
+-- the way through the zones to a target further away: the cheapest chain of crossings, from the
+-- crossings out of this zone through as many zones as it takes (Stranglethorn -> Duskwood ->
+-- Deadwind Pass -> Swamp of Sorrows).  -> first zone to cross into, the point after that crossing
+-- (the next crossing's middle, or the target), and the straight distance from there on
+function PA:ZoneChain(pm, pwx, pwy, tm, twx, twy)
+    local gates = SL.TerrainGates
+    if not (gates and gates[pm]) then return nil end
+    local dist, prev, seen = {}, {}, {}
+    local function d(ax, ay, bx, by) return sqrt((ax - bx) ^ 2 + (ay - by) ^ 2) end
+    for b in pairs(gates[pm]) do
+        local c = self:GateCenter(pm, b)
+        if c then dist[pm .. ">" .. b] = { d(pwx, pwy, c.x, c.y), pm, b, c } end
+    end
+    local best, bestCost
+    for _ = 1, 400 do
+        local k, kv
+        for key, v in pairs(dist) do
+            if not seen[key] and (not kv or v[1] < kv[1]) then k, kv = key, v end
+        end
+        if not k then break end
+        seen[k] = true
+        local cost, a, b, c = kv[1], kv[2], kv[3], kv[4]
+        if bestCost and cost >= bestCost then break end
+        if b == tm then
+            local total = cost + d(c.x, c.y, twx, twy)
+            if not bestCost or total < bestCost then best, bestCost = k, total end
+        end
+        for nb in pairs(gates[b] or {}) do
+            if nb ~= a then
+                local nc = self:GateCenter(b, nb)
+                local key = b .. ">" .. nb
+                if nc and not seen[key] then
+                    local nd = cost + d(c.x, c.y, nc.x, nc.y)
+                    if not dist[key] or nd < dist[key][1] then
+                        dist[key] = { nd, b, nb, nc }
+                        prev[key] = k
+                    end
+                end
+            end
+        end
+    end
+    if not best then return nil end
+    -- walk back to the first crossing out of this zone
+    local chain = { best }
+    while prev[chain[1]] do table.insert(chain, 1, prev[chain[1]]) end
+    local first = dist[chain[1]]
+    local nextPt = chain[2] and dist[chain[2]][4] or { x = twx, y = twy }
+    local rest = bestCost - (chain[2] and dist[chain[2]][1] or bestCost)
+    if not chain[2] then rest = 0 end
+    return first[3], nextPt.x, nextPt.y, rest
+end
+
+-- target in another zone: goals = the crossings out of this zone on the way there, each with the
+-- straight distance from it to the next point on the way (the next crossing, or the target) plus
+-- what lies beyond
+function PA:Crossing(pm, px, py, target)
+    local A = SL.Advisor
+    if not (A and SL.TerrainGates and SL.TerrainGates[pm]) then return nil end
+    local hi = self:Hi(pm)
+    if not hi then return nil end
+    local pc, pwx, pwy = A:World(pm, px, py)
+    local tc, twx, twy = A:World(target.m, target.x, target.y)
+    if not tc or tc ~= pc then return nil end
+    local tm = SL.Player:ZoneMap(target.m) or target.m
+    local to, nx, ny, rest = self:ZoneChain(pm, pwx, pwy, tm, twx, twy)
+    if not to then return nil end
+    local tx, ty = onMap(pm, nx, ny)
+    if not tx then return nil end
+    local G, cells = hi.G, hi.cells
+    local W, H = zoneSize(pm)
+    local goals = {}
+    for _, id in ipairs(self:Gates(pm, to)) do
+        local ci, r = splitNode(id)
+        local reg = cells[ci] and cells[ci][r]
+        if reg then
+            local cx, cy = regionCenter(G, (ci - 1) % G, floor((ci - 1) / G), reg)
+            goals[id] = sqrt(((cx - tx) / 100 * W) ^ 2 + ((cy - ty) / 100 * H) ^ 2) + (rest or 0)
+        end
+    end
+    if not next(goals) then return nil end
+    return { goals = goals, to = to, tx = tx, ty = ty, hx = tx / 100 * G - 0.5, hy = ty / 100 * G - 0.5 }
+end
+
+-- ------------------------------------------------------------------ walking distance (travel advice)
+
+-- the region node at a map point (nearest cell with ground within 2 cells), or nil
+local function nodeAt(self, m, x, y)
+    local hi = self:Hi(m)
+    if not hi then return nil end
+    local G, cells = hi.G, hi.cells
+    local cx, cy, sub = cellAndSub(G, x, y)
+    for r = 0, 2 do
+        for dy = -r, r do
+            for dx = -r, r do
+                local nx, ny = cx + dx, cy + dy
+                if (r == 0 or max(abs(dx), abs(dy)) == r) and nx >= 0 and ny >= 0 and nx < G and ny < G then
+                    local ci = ny * G + nx + 1
+                    local reg = regionAt(cells[ci], sub, nil)
+                    if reg then return nodeOf(ci, reg) end
+                end
+            end
+        end
+    end
+end
+
+local function pathLength(self, m, path, tailX, tailY)
+    local hi = self:Hi(m)
+    local G = hi.G
+    local W, H = zoneSize(m)
+    local len, lx, ly = 0, nil, nil
+    for _, id in ipairs(path) do
+        local ci = splitNode(id)
+        local x, y = ((ci - 1) % G + 0.5) / G * 100, (floor((ci - 1) / G) + 0.5) / G * 100
+        if lx then len = len + sqrt(((x - lx) / 100 * W) ^ 2 + ((y - ly) / 100 * H) ^ 2) end
+        lx, ly = x, y
+    end
+    if tailX and lx then len = len + sqrt(((tailX - lx) / 100 * W) ^ 2 + ((tailY - ly) / 100 * H) ^ 2) end
+    return len
+end
+
+-- yards on foot over the real terrain from (m1, x1, y1) to (m2, x2, y2) - in one zone, or into the
+-- next one through a crossing - or nil when the terrain can't tell (no data, no route found).
+-- Cached for a minute per 1%-rounded pair.
+function PA:PathYards(m1, x1, y1, m2, x2, y2)
+    if not (SL.TerrainHi and SL.TerrainHi[m1]) then return nil end
+    self.yardCache = self.yardCache or {}
+    local key = string.format("%d:%.0f:%.0f>%d:%.0f:%.0f", m1, x1, y1, m2, x2, y2)
+    local now = GetTime and GetTime() or 0
+    local c = self.yardCache[key]
+    if c and now - c[2] < 60 then return c[1] or nil end
+    local res
+    local ok, err = pcall(function()
+        local start = nodeAt(self, m1, x1, y1)
+        if not start then return end
+        if m1 == m2 then
+            local goal = nodeAt(self, m2, x2, y2)
+            if not goal then return end
+            local G = self:Hi(m1).G
+            local gci = splitNode(goal)
+            local path = self:FindPathHi(m1, start, { [goal] = true }, (gci - 1) % G, floor((gci - 1) / G))
+            if path then res = pathLength(self, m1, path, x2, y2) end
+        else
+            local cross = self:Crossing(m1, x1, y1, { m = m2, x = x2, y = y2 })
+            if not cross then return end
+            local path = self:FindPathHi(m1, start, cross.goals, cross.hx, cross.hy)
+            if not path then return end
+            local gate = path[#path]
+            res = pathLength(self, m1, path) + (cross.goals[gate] or 0) * 1.15
+        end
+    end)
+    if not ok then SL:ReportError("terrain distance", err) end
+    self.yardCache[key] = { res or false, now }
+    return res
+end
+
 -- use real terrain where the zone has it, the older grid elsewhere
 local gridSteer = PA.Steer
 function PA:Steer(target)
     if not SL.db.terrainArrow or not target then return nil end
+    local pm = SL.Player:Position()
+    if pm and pm ~= target.m and SL.TerrainHi and SL.TerrainHi[pm] and SL.TerrainGates and SL.TerrainGates[pm] then
+        local ok, res = pcall(self.SteerHi, self, target)
+        if ok then return res end
+        SL:ReportError("terrain pathing", res)
+        return nil
+    end
     if SL.TerrainHi and SL.TerrainHi[target.m] then
         local ok, res = pcall(self.SteerHi, self, target)
         if ok then return res end
