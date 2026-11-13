@@ -307,9 +307,38 @@ local function makeUpcomingRow(parent)
     return row
 end
 
+-- the width a text would take on one line (whatever width the font string is bound to)
+local function textWidth(fs, text)
+    if text then fs:SetText(text) end
+    local w = fs.GetUnboundedStringWidth and fs:GetUnboundedStringWidth() or fs:GetStringWidth()
+    return w or 0
+end
+
+-- join pieces of a line with `sep` while they fit in `width`; a piece that doesn't fit starts a new
+-- line, so a line never breaks in the middle of one piece
+local function fitLines(fs, width, pieces, sep)
+    sep = sep or "  "
+    local lines, cur = {}, nil
+    for _, piece in ipairs(pieces) do
+        if piece and piece ~= "" then
+            if cur and textWidth(fs, cur .. sep .. piece) <= width then
+                cur = cur .. sep .. piece
+            else
+                if cur then lines[#lines + 1] = cur end
+                cur = piece
+            end
+        end
+    end
+    if cur then lines[#lines + 1] = cur end
+    local text = table.concat(lines, "\n")
+    fs:SetText(text)
+    return text
+end
+
 -- a row below the card: its text wraps instead of being cut off, and the row takes its height
 local function placeRow(row, y, alpha, x, w, reserve)
     w = w or (WIDTH - 16)
+    if rawget(row, "lfgBtn") then row.lfgBtn:Hide() end    -- shown again by group quest rows
     row.text:SetWidth(w - 34 - (reserve or 0))
     local h = math.max(16, math.ceil((row.text:GetStringHeight() or 12) + 4))
     row:ClearAllPoints()
@@ -318,6 +347,46 @@ local function placeRow(row, y, alpha, x, w, reserve)
     row:SetAlpha(alpha)
     row:Show()
     return y - h - 1
+end
+
+-- "LFG" on a line of a quest you want a group for: writes an LFG message with the quest link
+local function lfgButton(parent)
+    local have = rawget(parent, "lfgBtn")
+    if have then return have end
+    local b = CreateFrame("Button", nil, parent)
+    b:SetSize(28, 14)
+    b.bg = flatTexture(b, "BACKGROUND", 0.95, 0.6, 0.15, 0.22)
+    b.bg:SetAllPoints()
+    b.text = b:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    b.text:SetPoint("CENTER", 0, 0)
+    b.text:SetText("LFG")
+    b:SetHighlightTexture("Interface\\Buttons\\ButtonHilight-Square", "ADD")
+    b:SetScript("OnClick", function(self) UI:LFGChat(self.q) end)
+    b:SetScript("OnEnter", function(self)
+        GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+        GameTooltip:AddLine("Looking for group: " .. (self.q and SL.Engine:QuestName(self.q) or "this quest"))
+        GameTooltip:AddLine("Writes an LFG message with the quest link in chat (LookingForGroup channel). Press Enter to send it.", 1, 1, 1, true)
+        GameTooltip:AddLine("The eye next to it opens the game's Group Finder.", 0.7, 0.7, 0.7, true)
+        GameTooltip:Show()
+    end)
+    b:SetScript("OnLeave", function() GameTooltip:Hide() end)
+    b.q = false
+    b:Hide()
+    parent.lfgBtn = b
+    return b
+end
+
+-- show it at the right end of `line` for quest q (room for the eye to its right), or hide it
+local function showLFG(line, q)
+    if q then
+        local b = lfgButton(line)
+        b.q = q
+        b:ClearAllPoints()
+        b:SetPoint("TOPRIGHT", line, "TOPRIGHT", -24, 0)
+        b:Show()
+    elseif rawget(line, "lfgBtn") then
+        line.lfgBtn:Hide()
+    end
 end
 
 local function peerRow(f, i)
@@ -431,13 +500,13 @@ function UI:Init()
     f.titleBtn:SetPoint("TOPLEFT", 46, -24)
     f.titleBtn:SetSize(WIDTH - 56, 14)
     f.title = f.titleBtn:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-    f.title:SetPoint("LEFT")
+    f.title:SetPoint("TOPLEFT", 0, -1)
     f.title:SetJustifyH("LEFT")
-    f.title:SetWordWrap(false)
+    f.title:SetWordWrap(true)
     f.title:SetTextColor(1, 1, 1)
     f.titleArrow = f.titleBtn:CreateTexture(nil, "OVERLAY")
     f.titleArrow:SetSize(12, 12)
-    f.titleArrow:SetPoint("LEFT", f.title, "RIGHT", 3, -1)
+    f.titleArrow:SetPoint("TOPLEFT", f.title, "TOPRIGHT", 3, 1)
     f.titleArrow:SetTexture("Interface\\Buttons\\Arrow-Down-Up")
     f.titleBtn:SetScript("OnClick", function(self) SL.UI:SectionMenu(self) end)
     f.titleBtn:SetScript("OnEnter", function(self)
@@ -449,6 +518,8 @@ function UI:Init()
 
     f.secInfo = f:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
     f.secInfo:SetPoint("TOPRIGHT", -10, -12)
+    f.modeTag = f:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
+    f.modeTag:SetJustifyH("LEFT")
 
     f.secBar = makeBar(f, 2, cr, cg, cb)
     f.secBar:SetPoint("TOPLEFT", 10, -43)
@@ -646,13 +717,27 @@ end
 
 local function inCombat() return InCombatLockdown and InCombatLockdown() end
 
+function UI:GroupQuest()
+    local E = SL.Engine
+    local st = E:Current()
+    if st and st.q and E:NeedsGroup(st.q) then return st.q end
+    for q in pairs(SL.Player.log or {}) do
+        if type(q) == "number" and E:NeedsGroup(q) and not SL.Player:IsQuestReady(q) then return q end
+    end
+    return st and st.q
+end
+
 function UI:LFGChat(q)
     local E = SL.Engine
-    if not q then return end
+    if not q then
+        SL:Print("no quest to find a group for right now.")
+        return
+    end
     local link = E:QuestLink(q) or ("[" .. E:QuestName(q) .. "]")
     local zone = GetZoneText and GetZoneText() or ""
-    local msg = string.format("LFG %s (elite, level %d)%s", link, E:QuestLevel(q) or 0,
-        zone ~= "" and (" in " .. zone) or "")
+    local kind = E:NeedsGroup(q)
+    local msg = string.format("LFG %s (level %d%s)%s", link, E:QuestLevel(q) or 0,
+        kind and kind ~= "group" and (", " .. kind) or "", zone ~= "" and (" in " .. zone) or "")
     local ch = GetChannelName and GetChannelName("LookingForGroup")
     if type(ch) == "number" and ch > 0 then msg = "/" .. ch .. " " .. msg end
     if ChatFrame_OpenChat then ChatFrame_OpenChat(msg) end
@@ -745,9 +830,73 @@ function UI:UpdateListThumb()
     f.listThumb:Show()
 end
 
+-- top rows: [logo] MacQuest v1.8.0 .......... 5/12 quests
+--                 Zone title v ........ Thorough + Dungeons
+-- whatever does not fit beside the text before it moves to a line of its own (the zone title
+-- wraps), and the progress bar and everything below move down with it
+function UI:LayoutTop()
+    local f = self.frame
+    local left, right = 46, WIDTH - 10
+    local count = f.secInfo:GetText() or ""
+    local tag = f.modeText or ""
+    local brandRight = left + textWidth(f.brand) + 5 + textWidth(f.brandVer)
+    local countW = count ~= "" and textWidth(f.secInfo) or 0
+    local ownLine = {}
+    f.secInfo:ClearAllPoints()
+    if countW == 0 or brandRight + 10 + countW <= right then
+        f.secInfo:SetPoint("TOPRIGHT", -10, -12)
+        f.secInfo:Show()
+    else
+        ownLine[#ownLine + 1] = count
+        f.secInfo:Hide()
+    end
+    -- zone title (+ its 15px arrow); the tag beside it when both fit on one line
+    local avail = right - left
+    f.title:SetWidth(0)
+    local tw = textWidth(f.title)
+    local tagW = tag ~= "" and textWidth(f.modeTag, tag) or 0
+    local th
+    if tw + 15 <= avail then
+        f.title:SetWidth(tw + 1)
+        th = 12
+    else
+        f.title:SetWidth(avail - 15)
+        th = math.max(12, f.title:GetStringHeight() or 12)
+    end
+    f.titleBtn:SetSize(math.min(avail, tw + 15), th + 2)
+    local y = -24 - th - 2
+    f.modeTag:ClearAllPoints()
+    if tag ~= "" and #ownLine == 0 and th <= 12 and tw + 15 + 10 + tagW <= avail then
+        f.modeTag:SetWidth(0)
+        f.modeTag:SetText(tag)
+        f.modeTag:SetPoint("TOPRIGHT", -10, -25)
+        f.modeTag:Show()
+    else
+        -- the tag (and a count that did not fit beside the version) on a line under the title
+        if tag ~= "" then table.insert(ownLine, 1, tag) end
+        if #ownLine > 0 then
+            f.modeTag:SetWidth(avail)
+            fitLines(f.modeTag, avail, ownLine)
+            f.modeTag:SetPoint("TOPLEFT", left, y)
+            f.modeTag:Show()
+            y = y - math.max(12, f.modeTag:GetStringHeight() or 12) - 1
+        else
+            f.modeTag:Hide()
+        end
+    end
+    local barY = math.min(-43, y - 2)        -- below the logo (to -38) and the text rows
+    f.secBar:ClearAllPoints()
+    f.secBar:SetPoint("TOPLEFT", 10, barY)
+    f.secBar:SetPoint("TOPRIGHT", -10, barY)
+    return barY - 6
+end
+
 function UI:LayoutHeader(showGold)
     local f = self.frame
-    local y = -49
+    local y = self:LayoutTop()
+    f.xpText:ClearAllPoints()
+    f.xpText:SetPoint("TOPLEFT", 10, y)
+    f.xpText:SetPoint("TOPRIGHT", -10, y)
     local hx = math.max(12, f.xpText:GetStringHeight() or 12)
     y = y - hx - 2
     f.xpBar:ClearAllPoints()
@@ -775,13 +924,13 @@ function UI:RefreshHeader()
     local P = SL.Player
     local pct = P.xp / P.xpMax
     local rate, sampleSeconds = xpPerHour()
-    local txt = string.format("|cffffffffLevel %d|r  |cffaaaaaa%.0f%%|r", P.level, pct * 100)
+    local pieces = { string.format("|cffffffffLevel %d|r  |cffaaaaaa%.0f%%|r", P.level, pct * 100) }
     if rate and rate > 0 then
-        txt = txt .. string.format("   |cffaaaaaa%.1fk/h  lvl %s|r", rate / 1000, fmtTime((P.xpMax - P.xp) / rate * 3600))
+        pieces[#pieces + 1] = string.format(" |cffaaaaaa%.1fk/h  lvl %s|r", rate / 1000, fmtTime((P.xpMax - P.xp) / rate * 3600))
     end
     local t60 = self:TimeTo60(rate, sampleSeconds)
-    if t60 and t60 > 0 then txt = txt .. string.format("  |cff888888(60 in ~%s)|r", fmtTime(t60)) end
-    f.xpText:SetText(txt)
+    if t60 and t60 > 0 then pieces[#pieces + 1] = string.format("|cff888888(60 in ~%s)|r", fmtTime(t60)) end
+    fitLines(f.xpText, WIDTH - 20, pieces)
     local hx = math.max(12, f.xpText:GetStringHeight() or 12)
     if f.xpTextH and f.xpTextH ~= hx then SL:RequestUpdate() end
     f.xpTextH = hx
@@ -833,14 +982,15 @@ function UI:Refresh()
     if not cur then
         f.title:SetText("Route complete")
         f.secInfo:SetText("")
+        f.modeText = ""
         f.secBar:SetValue(1)
     else
         local sec = E.sections[cur.sec]
         f.title:SetText(sec.title)
         local done, total = sectionProgress(cur.sec)
         local mode = SL.Engine:Mode()
-        local tag = mode ~= "thorough" and ("|cff9a6bff" .. (SL.Engine.MODE_NAMES[mode] or mode) .. "|r  ") or ""
-        f.secInfo:SetText(tag .. (total > 0 and string.format("%d/%d quests", done, total) or ""))
+        f.modeText = mode ~= "thorough" and ("|cff9a6bff" .. (SL.Engine.MODE_NAMES[mode] or mode) .. "|r") or ""
+        f.secInfo:SetText(total > 0 and string.format("%d/%d quests", done, total) or "")
         f.secBar:SetValue(total > 0 and done / total or 0)
     end
     self:RefreshHeader()
@@ -860,7 +1010,9 @@ function UI:Refresh()
             local _, text, lines = E:StepText(st)
             line.stepIndex = idx
             setIcon(line.icon, st.t)
-            line.text:SetWidth(inner - 24 - (st.grp and 22 or 0))
+            local wantGroup = li == 1 and st.q and (st.grp or E:NeedsGroup(st.q)) and not compact
+            line.text:SetWidth(inner - 24 - (wantGroup and 54 or 0))
+            showLFG(line, wantGroup and st.q or nil)
             line.text:SetText(text)
             line.text:SetFontObject(li == 1 and "GameFontHighlight" or "GameFontHighlightSmall")
             local h = math.max(18, line.text:GetStringHeight() + 4)
@@ -926,6 +1078,7 @@ function UI:Refresh()
         line.icon:SetTexture("Interface\\Icons\\Achievement_Level_60")
         line.text:SetText(SL.Player.level >= 60 and "Level 60 - congratulations!" or "No more steps for this character. Click the zone name to jump.")
         for k = 1, MAX_OBJ do line.obj[k].label:Hide() line.obj[k].bar:Hide() end
+        if rawget(line, "lfgBtn") then line.lfgBtn:Hide() end
         line.text:SetWidth(inner - 24)
         line.text:SetFontObject("GameFontHighlight")
         local h = math.max(20, math.ceil(line.text:GetStringHeight() + 4))
@@ -943,19 +1096,22 @@ function UI:Refresh()
     if showGold then
         local pace = ""
         if have >= goal then
-            pace = "  |cff40ff40ready - go buy it|r"
+            pace = "|cff40ff40Ready - go buy it|r"
         elseif proj then
-            pace = proj >= goal and "  |cff40ff40on pace for 40|r" or string.format("  |cffff9933~%dg short at 40|r", goal - proj)
+            pace = proj >= goal and "|cff40ff40On pace for 40|r" or
+                string.format("|cffff9933~%dg short at 40|r", math.ceil(goal - proj))
         end
         local city = SL.Player:HomeCity()
         local rep = ""
         if honored then
-            rep = " |cff888888(Honored with " .. (city or "your city") .. " -10%)|r"
+            rep = "|cff888888(Honored with " .. (city or "your city") .. " -10%)|r"
         elseif city then
-            rep = string.format(" |cff888888(%dg at Honored with %s)|r",
+            rep = string.format("|cff888888(%dg at Honored with %s)|r",
                 math.floor((SL.db.mountGoal or 100) * 0.9 + 0.5), city)
         end
-        f.goldText:SetText(string.format("|cffffd040Mount gold|r  %dg / %dg%s%s", have, goal, rep, pace))
+        local first = fitLines(f.goldText, WIDTH - 20,
+            { string.format("|cffffd040Mount gold|r  %dg / %dg", math.floor(have), goal), rep })
+        f.goldText:SetText(pace ~= "" and (first .. "\n" .. pace) or first)
         f.goldBar:SetValue(math.min(1, have / math.max(1, goal)))
         f.goldText:Show()
         f.goldBar:Show()
@@ -1124,7 +1280,7 @@ function UI:Refresh()
     local lfgAt, lfgQ
     do
         local st1 = group[1] and E.steps[group[1]]
-        if st1 and st1.grp and st1.q and not compact then lfgAt, lfgQ = card.lines[1], st1.q end
+        if st1 and st1.q and not compact and (st1.grp or E:NeedsGroup(st1.q)) then lfgAt, lfgQ = card.lines[1], st1.q end
     end
     if not compact then
         local hy = total - 2
@@ -1139,7 +1295,8 @@ function UI:Refresh()
             row.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
             row.text:SetText(string.format("|cffff9933Group quest: %s (elite, %d) - take it if you have a group|r",
                 E:QuestName(st.q), E:QuestLevel(st.q) or 0))
-            hy = placeRow(row, hy, 0.9, nil, nil, 22)
+            hy = placeRow(row, hy, 0.9, nil, nil, 54)
+            showLFG(row, st.q)
             if not lfgAt then lfgAt, lfgQ = row, st.q end
             total = hy
         end

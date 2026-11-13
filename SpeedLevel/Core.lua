@@ -63,6 +63,7 @@ SL.charDefaults = {
     lastTrained = 0,
     goldMode = false,  -- mount gold mode: skinning + a gold tracker towards the level 40 mount
     duo = false,       -- duo mode: levelling with a partner (status shared over addon messages)
+    eliteQuests = {},  -- [questID] = true: its objective mobs turned out to be elite
     hasMount = false,  -- learned Apprentice Riding
     moneyAt = {},      -- [level] = copper when you reached it (gold pace)
     initialized = false,
@@ -167,7 +168,7 @@ function SL:Update()
     SL.Arrow:SetTarget(SL.Engine:CurrentTarget())
     if SL.db.telemetry then SL.Telemetry:OnCursor() end
     SL.MapPins:Refresh()
-    if SL.Highlight and SL.Highlight.button then SL.Highlight:Refresh() end
+    if SL.Highlight and SL.Highlight.button then SL.Highlight:Refresh(true) end
 end
 
 SL:On("ADDON_LOADED", function(_, name)
@@ -251,6 +252,7 @@ local function help()
     print("  /sl mode <m>     route style: thorough (recommended) or safe (never an orange fight)")
     print("  /sl dungeons on|off  include dungeon runs (with their quests) in the route")
     print("  /sl duo on|off   duo mode: level with a partner (see each other's step, share quests)")
+    print("  /sl lfg          write an LFG message for your current (group) quest in chat")
     print("  /sl setup        open the setup window (route style, dungeons, starting zones)")
     print("  /sl start <race|auto>  follow another race's starting zones (e.g. /sl start nightelf)")
     print("  /sl list         scrollable list of the whole route (look ahead, jump, skip)")
@@ -324,6 +326,8 @@ SlashCmdList.SPEEDLEVEL = function(msg)
         else
             SL.Engine:SetPath(alias[a] or a)
         end
+    elseif cmd == "lfg" then
+        SL.UI:LFGChat(SL.UI:GroupQuest())
     elseif cmd == "duo" then
         local a = (arg or ""):lower()
         SL.Duo:SetEnabled((a == "on") or (a ~= "off" and not SL.Duo:Enabled()))

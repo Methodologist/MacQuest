@@ -724,10 +724,12 @@ def quest_info(qid):
         part = {"label": it.get("name", "item") + (f" - from {', '.join(srcs[:2])}" if srcs else ""),
                 "oname": it.get("name"), "pts": defaultdict(list)}
         parts.append(part)
+        # only elites drop it (the Syndicate in Stromgarde for the Sigil of Strom): a group quest
+        known = [N[str(nid)] for nid in drops if str(nid) in N and N[str(nid)].get("friendly") != FCFG["letter"]]
+        if known and not it.get("objectDrops") and all((e.get("rank") or 0) in (1, 2, 3) for e in known):
+            elite = True
         for nid in drops[:12]:
             e = N.get(str(nid), {})
-            if (e.get("rank") or 0) in (1, 2, 3) and len(drops) == 1:
-                elite = True
             # "AH" (friendly to both) is how QuestieDB marks *neutral* creatures - plainstriders,
             # cougars, boars... - which you can attack and loot.  Only our own faction's NPCs are skipped.
             if e.get("friendly") == FCFG["letter"]:
@@ -954,6 +956,36 @@ def build_order(start, quests, deferred, before):
 
 
 DUNGEON_QUEST = {}
+DUNGEON_PRE = {}    # qid -> dungeon run index: a quest outside the dungeon that unlocks one of its quests
+
+
+def dungeon_prereqs(qid):
+    """the quests (outside any dungeon) that must be done before this dungeon quest can be taken, in
+    no particular order; None when one of them can't be routed (elite, no data, other faction...),
+    since then the dungeon quest stays out of reach anyway"""
+    need, todo, seen = [], [qid], {qid}
+    dz = dungeon_zone_areas()
+    while todo:
+        q = qget(todo.pop()) or {}
+        picks = list(q.get("preGroup") or [])
+        single = q.get("preSingle") or []
+        if single:
+            # any one of them will do: the first that can be routed
+            alt = next((x for x in single if qget(x) and race_ok(qget(x), ALL_RACES) and quest_info(x)["ok"]), None)
+            if alt is None:
+                return None
+            picks.append(alt)
+        for x in picks:
+            if x in seen:
+                continue
+            seen.add(x)
+            xq = qget(x)
+            if not xq or not race_ok(xq, ALL_RACES) or not quest_info(x)["ok"]:
+                return None
+            if (xq.get("zone") or 0) not in dz:
+                need.append(x)
+            todo.append(x)
+    return need
 PLAN = []
 CHAIN_RESERVED = set()
 
@@ -1069,11 +1101,28 @@ def add_city_visits(plan, keep=None):
         lo, hi = sg.levels or (0, 99)
         ent_map = sg.entrance[0] if sg.entrance else None
         gmaps, fmaps, fnpc = set(), set(), {}
+        zmaps, zpos, pcities = [], {}, set()      # prerequisites: their zones outside the cities
         for qid, q in Q.items():
             if (q.get("zone") or 0) in sg.dungeon and race_ok(q, ALL_RACES) and lo - 3 <= (q.get("level") or 0) <= hi + 2:
                 info = quest_info(int(qid))
                 if info["ok"]:
                     gmaps |= {m for m in info["start"] if m in CITIES}
+                    # its prerequisites: picked up / handed in at those city stops too
+                    for pq in dungeon_prereqs(int(qid)) or []:
+                        pinfo = quest_info(pq)
+                        gmaps |= {m for m in list(pinfo["start"]) + list(pinfo["end"]) if m in CITIES}
+                        where = list(pinfo["start"]) + list(pinfo["end"]) + \
+                            (list(pinfo["obj"]) if pinfo.get("has_obj") else [])
+                        for m in where:
+                            if m in CITIES:
+                                pcities.add(m)
+                            elif m not in DUNGEON_MAPS and m != sg.map and m not in zmaps:
+                                zmaps.append(m)
+                            if m not in CITIES and m not in zpos:
+                                pts = ((pinfo["obj"].get(m) if pinfo.get("has_obj") else None)
+                                       or pinfo["start"].get(m) or pinfo["end"].get(m))
+                                if pts:
+                                    zpos[m] = tuple(pts[0][:2])
                     for m, pts in info["end"].items():
                         if m in CITIES or m == ent_map:
                             fmaps.add(m)
@@ -1088,7 +1137,10 @@ def add_city_visits(plan, keep=None):
                 start = ("npc", fm)
             else:
                 name = AREA_NAME_BY_MAP.get(m, "the zone")
-                start = fnpc.get(m) or (sg.entrance[1], sg.entrance[2])
+                start = fnpc.get(m) or zpos.get(m)
+                if not start:
+                    ent = sg.entrance
+                    start = (ent[1], ent[2]) if ent and ent[0] == m else (50.0, 50.0)
             c = Segment(f"{name} ({label} {sg.title})")
             c.map, c.noauto, c.races = m, True, set(ALL_RACES)
             c.levels = (0, 99)
@@ -1104,13 +1156,37 @@ def add_city_visits(plan, keep=None):
                 out.insert(k, c)
                 k += 1
                 inserted += 1
+        # a dungeon quest's prerequisites out in a zone (the Burning Blade at Skull Rock for Hidden
+        # Enemies): a stop there, then the cities again for the hand-ins and the pickups they unlock
+        zone_added = False
+        for m in zmaps:
+            if m not in zpos:
+                continue                     # nowhere to point the arrow at in that zone
+            c = stop(m, "quests for")
+            if m in zpos:
+                c.start = zpos[m]
+            if not visited(m, range(k - 3, k)) and (keep is None or c.title in keep):
+                out.insert(k, c)
+                k += 1
+                inserted += 1
+                zone_added = True
+        if zone_added:
+            for m in sorted(pcities):
+                c = stop(m, "back for")
+                if keep is None or c.title in keep:
+                    out.insert(k, c)
+                    k += 1
+                    inserted += 1
         after = k + 1
+        turnins = 0
         for m in sorted(fmaps):
             c = stop(m, "turn in")
             if not visited(m, range(after, after + 3)) and (keep is None or c.title in keep):
                 out.insert(after, c)
-                inserted += 1
-        k = after + inserted
+                turnins += 1
+        # on to the segment after this run's turn-in stops (skipping by every stop inserted here,
+        # the ones before the run too, could jump over the next dungeon run)
+        k = after + turnins
     for sg in out:
         if isinstance(sg.start, tuple) and sg.start and sg.start[0] == "npc":
             sg.start = npc_location(sg.start[1], sg.map)
@@ -1202,6 +1278,10 @@ def segment_quests(seg, used, entry_level, si=None):
     seg.stack = set()
     stack_hi = hi_q + 4 if getattr(seg, "later_same_map", False) else hi_q
     cands = set(seg.include)
+    if si is not None and DUNGEON_PRE and not seg.only and not seg.chain and not seg.dungeon:
+        for qid, dsi in DUNGEON_PRE.items():
+            if si < dsi and seg.map in quest_info(qid)["start"]:
+                cands.add(qid)
     if not seg.only and not seg.noauto:
         for qid, q in Q.items():
             qid = int(qid)
@@ -1229,7 +1309,15 @@ def segment_quests(seg, used, entry_level, si=None):
         if lvl <= 0:
             lvl = q.get("reqLevel") or 1
         req = eff_req(qid)
-        if not forced:
+        unlocks = si is not None and si < DUNGEON_PRE.get(qid, -1)
+        if unlocks and not forced:
+            # unlocks a dungeon quest: no level window, only a level you can take it at (and not grey:
+            # the guide skips grey quests in play, so a grey prerequisite would not be done)
+            if req > entry_level + 3 or is_grey(entry_level, lvl):
+                continue
+            if q.get("maxLevel") and q["maxLevel"] < entry_level:
+                continue
+        elif not forced:
             if lvl < lo_q or lvl > stack_hi:
                 continue
             if req > stack_hi:
@@ -1310,8 +1398,9 @@ def main(mode="speed", keep=None, dry=False):
         if sg.chain:
             CHAIN_RESERVED.update(chain_quests(sg.chain, next(iter(sg.classes))))
     # dungeon quests (dungeons mode): qid -> index of the dungeon run segment that completes them
-    global DUNGEON_QUEST
+    global DUNGEON_QUEST, DUNGEON_PRE
     DUNGEON_QUEST = {}
+    DUNGEON_PRE = {}
     if has_dungeons(mode):
         for di, sg in enumerate(plan):
             if not sg.dungeon:
@@ -1322,6 +1411,13 @@ def main(mode="speed", keep=None, dry=False):
                     lvl = q.get("level") or 0
                     if lo - 3 <= lvl <= hi + 2 and int(qid) not in DUNGEON_QUEST:
                         DUNGEON_QUEST[int(qid)] = di
+        # everything that unlocks those quests, so a run can take all of them at once
+        for qid, di in DUNGEON_QUEST.items():
+            if not quest_info(qid)["ok"] or not race_ok(qget(qid), ALL_RACES):
+                continue
+            for x in dungeon_prereqs(qid) or []:
+                if x not in DUNGEON_QUEST:
+                    DUNGEON_PRE[x] = min(DUNGEON_PRE.get(x, di), di)
     zone_plan = [sg for sg in plan if not sg.chain]          # class chains are side trips
     for sg in plan:
         sg.later_same_map = False
@@ -1448,6 +1544,8 @@ def main(mode="speed", keep=None, dry=False):
                     horizon = min(len(plan), si + CARRY_SEGMENTS)
                     if qid in DUNGEON_QUEST:
                         horizon = DUNGEON_QUEST[qid] + 1
+                    elif qid in DUNGEON_PRE:
+                        horizon = max(horizon, DUNGEON_PRE[qid])
                     for sj in range(si + 1, horizon):
                         if plan[sj].map in info["obj"] and seg.races <= plan[sj].races and not plan[sj].chain:
                             tgt = sj
@@ -1467,7 +1565,10 @@ def main(mode="speed", keep=None, dry=False):
                 # a plain hand-in (nothing to do in between) rides along to wherever the route next
                 # reaches its NPC - a city it goes back to, a later zone: it only takes a log slot
                 carry = DELIVERY_CARRY if not info.get("has_obj") else CARRY_SEGMENTS
-                for sj in range(lo, len(plan) if qid in DUNGEON_QUEST else min(len(plan), si + carry)):
+                t_end = len(plan) if qid in DUNGEON_QUEST else min(len(plan), si + carry)
+                if qid in DUNGEON_PRE:
+                    t_end = max(t_end, min(len(plan), DUNGEON_PRE[qid] + 1))
+                for sj in range(lo, t_end):
                     if plan[sj].map in info["end"] and seg.races <= plan[sj].races and not plan[sj].chain:
                         tgt = sj
                         break
@@ -3795,6 +3896,39 @@ def write_lua(plan, mode):
     return allq
 
 
+def dungeon_keep(plan):
+    """after a first pass with every possible stop: the dungeon runs that ended up with quests of their
+    own, and the stops worth making for them - a city stop serving 2+ dungeon pickups / turn-ins (or
+    prerequisites of them), a zone stop for prerequisites 2+, the entrance zone 1+.  Stops of a run
+    that is dropped go with it; "back for" city stops only follow a kept prerequisite zone stop."""
+    keep = set()
+    for sg in plan:
+        own = sum(1 for x in sg.nodes if x.qid in DUNGEON_QUEST and x.kind in ("A", "T", "C"))
+        pre = sum(1 for x in sg.nodes if x.qid in DUNGEON_PRE and x.kind in ("A", "T", "C"))
+        if sg.dungeon:
+            if own > 0:
+                keep.add(sg.title)
+        elif "(" in sg.title and sg.modes == {"dungeons"}:
+            need = 2 if sg.map in CITIES or "(quests for " in sg.title else 1
+            if own + pre >= need:
+                keep.add(sg.title)
+    runs = {sg.title for sg in plan if sg.dungeon and sg.title in keep}
+    city_titles = {sg.title for sg in plan if sg.map in CITIES}
+
+    def run_of(t):
+        m = re.search(r"\((?:quests for|back for|turn in) (.*)\)$", t)
+        return m.group(1) if m else None
+    for t in list(keep):
+        r = run_of(t)
+        if r is not None and r not in runs:
+            keep.discard(t)
+    zone_runs = {run_of(t) for t in keep if "(quests for " in t and t not in city_titles}
+    for t in list(keep):
+        if "(back for " in t and run_of(t) not in zone_runs:
+            keep.discard(t)
+    return keep
+
+
 def build_all():
     union = set()
     maps = set(CITIES)
@@ -3805,15 +3939,15 @@ def build_all():
             # pass 1: every possible stop; keep stops serving >= 2 dungeon pickups/turn-ins (>= 1 in the
             # dungeon's own zone) and dungeon runs that ended up with quests
             plan, _ = main(mode, dry=True)
-            keep = set()
-            for sg in plan:
-                n = sum(1 for x in sg.nodes if x.qid in DUNGEON_QUEST and x.kind in ("A", "T", "C"))
-                if sg.dungeon and n > 0:
-                    keep.add(sg.title)
-                elif "(" in sg.title and sg.modes == {"dungeons"}:
-                    need = 2 if sg.map in CITIES else 1
-                    if n >= need:
-                        keep.add(sg.title)
+            keep = dungeon_keep(plan)
+            # with fewer stops a run can end up without quests of its own (they went grey, or their
+            # pickup stop was dropped): settle until every kept run still has some
+            for _ in range(3):
+                plan, _ = main(mode, keep, dry=True)
+                settled = dungeon_keep(plan) & keep
+                if settled == keep:
+                    break
+                keep = settled
         plan, allq = main(mode, keep)
         union |= allq
         maps |= {sg.map for sg in plan if not sg.dungeon}

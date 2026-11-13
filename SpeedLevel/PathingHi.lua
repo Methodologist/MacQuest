@@ -401,9 +401,12 @@ function PA:SteerHi(target)
     if not hi then return nil end
     local G, cells = hi.G, hi.cells
     -- where you are: cell + region (keep the previous region when the cell has several levels)
+    -- a cell has ground when it has a real terrain region (the path search adds road-only
+    -- placeholders to cells it walks through; those are not ground to stand on)
+    local function ground(ci) return cells[ci] ~= nil and cells[ci][1] ~= nil end
     local scx, scy, ssub = cellAndSub(G, px, py)
     local sci = scy * G + scx + 1
-    if not cells[sci] then return nil end
+    if not ground(sci) then return nil end
     local prev = self.hiLast and splitNode(self.hiLast) == sci and select(2, splitNode(self.hiLast)) or nil
     if self.hiLast and not prev then
         -- moved to a new cell: take the region linked from the last one if there is a link
@@ -427,18 +430,18 @@ function PA:SteerHi(target)
     -- goal regions (snap to the nearest cell with ground if the target is inside a building)
     local gcx, gcy, gsub = cellAndSub(G, target.x, target.y)
     gci = gcy * G + gcx + 1
-    if not cells[gci] then
+    if not ground(gci) then
         for r = 1, 4 do
             for dy = -r, r do
                 for dx = -r, r do
                     local nx, ny = gcx + dx, gcy + dy
-                    if not cells[gci] and nx >= 0 and ny >= 0 and nx < G and ny < G and cells[ny * G + nx + 1] then
+                    if not ground(gci) and nx >= 0 and ny >= 0 and nx < G and ny < G and ground(ny * G + nx + 1) then
                         gcx, gcy, gci = nx, ny, ny * G + nx + 1
                     end
                 end
             end
         end
-        if not cells[gci] then return nil end
+        if not ground(gci) then return nil end
     end
     goals = {}
     local gr = regionAt(cells[gci], gsub, nil)
@@ -735,6 +738,10 @@ function PA:PathYards(m1, x1, y1, m2, x2, y2)
         end
     end)
     if not ok then SL:ReportError("terrain distance", err) end
+    self.yardCount = (self.yardCount or 0) + 1
+    if self.yardCount > 400 then                 -- old positions: start over rather than grow forever
+        self.yardCache, self.yardCount = {}, 1
+    end
     self.yardCache[key] = { res or false, now }
     return res
 end

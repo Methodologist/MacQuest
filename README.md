@@ -55,8 +55,9 @@ The addon is developed under the working name **SpeedLevel** (`SpeedLevel/` in t
   **Safe** (never an orange fight: a quest's mobs are at most a level above you; a short grind first where
   a zone would be tough). Dungeon quests are only planned when dungeons are turned on.
 * **Dungeon runs, opt in or out**: a new character is asked once whether to include dungeons. When on,
-  13 runs (Ragefire Chasm to Dire Maul) are slotted in at the right levels: their quests are picked up
-  in town beforehand, the arrow leads to the entrance, and turn-ins follow. Change it any time with
+  runs from Ragefire Chasm to Dire Maul are slotted in at the right levels: their quests (and the
+  prerequisite quests that unlock them) are picked up beforehand, the arrow leads to the entrance,
+  and turn-ins follow. Change it any time with
   `/mq dungeons on|off` or in settings; right-click a run to skip just that one.
 * **Class quests that matter**: ability-unlocking chains are built into the route for your class only,
   at the hub where they start: totems (Shaman), stances (Warrior), Voidwalker / Succubus / Felhunter
@@ -72,9 +73,12 @@ The addon is developed under the working name **SpeedLevel** (`SpeedLevel/` in t
   reach 40.
 * **Group (elite) quests**: at hubs with elite quests, the guide shows them as optional ("Group
   quest: ... take it if you have a group"). Accept one and the guide takes you through it; leave it
-  and the route carries on. Shift-click it to link it in chat when looking for a group. The eye at the
-  end of the line opens the game's Group Finder; right-click it for a ready LFG message with the quest
-  link. Turn the hints off in settings.
+  and the route carries on. Shift-click it to link it in chat when looking for a group. Turn the hints
+  off in settings.
+* **Find a group**: every quest you want a group for (the route's group quests, quests the game tags
+  Elite / Group / Dungeon, and quests whose mobs turn out to be elite) gets an "LFG" button on its
+  step: a ready LFG message with the quest link for the LookingForGroup channel. The eye next to it
+  opens the game's Group Finder. `/mq lfg` from chat.
 * **Duo mode** (setup window, settings or `/mq duo`): level with a friend. With both of you in a party
   and duo mode on, the guide shows your partner's step under yours (ahead / behind / same step, with
   their progress; click it to join them), offers each route quest you accept to your partner when they
@@ -98,7 +102,7 @@ The addon is developed under the working name **SpeedLevel** (`SpeedLevel/` in t
   * planned grind spots chosen for XP/hour.
 
 Commands: `/mq` show/hide · `/mq skip` · `/mq back` · `/mq sync` (re-detect your place) ·
-`/mq mode thorough|safe` · `/mq dungeons on|off` · `/mq duo on|off` · `/mq list` · `/mq compact` · `/mq report <note>` · `/mq options`.
+`/mq mode thorough|safe` · `/mq dungeons on|off` · `/mq duo on|off` · `/mq lfg` · `/mq list` · `/mq compact` · `/mq report <note>` · `/mq options`.
 Left-click a step to make it current, right-click to skip it, shift-click to link its quest in chat.
 
 ## How the route is chosen

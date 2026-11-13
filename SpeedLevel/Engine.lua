@@ -756,6 +756,18 @@ function E:Surfaced()
     return out
 end
 
+-- a quest you want a group for, and what kind: "elite" (a group quest of the route, or one whose
+-- objective mobs turned out to be elite when you met them), or the game's tag for it ("elite",
+-- "dungeon", "raid", "group"); false for a quest you can do alone
+function E:NeedsGroup(q)
+    if not q then return false end
+    local qs = self.questSteps[q]
+    if qs and qs.A and self.steps[qs.A] and self.steps[qs.A].grp then return "elite" end
+    if SL.char.eliteQuests and SL.char.eliteQuests[q] then return "elite" end
+    local e = SL.Player.log and SL.Player.log[q]
+    return e and e.group or false
+end
+
 -- group quests you could pick up right here (giver within reach): { stepIndex, ... }
 function E:GroupHints()
     local out = {}
@@ -1298,6 +1310,7 @@ function E:CurrentTarget()
         end
         -- close by: the arrow takes you there first (a few seconds now, minutes saved later)
         if (fp.d or 999) <= FP_DETOUR_YARDS and not (first.t == "FP" and first.npc == fp.npc) then
+            self.advice = nil
             return { m = fp.m, x = fp.x, y = fp.y, step = first, label = "Flight path: " .. fp.name, via = "fp" }
         end
     end
@@ -1697,20 +1710,43 @@ function E:RegisterEvents()
         end
         SL:RequestUpdate()
     end)
+    -- the riding instructor of a MOUNT step: riding counts as learned once the trainer lists it as
+    -- known, or once you paid for it (opening the window to look at the price is not learning it)
+    local riding
+    local function npcID()
+        local g = UnitGUID and SL.Clean(UnitGUID("npc"))
+        return g and tonumber(select(6, strsplit("-", g)))
+    end
+    local function ridingLearned()
+        if SL.Player:Skill("Riding") > 0 then return true end
+        if GetNumTrainerServices and GetTrainerServiceInfo then
+            for i = 1, (GetNumTrainerServices() or 0) do
+                local name, _, cat = GetTrainerServiceInfo(i)
+                if name and cat == "used" and name:find("Riding", 1, true) then return true end
+            end
+        end
+        return riding and GetMoney and GetMoney() <= riding.money - 150000     -- 15g or more spent here
+    end
+    local function checkRiding()
+        if riding and ridingLearned() then
+            E:Flag(riding.step.i)
+            SL.char.hasMount = true
+            riding = nil
+        end
+    end
+    SL:On("TRAINER_UPDATE", checkRiding)
+    SL:On("TRAINER_CLOSED", function() checkRiding(); riding = nil end)
     SL:On("TRAINER_SHOW", function()
-        -- a profession trainer (skinning, first aid...) is not your class trainer
-        if IsTradeskillTrainer and SL.Clean(IsTradeskillTrainer()) then
-            -- a profession trainer: a gold-mode skinning stop, or the riding instructor
-            local st = E:CurrentIs("PROF") or E:CurrentIs("MOUNT")
-            if st then E:Flag(st.i) end
-            if st and st.t == "MOUNT" then SL.char.hasMount = true end
+        local mt = E:CurrentIs("MOUNT")
+        if mt and ((mt.npc and npcID() == mt.npc) or (mt.name and SL.Clean(UnitName("npc")) == mt.name)) then
+            riding = { step = mt, money = GetMoney and GetMoney() or 0 }
+            checkRiding()
             return
         end
-        local mt = E:CurrentIs("MOUNT")
-        if mt then
-            -- riding instructors are not profession trainers on every client
-            E:Flag(mt.i)
-            SL.char.hasMount = true
+        -- a profession trainer (skinning, first aid...) is not your class trainer
+        if IsTradeskillTrainer and SL.Clean(IsTradeskillTrainer()) then
+            local st = E:CurrentIs("PROF")
+            if st then E:Flag(st.i) end
             return
         end
         SL.char.lastTrained = UnitLevel("player")
@@ -1746,12 +1782,20 @@ function E:RegisterEvents()
     -- looted an item that starts a route quest: its pickup comes up (wherever you are)
     SL:On("BAG_UPDATE_DELAYED", function()
         local changed = false
+        E.itemTold = E.itemTold or {}
         for i, st in ipairs(E.steps) do
             if st.item and st.t == "A" and not SL.char.waiting[i] and (GetItemCount and GetItemCount(st.item) or 0) > 0
-               and not SL.Player:IsCompleted(st.q) and not SL.Player:InLog(st.q) then
-                SL.char.waiting[i] = true
-                changed = true
-                SL:Print("|cffffd100" .. (st.npc or "an item") .. "|r starts a quest worth doing: " .. E:QuestName(st.q))
+               and not SL.Player:IsCompleted(st.q) and not SL.Player:InLog(st.q)
+               and E:SectionApplies(E.sections[st.sec]) and not SL.Player:IsGrey(E:QuestLevel(st.q)) then
+                local d = SL.Quests and SL.Quests[st.q]
+                if not d or (SL.Player:RaceOK(d[4]) and SL.Player:ClassOK(d[5])) then
+                    SL.char.waiting[i] = true
+                    changed = true
+                    if not E.itemTold[st.q] then
+                        E.itemTold[st.q] = true
+                        SL:Print("|cffffd100" .. (st.npc or "an item") .. "|r starts a quest worth doing: " .. E:QuestName(st.q))
+                    end
+                end
             end
         end
         if changed then E:Invalidate() SL:RequestUpdate() end

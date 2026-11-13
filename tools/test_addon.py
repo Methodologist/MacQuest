@@ -2166,6 +2166,107 @@ def main():
     check(chat.startswith("/4 LFG ") and qname in chat, f"right-click writes an LFG message for the LookingForGroup channel ({chat})")
     check(hidden == "true", "it hides when there is no group quest line")
 
+    print("\n== guide window top: nothing overlaps the version, the gold pace has its own line")
+    top = L.eval("""(function()
+        local SL, UI, E = SpeedLevel, SpeedLevel.UI, SpeedLevel.Engine
+        local f = UI.frame
+        local W = { brand = 70, brandVer = 30, secInfo = 60, title = 120, modeTag = 110 }
+        for k in pairs(W) do f[k].GetUnboundedStringWidth = function() return W[k] end end
+        local pos = {}
+        for _, k in ipairs({ "secInfo", "modeTag", "secBar" }) do
+          f[k].SetPoint = function(self, a, x, y) if not pos[k] then pos[k] = { a, x, y } end end
+          f[k].ClearAllPoints = function() pos[k] = nil end
+        end
+        f.modeText = "|cff9a6bffThorough + Dungeons|r"
+        f.secInfo:SetText("5/12 quests")
+        local r = {}
+        local y1 = UI:LayoutTop()
+        r.short = pos.modeTag[1] == "TOPRIGHT" and pos.modeTag[3] == -25 and y1 == -49
+        W.title = 200                                  -- a long zone name: the tag moves under it
+        local y2 = UI:LayoutTop()
+        r.long = pos.modeTag[1] == "TOPLEFT" and pos.modeTag[3] <= -36 and y2 < y1
+        W.title, W.secInfo = 120, 200                  -- a count too wide to sit beside the version
+        UI:LayoutTop()
+        r.count = not f.secInfo:IsShown() and (f.modeTag:GetText() or ""):find("5/12 quests", 1, true) ~= nil
+        W.secInfo = 60
+        -- gold mode: the pace sits on its own line
+        local oldPace = E.GoldPace
+        E.GoldPace = function() return 45, 100, 120, false end
+        SL.char.goldMode = true
+        UI:Refresh()
+        local gt = f.goldText:GetText() or ""
+        r.pace = gt:find("\\n|cff40ff40On pace for 40|r", 1, true) ~= nil and gt:find("45g / 100g", 1, true) ~= nil
+        E.GoldPace = function() return 45, 100, 80, false end
+        UI:Refresh()
+        r.short40 = (f.goldText:GetText() or ""):find("\\n|cffff9933~20g short at 40|r", 1, true) ~= nil
+        E.GoldPace, SL.char.goldMode = oldPace, false
+        for k in pairs(W) do f[k].GetUnboundedStringWidth = nil end
+        for _, k in ipairs({ "secInfo", "modeTag", "secBar" }) do f[k].SetPoint, f[k].ClearAllPoints = nil, nil end
+        local out = {}
+        for _, k in ipairs({ "short", "long", "count", "pace", "short40" }) do out[#out + 1] = k .. "=" .. tostring(r[k] and true or false) end
+        return table.concat(out, " ") .. " gold=" .. gt:gsub("\\n", "/")
+    end)()""")
+    print("    top:", top)
+    check("short=true" in top, "a short zone name keeps the route style beside it, the rows start where they always did")
+    check("long=true" in top, "a long zone name pushes the route style to its own line, and the bars move down")
+    check("count=true" in top, "a quest count that would reach the version number moves to its own line")
+    check("pace=true" in top, "the gold pace ('On pace for 40') is on its own line")
+    check("short40=true" in top, "and so is '~Ng short at 40'")
+
+    print("\n== LFG button on quests you want a group for")
+    login(level=1, race=2, raceFile="Orc", **{"class": 1}, classFile="WARRIOR")
+    lfg2 = L.eval("""(function()
+        local SL, E, UI, HL = SpeedLevel, SpeedLevel.Engine, SpeedLevel.UI, SpeedLevel.Highlight
+        local r = {}
+        local st = E:Current()
+        local q = st.q
+        r.plain = not E:NeedsGroup(q)
+        -- you target one of its objective mobs and it is elite
+        local oldClass, oldAttack = UnitClassification, UnitCanAttack
+        UnitClassification = function() return "elite" end
+        UnitCanAttack = function() return true end
+        HL:CheckElite("target", q)
+        UnitClassification, UnitCanAttack = oldClass, oldAttack
+        r.learned = E:NeedsGroup(q)
+        UI:Refresh()
+        local line = UI.frame.card.lines[1]
+        local b = rawget(line, "lfgBtn")
+        r.button = b ~= nil and b:IsShown() and b.q == q
+        local chat
+        local oldOpen = ChatFrame_OpenChat
+        ChatFrame_OpenChat = function(t) chat = t end
+        b._scripts.OnClick(b)
+        r.chat = chat and chat:find("LFG", 1, true) and chat:find(E:QuestName(q), 1, true) and chat:find("elite", 1, true) and true
+        chat = nil
+        SlashCmdList.SPEEDLEVEL("lfg")
+        r.slash = chat and chat:find(E:QuestName(q), 1, true) and true
+        ChatFrame_OpenChat = oldOpen
+        SL.char.eliteQuests[q] = nil
+        UI:Refresh()
+        r.gone = not b:IsShown()
+        -- the game tags a quest in your log Elite
+        local oldTag = C_QuestLog.GetQuestTagInfo
+        C_QuestLog.GetQuestTagInfo = function(id) if id == 99991 then return { tagID = 1, tagName = "Elite" } end end
+        STATE.log = { { id = 99991, complete = false } }
+        SL.Player:RefreshLog()
+        r.tagged = E:NeedsGroup(99991) == "elite" and not E:NeedsGroup(q)
+        C_QuestLog.GetQuestTagInfo = oldTag
+        STATE.log = {}
+        SL.Player:RefreshLog()
+        local out = {}
+        for _, k in ipairs({ "plain", "learned", "button", "chat", "slash", "gone", "tagged" }) do out[#out + 1] = k .. "=" .. tostring(r[k] and true or false) end
+        return table.concat(out, " ")
+    end)()""")
+    print("    lfg:", lfg2)
+    for k, msg in [("plain", "a normal quest has no LFG button"),
+                   ("learned", "targeting an elite objective mob marks the quest as one for a group"),
+                   ("button", "then the current step shows an LFG button"),
+                   ("chat", "clicking it writes an LFG message with the quest in chat"),
+                   ("slash", "/mq lfg does the same"),
+                   ("gone", "the button goes away when the quest no longer needs a group"),
+                   ("tagged", "a quest the game tags Elite counts too")]:
+        check(f"{k}=true" in lfg2, msg)
+
     print("\n== time to 60")
     login(level=4, race=2, raceFile="Orc", **{"class": 1}, xp=600, xpMax=2100)
     secs = L.eval("(function() local t = SpeedLevel.UI:TimeTo60(5000, 3600); return t end)()")

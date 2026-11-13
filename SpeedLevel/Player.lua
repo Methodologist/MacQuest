@@ -82,6 +82,40 @@ local function questIsComplete(questID, fallback)
     return fallback and true or false
 end
 
+-- the game's tag for a quest says whether you want a group for it: "elite", "dungeon", "raid",
+-- "group" (a suggested group of 2+), or false.  By tag id (names are localized; the elite flag and
+-- the game's own ELITE / GROUP strings for clients that only give a name).  A quest's tag never
+-- changes, so it is looked up once.
+local TAG_KIND = { [1] = "group", [62] = "raid", [81] = "dungeon", [85] = "dungeon", [88] = "raid", [89] = "raid" }
+local tagCache = {}
+local function groupTag(questID, suggested)
+    local kind = tagCache[questID]
+    if kind ~= nil then return kind end
+    local id, name, elite
+    if C_QuestLog and C_QuestLog.GetQuestTagInfo then
+        local ok, t = pcall(C_QuestLog.GetQuestTagInfo, questID)
+        if ok and type(t) == "table" then id, name, elite = t.tagID, t.tagName, t.isElite end
+    end
+    if id == nil and name == nil and GetQuestTagInfo then
+        local ok, i, n = pcall(GetQuestTagInfo, questID)
+        if ok then id, name = i, n end
+    end
+    id, name, elite = SL.Clean(id), SL.Clean(name), SL.Clean(elite)
+    if elite or (name and (name == (_G.ELITE or "Elite") or name == "Elite")) then
+        kind = "elite"
+    elseif id and TAG_KIND[id] then
+        kind = TAG_KIND[id]
+    elseif name and (name == (_G.GROUP or "Group") or name == "Group") then
+        kind = "group"
+    elseif type(suggested) == "number" and suggested > 1 then
+        kind = "group"
+    else
+        kind = false
+    end
+    tagCache[questID] = kind
+    return kind
+end
+
 function P:RefreshLog()
     local log = {}
     if C_QuestLog and C_QuestLog.GetNumQuestLogEntries and C_QuestLog.GetInfo then
@@ -96,15 +130,17 @@ function P:RefreshLog()
                     index = i,
                     failed = failed and true or false,
                     complete = not failed and questIsComplete(info.questID, info.isComplete),
+                    group = groupTag(info.questID, SL.Clean(info.suggestedGroup)),
                 }
             end
         end
     elseif GetNumQuestLogEntries then
         local n = GetNumQuestLogEntries()
         for i = 1, n do
-            local title, level, _, isHeader, _, isComplete, _, questID = GetQuestLogTitle(i)
+            local title, level, suggested, isHeader, _, isComplete, _, questID = GetQuestLogTitle(i)
             if not isHeader and questID and questID > 0 then
-                log[questID] = { title = title, level = level, index = i, complete = isComplete == 1, failed = isComplete == -1 }
+                log[questID] = { title = title, level = level, index = i, complete = isComplete == 1, failed = isComplete == -1,
+                    group = groupTag(questID, tonumber(suggested)) }
             end
         end
     end
@@ -187,13 +223,47 @@ function P:Refresh()
 end
 
 -- a skill line (profession / Riding): rank, max rank - or 0, 0 when you do not have it
-function P:Skill(name)
-    if not (GetNumSkillLines and GetSkillLineInfo) then return 0, 0 end
+local function findSkill(name)
     for i = 1, GetNumSkillLines() do
         local sname, header, _, rank, _, _, maxRank = GetSkillLineInfo(i)
         if not header and sname == name then return rank or 0, maxRank or 0 end
     end
-    return 0, 0
+end
+
+-- your rank in a skill.  The skill list only shows what sits under expanded headers, so a skill not
+-- found while a header is collapsed is looked up with the headers opened for a moment (then closed
+-- again); that answer is kept for 10 s, as opening headers fires the skill-change event itself.
+local skillMemo = {}
+function P:Skill(name)
+    if not (GetNumSkillLines and GetSkillLineInfo) then return 0, 0 end
+    local r, m = findSkill(name)
+    if r then return r, m end
+    local now = GetTime and GetTime() or 0
+    local c = skillMemo[name]
+    if c and now - c[3] < 10 then return c[1], c[2] end
+    r, m = 0, 0
+    if ExpandSkillHeader and CollapseSkillHeader then
+        local closed = {}
+        local i = 1
+        while i <= GetNumSkillLines() do
+            local sname, header, expanded = GetSkillLineInfo(i)
+            if header and not expanded then
+                closed[sname] = true
+                ExpandSkillHeader(i)
+            end
+            i = i + 1
+        end
+        if next(closed) then
+            r, m = findSkill(name)
+            r, m = r or 0, m or 0
+            for j = GetNumSkillLines(), 1, -1 do
+                local sname, header = GetSkillLineInfo(j)
+                if header and closed[sname] then CollapseSkillHeader(j) end
+            end
+        end
+    end
+    skillMemo[name] = { r, m, now }
+    return r, m
 end
 
 -- your race's home city faction (mount vendor discount at Honored)

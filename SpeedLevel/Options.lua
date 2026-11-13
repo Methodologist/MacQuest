@@ -24,7 +24,7 @@ local CHECKS = {
     { "combatFade", "Fade in combat", "Make the guide window mostly transparent during combat." },
     { "hideInInstance", "Hide in dungeons", "Hide the window and arrow inside instances." },
     { "markTargets", "Mark quest mobs and NPCs", "A gold arrow over the nameplates of the mobs your current objectives need and the NPCs of your current pickups / turn-ins, plus a tooltip line. A key in Key Bindings > AddOns targets the nearest one. (Quest NPCs: turn on friendly NPC nameplates in the game's options.)",
-      function() SL.Highlight:Refresh() end },
+      function() SL.Highlight:Refresh(true) end },
     { "showQuestPlates", "Show quest mob nameplates", "The game only shows nameplates for your target by default, so the quest mob arrows only appear on what you've selected. This turns nameplates on for enemies (always) and friendly NPCs, and shows them further away. Turning it off puts your own settings back.",
       function() SL.Highlight:ApplyPlates() end },
     { "mapPins", "World map pins", "Numbered pins for the next steps on the world map." },

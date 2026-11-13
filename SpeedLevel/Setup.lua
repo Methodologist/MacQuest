@@ -73,7 +73,8 @@ local function makeCard(parent, w, h, icon, title, desc, tag)
     c.title:SetPoint("TOPLEFT", x, -11)
     c.title:SetPoint("RIGHT", -26, 0)
     c.title:SetJustifyH("LEFT")
-    c.title:SetWordWrap(false)
+    c.title:SetWordWrap(true)
+    c.title:SetWidth(w - x - 26)          -- set widths: the heights below are known right away
     c.title:SetText(title)
     c.title:SetTextColor(1, 1, 1)
     c.desc = c:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
@@ -82,6 +83,7 @@ local function makeCard(parent, w, h, icon, title, desc, tag)
     c.desc:SetJustifyH("LEFT")
     c.desc:SetJustifyV("TOP")
     c.desc:SetSpacing(2)
+    c.desc:SetWidth(w - x - 10)
     c.desc:SetText(desc or "")
     c.desc:SetTextColor(0.72, 0.72, 0.76)
     if tag then
@@ -90,6 +92,9 @@ local function makeCard(parent, w, h, icon, title, desc, tag)
         c.tag:SetText(tag)
         c.tag:SetTextColor(0.45, 0.85, 0.45)
     end
+    -- the height this card needs so the title, description and tag never run into each other
+    c.need = 11 + math.max(12, c.title:GetStringHeight() or 12) + 4 + (c.desc:GetStringHeight() or 0)
+        + (tag and 22 or 0) + 8
     c.check = c:CreateTexture(nil, "OVERLAY")
     c.check:SetSize(20, 20)
     c.check:SetPoint("TOPRIGHT", -6, -6)
@@ -155,7 +160,11 @@ local function choiceRow(parent, y, h, items, chosen, onPick)
         cards[k] = c
     end
     pick(chosen)
-    return cards
+    -- the row is as tall as its tallest card
+    local rowH = h
+    for _, c in ipairs(cards) do rowH = math.max(rowH, math.ceil(c.need or 0)) end
+    for _, c in ipairs(cards) do c:SetHeight(rowH) end
+    return rowH, cards
 end
 
 local PATH_SHORT = {
@@ -238,35 +247,36 @@ function S:Build()
     local y = -106
     sectionLabel(f, "Route style", y)
     y = y - 18
-    choiceRow(f, y, 76, {
+    local rowH
+    rowH = choiceRow(f, y, 76, {
         { key = "thorough", icon = "Interface\\Icons\\Ability_Rogue_Sprint", title = "Thorough", tag = "Recommended",
           desc = "Every worthwhile quest - the fastest way to 60." },
         { key = "safe", icon = "Interface\\Icons\\INV_Shield_06", title = "Safe",
           desc = "Never an orange fight: mobs at most a level above you." },
     }, self.style, function(k) S.style = k end)
-    y = y - 76 - 18
+    y = y - rowH - 18
 
     sectionLabel(f, "Dungeons", y)
     y = y - 18
-    choiceRow(f, y, 76, {
+    rowH = choiceRow(f, y, 76, {
         { key = false, icon = "Interface\\Icons\\INV_Sword_04", title = "Solo",
           desc = "Out in the world only. No group needed." },
         { key = true, icon = "Interface\\Icons\\INV_Misc_Key_03", title = "Include dungeons",
           desc = "Quests picked up first; the arrow leads to each entrance." },
     }, self.dungeons, function(k) S.dungeons = k end)
-    y = y - 76 - 18
+    y = y - rowH - 18
 
     -- on top of either route: Skinning on the way and a gold tracker for the level 40 mount
     self.gold = SL.char.goldMode and true or false
     sectionLabel(f, "Mount gold", y)
     y = y - 18
-    choiceRow(f, y, 76, {
+    rowH = choiceRow(f, y, 76, {
         { key = false, icon = "Interface\\Icons\\INV_Misc_Coin_02", title = "Just level",
           desc = "No profession stops." },
         { key = true, icon = "Interface\\Icons\\Ability_Mount_RidingHorse", title = "Mount gold mode",
           desc = "Skinning on the way and a tracker for your mount gold at 40." },
     }, self.gold, function(k) S.gold = k end)
-    y = y - 76 - 18
+    y = y - rowH - 18
 
     -- starting zones: only worth asking while you are still in them
     local choices = E:PathChoices()
@@ -280,7 +290,7 @@ function S:Build()
                 desc = PATH_DESC[p], tag = (p == own) and "Your race" or nil }
         end
         local h = #items >= 4 and 92 or 78
-        choiceRow(f, y, h, items, (self.path == own) and "auto" or self.path,
+        h = choiceRow(f, y, h, items, (self.path == own) and "auto" or self.path,
             function(k) S.path = k end)
         y = y - h - 8
         local note = f:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")

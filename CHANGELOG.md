@@ -1,5 +1,39 @@
 # Changelog
 
+## 1.8.1
+
+- **Find a group for any elite quest.** An "LFG" button now sits on the step of every quest you
+  want a group for. Click it for a ready LFG message with the quest link in the LookingForGroup
+  channel (press Enter to send). The Group Finder eye next to it opens the game's Group Finder.
+  This covers the route's group quests, quests the game tags Elite / Group / Dungeon, and quests
+  whose mobs turn out to be elite when you target or mouse over them (the guide tells you once).
+  `/mq lfg` does the same from chat.
+- **Dungeon runs take all their quests.** With dungeons on, the route now also plans the
+  prerequisite quests that unlock a dungeon's quests, so you arrive with the whole set. Where a
+  prerequisite is out in a zone, a short stop is added before the run (for example the Burning
+  Blade at Skull Rock for Ragefire Chasm's Hidden Enemies). Fixed: a dungeon run could lose its
+  pickup and turn-in stops when the run before it had several.
+- **Elite-only drop quests are group quests.** A quest whose item only drops from elite mobs (the
+  Sigil of Strom in Stromgarde, Humbert's Sword at Dun Garok, the Mosh'Ogg ogres' foot...) is no
+  longer routed as a solo quest. It shows as an optional group quest instead.
+- **Nothing overlaps at the top of the window.** The route style tag ("Thorough + Dungeons") has
+  its own spot beside the zone name, or a line of its own when the name is long, and never runs
+  into the version number. A long zone name wraps. The XP line breaks between its parts, never in
+  the middle of one.
+- **The gold pace has its own line**: "On pace for 40" / "~12g short at 40" / "Ready - go buy it"
+  sit on the line under the gold amount.
+- The setup window's choice cards grow to fit their text, and the arrow's step label wraps instead
+  of being cut short.
+- Fixed: opening your class trainer (or looking at the riding price) during the level 40 mount
+  step marked riding as learned. Now only the riding instructor counts, once riding is bought.
+- Fixed: skills under a collapsed header in the skill window (Riding, Skinning) read as not
+  learned.
+- Fixed: a quest-starting item for a quest that isn't yours to do (grey, another race's zone)
+  printed "starts a quest worth doing" again on every bag change.
+- Fixed: "Faster by air" advice could stay on the card while the arrow led to a new flight path.
+- Fixed: the terrain arrow could stop finding a path to a spot after crossing a bridge or tunnel.
+- Quest mob markers and travel estimates do less work in busy areas.
+
 ## 1.8.0
 
 - **Duo mode: level with a friend.** Turn it on in the setup window, in settings or with

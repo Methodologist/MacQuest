@@ -80,9 +80,15 @@ local function mark(plate, on)
     m:Show()
 end
 
-function HL:Refresh()
+-- force: the guide updated (new step, quest log...); otherwise (ticker, nameplate events) the names
+-- the guide wants are rebuilt at most once a second - plates come and go far more often
+function HL:Refresh(force)
     local on = SL.db and SL.db.markTargets ~= false
-    self.wanted = on and self:Wanted() or {}
+    local now = GetTime and GetTime() or 0
+    if force or not self.wanted or now - (self.wantedAt or -1e9) >= 1 then
+        self.wanted = on and self:Wanted() or {}
+        self.wantedAt = now
+    end
     if C_NamePlate and C_NamePlate.GetNamePlates then
         local ok, plates = pcall(C_NamePlate.GetNamePlates)
         for _, plate in ipairs(ok and plates or {}) do
@@ -97,11 +103,29 @@ end
 
 -- ------------------------------------------------------------------ tooltip line
 
+local ELITE = { elite = true, rareelite = true, worldboss = true }
+function HL:CheckElite(unit, q)
+    if type(q) ~= "number" or not unit or not UnitClassification then return end
+    if IsInInstance and SL.Clean(IsInInstance()) then return end     -- dungeon mobs: elite anyway
+    if UnitCanAttack and not SL.Clean(UnitCanAttack("player", unit)) then return end
+    local c = SL.Clean(UnitClassification(unit))
+    if c and ELITE[c] then
+        SL.char.eliteQuests = SL.char.eliteQuests or {}
+        if not SL.char.eliteQuests[q] then
+            SL.char.eliteQuests[q] = true
+            SL:Print(string.format("%s has elite mobs - the LFG button on the step helps you find a group (or /mq lfg).",
+                SL.Engine:QuestName(q)))
+            SL:RequestUpdate()
+        end
+    end
+end
+
 local function onUnit(tt)
     if not (SL.db and SL.db.markTargets ~= false) or not HL.wanted then return end
     local ok, _, unit = pcall(tt.GetUnit, tt)
     local name = ok and unit and SL.Clean(UnitName(unit))
     local q = name and HL.wanted[name]
+    if q then HL:CheckElite(unit, q) end
     if q then
         local what = type(q) == "number" and SL.Engine:QuestName(q) or tostring(q)
         tt:AddLine("|cffffd040SpeedLevel:|r " .. what, 1, 1, 1)
@@ -227,6 +251,11 @@ function HL:Init()
         pcall(GameTooltip.HookScript, GameTooltip, "OnTooltipSetUnit", onUnit)
     end
     SL:On("NAME_PLATE_UNIT_ADDED", function() HL:Refresh() end)
+    SL:On("PLAYER_TARGET_CHANGED", function()
+        local name = UnitExists and SL.Clean(UnitExists("target")) and SL.Clean(UnitName("target"))
+        local q = name and HL.wanted and HL.wanted[name]
+        if q then HL:CheckElite("target", q) end
+    end)
     SL:On("NAME_PLATE_UNIT_REMOVED", function() HL:Refresh() end)
     SL:On("PLAYER_REGEN_ENABLED", function()
         if HL.pending then HL:UpdateMacro() end

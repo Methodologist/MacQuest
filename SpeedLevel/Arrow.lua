@@ -63,7 +63,7 @@ function AR:Init()
     local label = f:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
     label:SetPoint("TOP", dist, "BOTTOM", 0, -1)
     label:SetWidth(240)
-    label:SetWordWrap(false)
+    label:SetWordWrap(true)       -- a long step wraps under the arrow instead of being cut off
     label:SetShadowOffset(1, -1)
     f.label = label
 
